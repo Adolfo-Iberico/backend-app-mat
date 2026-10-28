@@ -1,0 +1,2172 @@
+[
+  {
+    "subject": "?lgebra",
+    "title": "Lenguaje algebraico y valor numérico",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "lenguaje-algebraico-y-valor-numerico-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=MCbKYBUeE3U",
+    "video_title": "🎥 Valor numérico de un polinomio | Ej. 1 #ju…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Productos notables",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "productos-notables-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=o6PkQJEQql4",
+    "video_title": "🎥 Productos notables: binomio al cuadrado | …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Potenciación y ecuaciones exponenciales",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "potenciacion-y-ecuaciones-exponenciales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Fl1PvjOh9Us",
+    "video_title": "🎥 Ecuaciones exponenciales | Ej. 1 y 2 #juli…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Factorización",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "factorizacion-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=LWyZSXsMAr8",
+    "video_title": "🎥 Factorización | Caso 1: factor común #juli…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Teoría de exponentes y radicales",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "teoria-de-exponentes-y-radicales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ainnlQ_Owq8",
+    "video_title": "🎥 TODAS LAS LEYES DE LOS EXPONENTES Super fá…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales y radicales"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones de primer grado",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "ecuaciones-de-primer-grado-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=qeKEA066OSs",
+    "video_title": "🎥 Ecuaciones lineales o de primer grado | Ej…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:solve-equations-inequalities",
+        "title": "🔗 Khan Academy: Resolver ecuaciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Inecuaciones de primer grado",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "inecuaciones-de-primer-grado-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=I06hz1Jz8JA",
+    "video_title": "🎥 Desigualdades o inecuaciones lineales | Ej…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:inequalities-systems-graphs",
+        "title": "🔗 Khan Academy: Desigualdades"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones cuadráticas",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "ecuaciones-cuadraticas-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=xmzG2xR-oBI",
+    "video_title": "🎥 Ecuaciones cuadráticas por fórmula general…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratic-functions-equations",
+        "title": "🔗 Khan Academy: Funciones y ecuaciones cuadráticas"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Sistemas de ecuaciones lineales",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "sistemas-de-ecuaciones-lineales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ieiRIATCOUI",
+    "video_title": "🎥 Sistemas de ecuaciones lineales 2×2 por mé…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:systems-of-equations",
+        "title": "🔗 Khan Academy: Sistemas de ecuaciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Funciones y progresiones",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "funciones-y-progresiones-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=-6ylrFX_Ehc",
+    "video_title": "🎥 En vivo 🔴 Progresiones aritméticas | Demos…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:sequences",
+        "title": "🔗 Khan Academy: Progresiones (secuencias)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Polinomios: grados y polinomios especiales",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "polinomios-grados-y-polinomios-especiales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=MCbKYBUeE3U",
+    "video_title": "🎥 Valor numérico de un polinomio | Ej. 1 #ju…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Productos notables especiales: Legendre, Lagrange y Argand",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "productos-notables-especiales-legendre-lagrange-y-argand-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=o6PkQJEQql4",
+    "video_title": "🎥 Productos notables: binomio al cuadrado | …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "División de polinomios: Ruffini, Horner y teorema del resto",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "division-de-polinomios-ruffini-horner-y-teorema-del-resto-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Pv-HtVEHoSI",
+    "video_title": "🎥 Teorema del residuo | Ej. 1 #julioprofe — …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Cocientes notables",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "cocientes-notables-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=pFCM59eo4Rk",
+    "video_title": "🎥 Cocientes notables | Ejemplo 1 — Matemátic…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra",
+        "title": "🔗 Khan Academy: Álgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Racionalización de expresiones irracionales",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "racionalizacion-de-expresiones-irracionales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=2HUHWhBjDQg",
+    "video_title": "🎥 Introducción a la racionalización — Matemá…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales y radicales"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Inecuaciones de segundo grado",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "inecuaciones-de-segundo-grado-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=CiCp1-3n3sU",
+    "video_title": "🎥 Desigualdades o inecuaciones cuadráticas |…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:inequalities-systems-graphs",
+        "title": "🔗 Khan Academy: Desigualdades"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones e inecuaciones con valor absoluto",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "ecuaciones-e-inecuaciones-con-valor-absoluto-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Lw5W84TczZE",
+    "video_title": "🎥 Ecuaciones con valor absoluto | Introducci…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:absolute-value-piecewise-functions",
+        "title": "🔗 Khan Academy: Valor absoluto y funciones a trozos"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Matrices y determinantes",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "matrices-y-determinantes-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=8OnOZvc5rFQ",
+    "video_title": "🎥 Determinante de una matriz de 3x3 Regla de…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra",
+        "title": "🔗 Khan Academy: Álgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Relaciones: producto cartesiano, dominio y rango",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "relaciones-producto-cartesiano-dominio-y-rango-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=F9malPMsv9k",
+    "video_title": "🎥 Plano cartesiano | Introducción — Matemáti…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Función real de variable real: dominio y rango",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "funcion-real-de-variable-real-dominio-y-rango-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=H40lcwlgPMk",
+    "video_title": "🎥 Dominio y rango de una función — Matemátic…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Funciones especiales: identidad, escalón, signo y parte entera",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "funciones-especiales-identidad-escalon-signo-y-parte-entera-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=HAeSkQH1C-I",
+    "video_title": "🎥 ¿Qué es una Función? @MatematicasprofeAlex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Clases de funciones: inyectiva, suryectiva y biyectiva",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "clases-de-funciones-inyectiva-suryectiva-y-biyectiva-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=xhBWUbY1VrM",
+    "video_title": "🎥 Función inyectiva, sobreyectiva y biyectiv…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Operaciones con funciones: composición e inversa",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "operaciones-con-funciones-composicion-e-inversa-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=fLiwtU-8KN4",
+    "video_title": "🎥 Funciones compuestas y sus dominios #julio…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Función exponencial y logarítmica",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "funcion-exponencial-y-logaritmica-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=riqZcExsvcE",
+    "video_title": "🎥 Ecuaciones logarítmicas | Ej. 1 #julioprof…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento y decaimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Lenguaje algebraico y valor numérico",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "lenguaje-algebraico-y-valor-numerico-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=MCbKYBUeE3U",
+    "video_title": "🎥 Valor numérico de un polinomio | Ej. 1 #ju…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Productos notables",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "productos-notables-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=o6PkQJEQql4",
+    "video_title": "🎥 Productos notables: binomio al cuadrado | …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones de primer grado",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "ecuaciones-de-primer-grado-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=qeKEA066OSs",
+    "video_title": "🎥 Ecuaciones lineales o de primer grado | Ej…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:solve-equations-inequalities",
+        "title": "🔗 Khan Academy: Resolver ecuaciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Inecuaciones de primer grado",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "inecuaciones-de-primer-grado-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=I06hz1Jz8JA",
+    "video_title": "🎥 Desigualdades o inecuaciones lineales | Ej…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:inequalities-systems-graphs",
+        "title": "🔗 Khan Academy: Desigualdades"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Relaciones: producto cartesiano, dominio y rango",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "relaciones-producto-cartesiano-dominio-y-rango-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=F9malPMsv9k",
+    "video_title": "🎥 Plano cartesiano | Introducción — Matemáti…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Factorización",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "factorizacion-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=LWyZSXsMAr8",
+    "video_title": "🎥 Factorización | Caso 1: factor común #juli…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Teoría de exponentes y radicales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "teoria-de-exponentes-y-radicales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ainnlQ_Owq8",
+    "video_title": "🎥 TODAS LAS LEYES DE LOS EXPONENTES Super fá…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales y radicales"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones cuadráticas",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "ecuaciones-cuadraticas-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=xmzG2xR-oBI",
+    "video_title": "🎥 Ecuaciones cuadráticas por fórmula general…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratic-functions-equations",
+        "title": "🔗 Khan Academy: Funciones y ecuaciones cuadráticas"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Sistemas de ecuaciones lineales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "sistemas-de-ecuaciones-lineales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ieiRIATCOUI",
+    "video_title": "🎥 Sistemas de ecuaciones lineales 2×2 por mé…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:systems-of-equations",
+        "title": "🔗 Khan Academy: Sistemas de ecuaciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Funciones y progresiones",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "funciones-y-progresiones-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=-6ylrFX_Ehc",
+    "video_title": "🎥 En vivo 🔴 Progresiones aritméticas | Demos…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:sequences",
+        "title": "🔗 Khan Academy: Progresiones (secuencias)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Potenciación y ecuaciones exponenciales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "potenciacion-y-ecuaciones-exponenciales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Fl1PvjOh9Us",
+    "video_title": "🎥 Ecuaciones exponenciales | Ej. 1 y 2 #juli…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Polinomios: grados y polinomios especiales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "polinomios-grados-y-polinomios-especiales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=MCbKYBUeE3U",
+    "video_title": "🎥 Valor numérico de un polinomio | Ej. 1 #ju…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Productos notables especiales: Legendre, Lagrange y Argand",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "productos-notables-especiales-legendre-lagrange-y-argand-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=o6PkQJEQql4",
+    "video_title": "🎥 Productos notables: binomio al cuadrado | …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
+        "title": "🔗 Khan Academy: Multiplicar y factorizar"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "División de polinomios: Ruffini, Horner y teorema del resto",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "division-de-polinomios-ruffini-horner-y-teorema-del-resto-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Pv-HtVEHoSI",
+    "video_title": "🎥 Teorema del residuo | Ej. 1 #julioprofe — …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
+        "title": "🔗 Khan Academy: Fundamentos de álgebra"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Cocientes notables",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "cocientes-notables-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=pFCM59eo4Rk",
+    "video_title": "🎥 Cocientes notables | Ejemplo 1 — Matemátic…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra",
+        "title": "🔗 Khan Academy: Álgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Racionalización de expresiones irracionales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "racionalizacion-de-expresiones-irracionales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=2HUHWhBjDQg",
+    "video_title": "🎥 Introducción a la racionalización — Matemá…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:rational-exponents-radicals",
+        "title": "🔗 Khan Academy: Exponentes racionales y radicales"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Inecuaciones de segundo grado",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "inecuaciones-de-segundo-grado-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=CiCp1-3n3sU",
+    "video_title": "🎥 Desigualdades o inecuaciones cuadráticas |…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:inequalities-systems-graphs",
+        "title": "🔗 Khan Academy: Desigualdades"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Ecuaciones e inecuaciones con valor absoluto",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "ecuaciones-e-inecuaciones-con-valor-absoluto-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Lw5W84TczZE",
+    "video_title": "🎥 Ecuaciones con valor absoluto | Introducci…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:absolute-value-piecewise-functions",
+        "title": "🔗 Khan Academy: Valor absoluto y funciones a trozos"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Matrices y determinantes",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "matrices-y-determinantes-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=8OnOZvc5rFQ",
+    "video_title": "🎥 Determinante de una matriz de 3x3 Regla de…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra",
+        "title": "🔗 Khan Academy: Álgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Función real de variable real: dominio y rango",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "funcion-real-de-variable-real-dominio-y-rango-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=H40lcwlgPMk",
+    "video_title": "🎥 Dominio y rango de una función — Matemátic…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Funciones especiales: identidad, escalón, signo y parte entera",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "funciones-especiales-identidad-escalon-signo-y-parte-entera-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=HAeSkQH1C-I",
+    "video_title": "🎥 ¿Qué es una Función? @MatematicasprofeAlex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Clases de funciones: inyectiva, suryectiva y biyectiva",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "clases-de-funciones-inyectiva-suryectiva-y-biyectiva-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=xhBWUbY1VrM",
+    "video_title": "🎥 Función inyectiva, sobreyectiva y biyectiv…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Operaciones con funciones: composición e inversa",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "operaciones-con-funciones-composicion-e-inversa-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=fLiwtU-8KN4",
+    "video_title": "🎥 Funciones compuestas y sus dominios #julio…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:functions",
+        "title": "🔗 Khan Academy: Funciones"
+      }
+    ]
+  },
+  {
+    "subject": "?lgebra",
+    "title": "Función exponencial y logarítmica",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "funcion-exponencial-y-logaritmica-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=riqZcExsvcE",
+    "video_title": "🎥 Ecuaciones logarítmicas | Ej. 1 #julioprof…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento y decaimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Conjuntos numéricos y valor absoluto",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "conjuntos-numericos-y-valor-absoluto-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Sr1YreAajps",
+    "video_title": "🎥 Ecuaciones con valor absoluto | Video 1 #j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/negatives-absolute-value",
+        "title": "🔗 Khan Academy: Números negativos y valor absoluto"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Jerarquía de operaciones y signos",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "jerarquia-de-operaciones-y-signos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dibwDpi4YcM",
+    "video_title": "🎥 Jerarquía de las operaciones | Introducció…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Divisibilidad, MCD y mcm",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "divisibilidad-mcd-y-mcm-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=e4Kd38jkFaQ",
+    "video_title": "🎥 Máximo común divisor: concepto y dos ejemp…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Fracciones y decimales",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "fracciones-y-decimales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=pOykmkuRnw4",
+    "video_title": "🎥 Representación gráfica de fracciones — Mat…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/fraction-arithmetic",
+        "title": "🔗 Khan Academy: Fracciones"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-decimals",
+        "title": "🔗 Khan Academy: Decimales"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Teoría de conjuntos: operaciones y diagramas de Venn",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "teoria-de-conjuntos-operaciones-y-diagramas-de-venn-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=1EbYydBSmPE",
+    "video_title": "🎥 Diagramas de Venn — Matemáticas profe Alex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Números naturales y enteros: complemento aritmético y división entera",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "numeros-naturales-y-enteros-complemento-aritmetico-y-division-entera-4to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-review-add-subtract",
+        "title": "🔗 Khan Academy: Suma y resta"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-review-negative-numbers",
+        "title": "🔗 Khan Academy: Números negativos"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Razón, proporción y proporcionalidad",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "razon-proporcion-y-proporcionalidad-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NEk9UaH4NBQ",
+    "video_title": "🎥 Reparto proporcional directo #julioprofe —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/ratios-proportions",
+        "title": "🔗 Khan Academy: Razones y proporciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Tanto por ciento",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "tanto-por-ciento-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=a8fEM586LQ4",
+    "video_title": "🎥 Porcentajes | Ej. 1 #julioprofe — juliopro…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra",
+        "title": "🔗 Khan Academy: Preálgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Regla de tres y reparto proporcional",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "regla-de-tres-y-reparto-proporcional-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=hP6F-0oDvGk",
+    "video_title": "🎥 Regla de tres simple directa | Problema 1 …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/ratios-proportions",
+        "title": "🔗 Khan Academy: Razones y proporciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Promedios e interés simple",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "promedios-e-interes-simple-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=bmNVWltce6I",
+    "video_title": "🎥 MEDIA ARITMETICA O PROMEDIO Super facil - …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability/mean-median-mode",
+        "title": "🔗 Khan Academy: Media, mediana y moda"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Fracciones: clases, densidad y aplicaciones",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "fracciones-clases-densidad-y-aplicaciones-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dcvYhxrBKVY",
+    "video_title": "🎥 Suma y resta de fracciones heterogéneas — …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/fraction-arithmetic",
+        "title": "🔗 Khan Academy: Fracciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Sucesiones y sumatorias notables",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "sucesiones-y-sumatorias-notables-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=24yZVPlGeF0",
+    "video_title": "🎥 Sumatorias - Video 1 con CASIO Classwiz fx…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:sequences",
+        "title": "🔗 Khan Academy: Secuencias y progresiones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Sistemas de numeración y conversión de bases",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "sistemas-de-numeracion-y-conversion-de-bases-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=F1xB6oxmMWQ",
+    "video_title": "🎥 Números Binarios | Introducción — Matemáti…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Criterios de divisibilidad ampliados",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "criterios-de-divisibilidad-ampliados-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=4tK2XIEx-fg",
+    "video_title": "🎥 Criterios de divisibilidad de 2,3 y 5 — Ma…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Números primos y estudio de divisores",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "numeros-primos-y-estudio-de-divisores-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=_9SYCAbh5oA",
+    "video_title": "🎥 Números primos y compuestos — Matemáticas …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Algoritmo de Euclides y propiedades del MCD y mcm",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "algoritmo-de-euclides-y-propiedades-del-mcd-y-mcm-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=e4Kd38jkFaQ",
+    "video_title": "🎥 Máximo común divisor: concepto y dos ejemp…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Interés compuesto",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "interes-compuesto-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=cD5xmLtYjYI",
+    "video_title": "🎥 Interés compuesto | Ejemplo 1 — Matemática…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Estadística descriptiva: frecuencias, tendencia y dispersión",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "estadistica-descriptiva-frecuencias-tendencia-y-dispersion-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dfxCsCZ1c3A",
+    "video_title": "🎥 Medidas de tendencia central | Media, Medi…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability/mean-median-mode",
+        "title": "🔗 Khan Academy: Media, mediana y moda"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Introducción a las probabilidades",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "introduccion-a-las-probabilidades-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=B1YE6ChdzgM",
+    "video_title": "🎥 Probabilidad | Conceptos básicos — Matemát…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability",
+        "title": "🔗 Khan Academy: Estadística y probabilidad (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Conjuntos numéricos y valor absoluto",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "conjuntos-numericos-y-valor-absoluto-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Sr1YreAajps",
+    "video_title": "🎥 Ecuaciones con valor absoluto | Video 1 #j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/negatives-absolute-value",
+        "title": "🔗 Khan Academy: Números negativos y valor absoluto"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Jerarquía de operaciones y signos",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "jerarquia-de-operaciones-y-signos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dibwDpi4YcM",
+    "video_title": "🎥 Jerarquía de las operaciones | Introducció…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Divisibilidad, MCD y mcm",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "divisibilidad-mcd-y-mcm-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=e4Kd38jkFaQ",
+    "video_title": "🎥 Máximo común divisor: concepto y dos ejemp…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Fracciones y decimales",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "fracciones-y-decimales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=pOykmkuRnw4",
+    "video_title": "🎥 Representación gráfica de fracciones — Mat…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/fraction-arithmetic",
+        "title": "🔗 Khan Academy: Fracciones"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-decimals",
+        "title": "🔗 Khan Academy: Decimales"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Razón, proporción y proporcionalidad",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "razon-proporcion-y-proporcionalidad-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NEk9UaH4NBQ",
+    "video_title": "🎥 Reparto proporcional directo #julioprofe —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/ratios-proportions",
+        "title": "🔗 Khan Academy: Razones y proporciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Tanto por ciento",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "tanto-por-ciento-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=a8fEM586LQ4",
+    "video_title": "🎥 Porcentajes | Ej. 1 #julioprofe — juliopro…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra",
+        "title": "🔗 Khan Academy: Preálgebra (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Teoría de conjuntos: operaciones y diagramas de Venn",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "teoria-de-conjuntos-operaciones-y-diagramas-de-venn-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=1EbYydBSmPE",
+    "video_title": "🎥 Diagramas de Venn — Matemáticas profe Alex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Números naturales y enteros: complemento aritmético y división entera",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "numeros-naturales-y-enteros-complemento-aritmetico-y-division-entera-5to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-review-add-subtract",
+        "title": "🔗 Khan Academy: Suma y resta"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/arith-review-negative-numbers",
+        "title": "🔗 Khan Academy: Números negativos"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Fracciones: clases, densidad y aplicaciones",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "fracciones-clases-densidad-y-aplicaciones-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dcvYhxrBKVY",
+    "video_title": "🎥 Suma y resta de fracciones heterogéneas — …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic/fraction-arithmetic",
+        "title": "🔗 Khan Academy: Fracciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Regla de tres y reparto proporcional",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "regla-de-tres-y-reparto-proporcional-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=hP6F-0oDvGk",
+    "video_title": "🎥 Regla de tres simple directa | Problema 1 …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/pre-algebra/ratios-proportions",
+        "title": "🔗 Khan Academy: Razones y proporciones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Promedios e interés simple",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "promedios-e-interes-simple-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=bmNVWltce6I",
+    "video_title": "🎥 MEDIA ARITMETICA O PROMEDIO Super facil - …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability/mean-median-mode",
+        "title": "🔗 Khan Academy: Media, mediana y moda"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Sucesiones y sumatorias notables",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "sucesiones-y-sumatorias-notables-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=24yZVPlGeF0",
+    "video_title": "🎥 Sumatorias - Video 1 con CASIO Classwiz fx…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:sequences",
+        "title": "🔗 Khan Academy: Secuencias y progresiones"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Sistemas de numeración y conversión de bases",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "sistemas-de-numeracion-y-conversion-de-bases-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=F1xB6oxmMWQ",
+    "video_title": "🎥 Números Binarios | Introducción — Matemáti…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Criterios de divisibilidad ampliados",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "criterios-de-divisibilidad-ampliados-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=4tK2XIEx-fg",
+    "video_title": "🎥 Criterios de divisibilidad de 2,3 y 5 — Ma…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Números primos y estudio de divisores",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "numeros-primos-y-estudio-de-divisores-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=_9SYCAbh5oA",
+    "video_title": "🎥 Números primos y compuestos — Matemáticas …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Algoritmo de Euclides y propiedades del MCD y mcm",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "algoritmo-de-euclides-y-propiedades-del-mcd-y-mcm-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=e4Kd38jkFaQ",
+    "video_title": "🎥 Máximo común divisor: concepto y dos ejemp…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/arithmetic",
+        "title": "🔗 Khan Academy: Aritmética (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Interés compuesto",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "interes-compuesto-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=cD5xmLtYjYI",
+    "video_title": "🎥 Interés compuesto | Ejemplo 1 — Matemática…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay",
+        "title": "🔗 Khan Academy: Crecimiento exponencial"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Estadística descriptiva: frecuencias, tendencia y dispersión",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "estadistica-descriptiva-frecuencias-tendencia-y-dispersion-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=dfxCsCZ1c3A",
+    "video_title": "🎥 Medidas de tendencia central | Media, Medi…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability/mean-median-mode",
+        "title": "🔗 Khan Academy: Media, mediana y moda"
+      }
+    ]
+  },
+  {
+    "subject": "Aritm?tica",
+    "title": "Introducción a las probabilidades",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "introduccion-a-las-probabilidades-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=B1YE6ChdzgM",
+    "video_title": "🎥 Probabilidad | Conceptos básicos — Matemát…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/statistics-probability",
+        "title": "🔗 Khan Academy: Estadística y probabilidad (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Segmentos y ángulos",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "segmentos-y-angulos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=tWEEUNJukzg",
+    "video_title": "🎥 Clasificación de ángulos según su medida —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Triángulos: clasificación y propiedades",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "triangulos-clasificacion-y-propiedades-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NQx89V_J4eI",
+    "video_title": "🎥 Propiedades fundamentales de los triángulo…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia y triángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Congruencia y semejanza",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "congruencia-y-semejanza-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=4MxChkgm370",
+    "video_title": "🎥 FIGURAS SEMEJANTES Super facil -  Semejanz…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-similarity",
+        "title": "🔗 Khan Academy: Semejanza"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Teorema de Pitágoras y relaciones métricas",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "teorema-de-pitagoras-y-relaciones-metricas-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NcgIpw9KMmY",
+    "video_title": "🎥 Teorema de Pitágoras | Problema 1 #juliopr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Trigonometría de triángulos rectos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Cuadriláteros y polígonos",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "cuadrilateros-y-poligonos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=PXNUyk0SK3E",
+    "video_title": "🎥 Clasificación de cuadriláteros y caracterí…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Circunferencia y círculo",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "circunferencia-y-circulo-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ha5eWCrxo28",
+    "video_title": "🎥 Ejercicio 1 de Circunferencia — julioprofe…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Áreas y perímetros de regiones planas",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "areas-y-perimetros-de-regiones-planas-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=DPcP6gz495U",
+    "video_title": "🎥 Qué es el área — Matemáticas profe Alex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Sólidos geométricos: áreas y volúmenes",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "solidos-geometricos-areas-y-volumenes-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=1IO8oZkrkXI",
+    "video_title": "🎥 Qué es volumen | Matemáticas — Matemáticas…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-solids",
+        "title": "🔗 Khan Academy: Sólidos geométricos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Líneas y puntos notables del triángulo",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "lineas-y-puntos-notables-del-triangulo-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Xu5RI6I9v2o",
+    "video_title": "🎥 Medianas de un triángulo | Baricentro (gra…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia y triángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Teoremas de la bisectriz, Menelao y Ceva",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "teoremas-de-la-bisectriz-menelao-y-ceva-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=kPIXZZS-35s",
+    "video_title": "🎥 TEOREMA DE LA BISECTRIZ (DEMOSTRACIÓN) — j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-similarity",
+        "title": "🔗 Khan Academy: Semejanza"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Relaciones métricas oblicuángulas: Euclides y Herón",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "relaciones-metricas-oblicuangulas-euclides-y-heron-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=6c_VZQhIwCk",
+    "video_title": "🎥 Fórmula de Herón | Demostración #julioprof…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Triángulos rectos y Pitágoras"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Ángulos en la circunferencia: inscrito, semiinscrito y exinscrito",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "angulos-en-la-circunferencia-inscrito-semiinscrito-y-exinscrito-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=N_9fbNfK8t0",
+    "video_title": "🎥 ANGULO CENTRAL E INSCRITO  Super Facil - P…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Potencia de un punto: cuerdas, secantes y tangentes",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "potencia-de-un-punto-cuerdas-secantes-y-tangentes-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=6FUv9uMEQHo",
+    "video_title": "🎥 CUERDAS QUE SE CORTAN EN UNA CIRCUNFERENCI…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Polígonos regulares y áreas circulares",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "poligonos-regulares-y-areas-circulares-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=wUmqDz3o8Uo",
+    "video_title": "🎥 Polígonos regulares | Características y no…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Segmentos y ángulos",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "segmentos-y-angulos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=tWEEUNJukzg",
+    "video_title": "🎥 Clasificación de ángulos según su medida —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Triángulos: clasificación y propiedades",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "triangulos-clasificacion-y-propiedades-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NQx89V_J4eI",
+    "video_title": "🎥 Propiedades fundamentales de los triángulo…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia y triángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Congruencia y semejanza",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "congruencia-y-semejanza-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=4MxChkgm370",
+    "video_title": "🎥 FIGURAS SEMEJANTES Super facil -  Semejanz…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-similarity",
+        "title": "🔗 Khan Academy: Semejanza"
+      },
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Teorema de Pitágoras y relaciones métricas",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "teorema-de-pitagoras-y-relaciones-metricas-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=NcgIpw9KMmY",
+    "video_title": "🎥 Teorema de Pitágoras | Problema 1 #juliopr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Trigonometría de triángulos rectos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Cuadriláteros y polígonos",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "cuadrilateros-y-poligonos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=PXNUyk0SK3E",
+    "video_title": "🎥 Clasificación de cuadriláteros y caracterí…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Circunferencia y círculo",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "circunferencia-y-circulo-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=ha5eWCrxo28",
+    "video_title": "🎥 Ejercicio 1 de Circunferencia — julioprofe…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Áreas y perímetros de regiones planas",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "areas-y-perimetros-de-regiones-planas-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=DPcP6gz495U",
+    "video_title": "🎥 Qué es el área — Matemáticas profe Alex…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry",
+        "title": "🔗 Khan Academy: Geometría (curso)"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Sólidos geométricos: áreas y volúmenes",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "solidos-geometricos-areas-y-volumenes-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=1IO8oZkrkXI",
+    "video_title": "🎥 Qué es volumen | Matemáticas — Matemáticas…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-solids",
+        "title": "🔗 Khan Academy: Sólidos geométricos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Líneas y puntos notables del triángulo",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "lineas-y-puntos-notables-del-triangulo-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Xu5RI6I9v2o",
+    "video_title": "🎥 Medianas de un triángulo | Baricentro (gra…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-congruence",
+        "title": "🔗 Khan Academy: Congruencia y triángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Teoremas de la bisectriz, Menelao y Ceva",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "teoremas-de-la-bisectriz-menelao-y-ceva-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=kPIXZZS-35s",
+    "video_title": "🎥 TEOREMA DE LA BISECTRIZ (DEMOSTRACIÓN) — j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-similarity",
+        "title": "🔗 Khan Academy: Semejanza"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Relaciones métricas oblicuángulas: Euclides y Herón",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "relaciones-metricas-oblicuangulas-euclides-y-heron-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=6c_VZQhIwCk",
+    "video_title": "🎥 Fórmula de Herón | Demostración #julioprof…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Triángulos rectos y Pitágoras"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Ángulos en la circunferencia: inscrito, semiinscrito y exinscrito",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "angulos-en-la-circunferencia-inscrito-semiinscrito-y-exinscrito-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=N_9fbNfK8t0",
+    "video_title": "🎥 ANGULO CENTRAL E INSCRITO  Super Facil - P…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Potencia de un punto: cuerdas, secantes y tangentes",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "potencia-de-un-punto-cuerdas-secantes-y-tangentes-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=6FUv9uMEQHo",
+    "video_title": "🎥 CUERDAS QUE SE CORTAN EN UNA CIRCUNFERENCI…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Geometr?a",
+    "title": "Polígonos regulares y áreas circulares",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "poligonos-regulares-y-areas-circulares-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=wUmqDz3o8Uo",
+    "video_title": "🎥 Polígonos regulares | Características y no…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-circles",
+        "title": "🔗 Khan Academy: Círculos"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Razones trigonométricas de ángulos agudos",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "razones-trigonometricas-de-angulos-agudos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=-fNkaIF1o6k",
+    "video_title": "🎥 Funciones trigonométricas en un triángulo …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trigonometry-right-triangles",
+        "title": "🔗 Khan Academy: Trigonometría de triángulos rectángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Sistemas de medición angular: sexagesimal, centesimal y radial",
+    "grade": "4to",
+    "difficulty": "basic",
+    "pdf": "sistemas-de-medicion-angular-sexagesimal-centesimal-y-radial-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=kfu1O0zRJ0E",
+    "video_title": "🎥 Conversión de radianes a grados | Ej. 1 #j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ángulos notables y resolución de triángulos rectángulos",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "angulos-notables-y-resolucion-de-triangulos-rectangulos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=t5m2HBVF_uw",
+    "video_title": "🎥 Seno y coseno de 0°, 30°, 45°, 60° y 90° #…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Triángulos rectángulos notables"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Circunferencia trigonométrica",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "circunferencia-trigonometrica-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=vICf_JIwar4",
+    "video_title": "🎥 Conceptos básicos ecuación de la CIRCUNFER…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Identidades trigonométricas fundamentales",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "identidades-trigonometricas-fundamentales-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=HsKyVQiXJzo",
+    "video_title": "🎥 DEMOSTRACIÓN DE IDENTIDADES TRIGONOMÉTRICA…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Reducción de ángulos al primer cuadrante",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "reduccion-de-angulos-al-primer-cuadrante-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Bckffm5SCnU",
+    "video_title": "🎥 Ejercita tu cerebro 15 #ejercitatucerebro …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Triángulos rectángulos notables: 37° y 53°",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "triangulos-rectangulos-notables-37-y-53-4to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trigonometry-right-triangles",
+        "title": "🔗 Khan Academy: Triángulos rectángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Identidades de arcos múltiples: doble, mitad y triple",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "identidades-de-arcos-multiples-doble-mitad-y-triple-4to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Funciones trigonométricas: círculo, gráficas, dominio y rango",
+    "grade": "4to",
+    "difficulty": "intermediate",
+    "pdf": "funciones-trigonometricas-circulo-graficas-dominio-y-rango-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=IOz5tIoV3ko",
+    "video_title": "🎥 Gráfico del Seno y Coseno — Matemáticas pr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ángulos compuestos: suma y diferencia",
+    "grade": "4to",
+    "difficulty": "advanced",
+    "pdf": "angulos-compuestos-suma-y-diferencia-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=FOmfxccS7LI",
+    "video_title": "🎥 En vivo 🔴 Suma y resta de ángulos #juliopr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Teoremas de senos y cosenos",
+    "grade": "4to",
+    "difficulty": "advanced",
+    "pdf": "teoremas-de-senos-y-cosenos-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=yVFs-OrGV_8",
+    "video_title": "🎥 LEY DE SENOS - Ejercicio 1 (con CASIO Clas…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-with-general-triangles",
+        "title": "🔗 Khan Academy: Triángulos generales (ley de senos y cosenos)"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ecuaciones trigonométricas básicas",
+    "grade": "4to",
+    "difficulty": "advanced",
+    "pdf": "ecuaciones-trigonometricas-basicas-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=EN7S3jzkmLs",
+    "video_title": "🎥 ECUACIONES TRIGONOMÉTRICAS - Ejercicio 1 —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Ecuaciones e identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Transformaciones trigonométricas: suma a producto y producto a suma",
+    "grade": "4to",
+    "difficulty": "advanced",
+    "pdf": "transformaciones-trigonometricas-suma-a-producto-y-producto-a-suma-4to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Leyes complementarias: tangente, proyecciones y Carnot",
+    "grade": "4to",
+    "difficulty": "advanced",
+    "pdf": "leyes-complementarias-tangente-proyecciones-y-carnot-4to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=SbFetGnLdr8",
+    "video_title": "🎥 Ley de Seno y Coseno | Ejemplo 1 | Solucio…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-with-general-triangles",
+        "title": "🔗 Khan Academy: Triángulos generales"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Razones trigonométricas de ángulos agudos",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "razones-trigonometricas-de-angulos-agudos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=-fNkaIF1o6k",
+    "video_title": "🎥 Funciones trigonométricas en un triángulo …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trigonometry-right-triangles",
+        "title": "🔗 Khan Academy: Trigonometría de triángulos rectángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ángulos notables y resolución de triángulos rectángulos",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "angulos-notables-y-resolucion-de-triangulos-rectangulos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=t5m2HBVF_uw",
+    "video_title": "🎥 Seno y coseno de 0°, 30°, 45°, 60° y 90° #…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/geometry/hs-geo-trig",
+        "title": "🔗 Khan Academy: Triángulos rectángulos notables"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Sistemas de medición angular: sexagesimal, centesimal y radial",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "sistemas-de-medicion-angular-sexagesimal-centesimal-y-radial-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=kfu1O0zRJ0E",
+    "video_title": "🎥 Conversión de radianes a grados | Ej. 1 #j…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Triángulos rectángulos notables: 37° y 53°",
+    "grade": "5to",
+    "difficulty": "intermediate",
+    "pdf": "triangulos-rectangulos-notables-37-y-53-5to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trigonometry-right-triangles",
+        "title": "🔗 Khan Academy: Triángulos rectángulos"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Circunferencia trigonométrica",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "circunferencia-trigonometrica-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=vICf_JIwar4",
+    "video_title": "🎥 Conceptos básicos ecuación de la CIRCUNFER…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Identidades trigonométricas fundamentales",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "identidades-trigonometricas-fundamentales-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=HsKyVQiXJzo",
+    "video_title": "🎥 DEMOSTRACIÓN DE IDENTIDADES TRIGONOMÉTRICA…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Reducción de ángulos al primer cuadrante",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "reduccion-de-angulos-al-primer-cuadrante-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=Bckffm5SCnU",
+    "video_title": "🎥 Ejercita tu cerebro 15 #ejercitatucerebro …",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ángulos compuestos: suma y diferencia",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "angulos-compuestos-suma-y-diferencia-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=FOmfxccS7LI",
+    "video_title": "🎥 En vivo 🔴 Suma y resta de ángulos #juliopr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Teoremas de senos y cosenos",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "teoremas-de-senos-y-cosenos-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=yVFs-OrGV_8",
+    "video_title": "🎥 LEY DE SENOS - Ejercicio 1 (con CASIO Clas…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-with-general-triangles",
+        "title": "🔗 Khan Academy: Triángulos generales (ley de senos y cosenos)"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Ecuaciones trigonométricas básicas",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "ecuaciones-trigonometricas-basicas-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=EN7S3jzkmLs",
+    "video_title": "🎥 ECUACIONES TRIGONOMÉTRICAS - Ejercicio 1 —…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Ecuaciones e identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Identidades de arcos múltiples: doble, mitad y triple",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "identidades-de-arcos-multiples-doble-mitad-y-triple-5to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Transformaciones trigonométricas: suma a producto y producto a suma",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "transformaciones-trigonometricas-suma-a-producto-y-producto-a-suma-5to.pdf",
+    "video_url": null,
+    "video_title": null,
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-equations-and-identities",
+        "title": "🔗 Khan Academy: Identidades trigonométricas"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Leyes complementarias: tangente, proyecciones y Carnot",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "leyes-complementarias-tangente-proyecciones-y-carnot-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=SbFetGnLdr8",
+    "video_title": "🎥 Ley de Seno y Coseno | Ejemplo 1 | Solucio…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/trig-with-general-triangles",
+        "title": "🔗 Khan Academy: Triángulos generales"
+      }
+    ]
+  },
+  {
+    "subject": "Trigonometr?a",
+    "title": "Funciones trigonométricas: círculo, gráficas, dominio y rango",
+    "grade": "5to",
+    "difficulty": "advanced",
+    "pdf": "funciones-trigonometricas-circulo-graficas-dominio-y-rango-5to.pdf",
+    "video_url": "https://www.youtube.com/watch?v=IOz5tIoV3ko",
+    "video_title": "🎥 Gráfico del Seno y Coseno — Matemáticas pr…",
+    "khan_links": [
+      {
+        "url": "https://es.khanacademy.org/math/trigonometry/unit-circle-trig-func",
+        "title": "🔗 Khan Academy: Circunferencia unitaria"
+      }
+    ]
+  }
+]

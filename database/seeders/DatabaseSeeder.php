@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TestDataSeeder::class,
             MathContentSeeder::class,
+            UnsaacLessonSeeder::class,
             DniSeeder::class,
             ExamSeeder::class,
             RankingSeeder::class,
