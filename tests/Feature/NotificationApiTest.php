@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Notification;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\Str;
@@ -22,14 +21,14 @@ class NotificationApiTest extends TestCase
     {
         parent::setUp();
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
+        $studentRole = 'student';
 
         $this->student = User::create([
             'id' => Str::uuid(),
             'full_name' => 'Student Notifications',
             'email' => 'student.notifications@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -39,7 +38,7 @@ class NotificationApiTest extends TestCase
             'full_name' => 'Other Student',
             'email' => 'other.student@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);

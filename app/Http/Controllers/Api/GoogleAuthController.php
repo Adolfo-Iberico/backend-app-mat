@@ -54,13 +54,11 @@ class GoogleAuthController extends Controller
                 }
 
                 if (!$user->is_active) {
-                    return redirect(config('app.url') . '/login?error=inactive');
+                    return $this->redirectToFrontendLogin(['error' => 'inactive']);
                 }
 
                 $user->update(['last_login' => now()]);
             } else {
-                $studentRole = Role::where('name', Role::STUDENT)->first();
-
                 $user = User::create([
                     'id' => Str::uuid(),
                     'email' => $googleUser->email,
@@ -69,7 +67,7 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleUser->id,
                     'google_token' => $googleUser->token,
                     'provider' => 'google',
-                    'role_id' => $studentRole->id,
+                    'role' => Role::STUDENT,
                     'is_active' => true,
                     'email_verified_at' => now(),
                     'password' => Hash::make(Str::random(24))
@@ -93,11 +91,18 @@ class GoogleAuthController extends Controller
                 'platform' => 'web',
             ]);
 
-            return redirect(config('app.url') . '/login?auth_code=' . $code);
+            return $this->redirectToFrontendLogin(['auth_code' => $code]);
         } catch (\Exception $e) {
             report($e);
-            return redirect(config('app.url') . '/login?error=auth_failed');
+            return $this->redirectToFrontendLogin(['error' => 'auth_failed']);
         }
+    }
+
+    private function redirectToFrontendLogin(array $query)
+    {
+        $frontendUrl = rtrim((string) config('services.google.frontend_url'), '/');
+
+        return redirect($frontendUrl . '/login?' . http_build_query($query));
     }
 
     /**
@@ -144,7 +149,6 @@ class GoogleAuthController extends Controller
                 }
                 $user->update(['last_login' => now()]);
             } else {
-                $studentRole = Role::where('name', Role::STUDENT)->first();
                 $user = User::create([
                     'id' => Str::uuid(),
                     'email' => $email,
@@ -152,7 +156,7 @@ class GoogleAuthController extends Controller
                     'profile_image' => $avatar,
                     'google_id' => $googleId,
                     'provider' => 'google',
-                    'role_id' => $studentRole->id,
+                    'role' => Role::STUDENT,
                     'is_active' => true,
                     'email_verified_at' => now(),
                     'password' => Hash::make(Str::random(24))
@@ -176,7 +180,7 @@ class GoogleAuthController extends Controller
 
             return response()->json([
                 'message' => __('google_auth_success'),
-                'user' => $user->load('role'),
+                'user' => $user,
                 'access_token' => $token,
                 'token_type' => 'Bearer'
             ]);

@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
-use App\Models\Enrollment;
 use App\Models\User;
 use App\Services\GamificationService;
 use Illuminate\Http\Request;
@@ -47,15 +45,8 @@ class GamificationController extends Controller
             return response()->json(['message' => __('gamification_student_not_found')], 404);
         }
 
-        // El docente solo ve alumnos matriculados en sus cursos.
         if ($user->isTeacher() && !$user->isCoordinator() && !$user->isDirector()) {
-            $related = Enrollment::where('student_id', $student->id)
-                ->whereIn('course_id', Course::where('teacher_id', $user->id)->pluck('id'))
-                ->exists();
-
-            if (!$related) {
-                return response()->json(['message' => __('gamification_student_forbidden')], 403);
-            }
+            return response()->json(['message' => __('gamification_student_forbidden')], 403);
         }
 
         $locale = in_array($request->input('locale'), ['es', 'en', 'qu']) ? $request->input('locale') : 'es';

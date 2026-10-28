@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class GuestStudentController extends Controller
         }
 
         $student = User::where('dni', $validated['dni'])
-            ->whereHas('role', fn ($q) => $q->where('name', 'student'))
+            ->where('role', Role::STUDENT)
             ->first();
 
         if (!$student) {
@@ -176,7 +177,7 @@ class GuestStudentController extends Controller
         }
 
         $student = User::where('dni', $validated['dni'])
-            ->whereHas('role', fn ($q) => $q->where('name', 'student'))
+            ->where('role', Role::STUDENT)
             ->first();
 
         if (!$student) {

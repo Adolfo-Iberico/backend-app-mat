@@ -2,76 +2,104 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
-/** Examen creado por un docente, con preguntas e intentos de estudiantes. */
-class Exam extends Model
+/**
+ * Examen: evaluación de type='exam' supervisada con anti-cheat.
+ *
+ * Desde la consolidación del módulo (Fase 2) los exámenes viven en la tabla
+ * canónica `evaluations`. Este modelo es la vista de compatibilidad del flujo
+ * de exámenes: un global scope filtra por type='exam' y el alias is_active
+ * mapea a is_published (en el flujo antiguo ambos flags se alternaban juntos,
+ * por lo que un solo flag gobierna la visibilidad para estudiantes).
+ *
+ * Se preservan los IDs originales: cualquier referencia externa (payloads del
+ * frontend /exams/*, submitted_works, conversaciones) sigue siendo válida.
+ */
+class Exam extends Evaluation
 {
-    use HasUuids, SoftDeletes;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
+    protected $table = 'evaluations';
 
     protected $fillable = [
         'id',
         'title',
         'description',
         'teacher_id',
+        'lesson_id',
         'unit',
+        'type',
         'difficulty',
         'time_limit',
-        'max_attempts',
+        'due_date',
+        'is_published',
+        'is_active',
         'auto_correct',
         'randomize_questions',
-        'is_active',
-        'is_published',
+        'max_attempts',
+        'published_at',
         'total_questions',
         'total_points',
-        'published_at',
     ];
 
-    protected $casts = [
-        'auto_correct' => 'boolean',
-        'randomize_questions' => 'boolean',
-        'is_active' => 'boolean',
-        'is_published' => 'boolean',
-        'max_attempts' => 'integer',
-        'time_limit' => 'integer',
-        'total_questions' => 'integer',
-        'total_points' => 'integer',
-        'published_at' => 'datetime',
-    ];
+    /** El alias is_active se serializa en los payloads del flujo de exámenes. */
+    protected $appends = ['is_active'];
 
-    /** Docente responsable del examen. */
-    public function teacher()
+    public const TYPE = parent::TYPE_EXAM;
+
+    protected static function booted(): void
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        parent::booted();
+
+        static::addGlobalScope('exam', function ($query) {
+            $query->where('type', self::TYPE);
+        });
+
+        // Todo examen creado desde este modelo nace con su tipo canónico.
+        static::creating(function ($exam) {
+            $exam->type = self::TYPE;
+        });
     }
 
-    /** Preguntas incluidas en el examen. */
-    public function questions()
+    /** is_active (legado) === is_published: un solo flag de visibilidad. */
+    public function getIsActiveAttribute(): bool
     {
-        return $this->hasMany(ExamQuestion::class);
+        return (bool) $this->is_published;
     }
 
-    /** Intentos realizados por estudiantes. */
+    public function setIsActiveAttribute($value): void
+    {
+        $this->attributes['is_published'] = $value ? 1 : 0;
+    }
+
+    /** Intentos de estudiantes en este examen (filas de evaluation_results). */
     public function attempts()
     {
-        return $this->hasMany(ExamAttempt::class);
+        return $this->hasMany(EvaluationResult::class, 'evaluation_id');
     }
 
-    /** Filtra los exámenes activos. */
+    /**
+     * Preguntas del examen. FK explícita: la heredada derivaría "exam_id"
+     * del nombre de esta clase y no de la tabla canónica evaluations.
+     */
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'evaluation_id');
+    }
+
+    /** Resultados de estudiantes (alias semántico de attempts). */
+    public function results()
+    {
+        return $this->hasMany(EvaluationResult::class, 'evaluation_id');
+    }
+
+    /** Filtra los exámenes activos (publicados). */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_published', true);
     }
 
     /** Filtra los exámenes inactivos, que este modelo usa como borradores. */
     public function scopeDraft($query)
     {
-        return $query->where('is_active', false);
+        return $query->where('is_published', false);
     }
 
     /** Filtra los exámenes asignados a un docente. */

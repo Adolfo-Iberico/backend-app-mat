@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Evaluation;
+use App\Models\Lesson;
+use App\Models\Question;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Lesson;
-use App\Models\Evaluation;
-use App\Models\Question;
 
 /**
  * Carga lecciones y evaluaciones de matemáticas con sus preguntas de práctica.
@@ -25,7 +24,7 @@ class MathContentSeeder extends Seeder
             [
                 'full_name' => 'Prof. Rodriguez',
                 'password' => bcrypt('password123'),
-                'role_id' => Role::where('name', 'teacher')->first()->id,
+                'role' => 'teacher',
                 'is_active' => true,
                 'provider' => 'email',
             ]
@@ -469,6 +468,7 @@ class MathContentSeeder extends Seeder
                 'description' => $lessonData['description'],
                 'content' => $lessonData['content'],
                 'teacher_id' => $teacher->id,
+                'grade' => $this->gradeForUnit($unit, $order),
                 'unit' => $lessonData['unit'],
                 'topic' => strtolower($lessonData['title']),
                 'difficulty' => $lessonData['difficulty'],
@@ -481,8 +481,8 @@ class MathContentSeeder extends Seeder
 
             $evaluation = Evaluation::create([
                 'id' => Str::uuid(),
-                'title' => $lessonData['title'] . ' - Evaluación',
-                'description' => 'Evalúa tus conocimientos sobre ' . strtolower($lessonData['title']) . '.',
+                'title' => $lessonData['title'].' - Evaluación',
+                'description' => 'Evalúa tus conocimientos sobre '.strtolower($lessonData['title']).'.',
                 'teacher_id' => $teacher->id,
                 'lesson_id' => $lesson->id,
                 'type' => 'practice',
@@ -517,10 +517,26 @@ class MathContentSeeder extends Seeder
      */
     private function getOrderForLesson(string $unit, int $index, array $lessons): int
     {
-        $unitLessons = array_filter($lessons, fn($l) => $l['unit'] === $unit);
+        $unitLessons = array_filter($lessons, fn ($l) => $l['unit'] === $unit);
         $unitKeys = array_keys($unitLessons);
         $position = array_search($index, $unitKeys);
 
         return $position !== false ? $position + 1 : 1;
+    }
+
+    /**
+     * Grado escolar asignado a la lección según su unidad y el orden dentro de ella.
+     */
+    private function gradeForUnit(string $unit, int $order): string
+    {
+        $progressions = [
+            'Álgebra' => ['2do', '2do', '3ro', '3ro', '3ro', '4to', '4to', '4to', '5to', '5to'],
+            'Geometría' => ['2do', '2do', '3ro', '3ro', '3ro', '3ro', '4to', '4to', '4to', '5to'],
+            'Trigonometría' => ['4to', '4to', '4to', '4to', '4to', '5to', '5to', '5to'],
+        ];
+
+        $list = $progressions[$unit] ?? ['3ro'];
+
+        return $list[($order - 1) % count($list)];
     }
 }

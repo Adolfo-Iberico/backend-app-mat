@@ -25,14 +25,12 @@ class StudentManagerController extends Controller
     /** Resumen de alumnos activos por salón (grado y sección). */
     public function summary()
     {
-        $studentRole = Role::where('name', 'student')->first();
-
         $salones = Salon::withCount(['students as alumnos' => fn ($q) => $q->where('is_active', true)])
             ->orderBy('grade')->orderBy('section')
             ->get();
 
-        $activos = User::where('role_id', $studentRole->id)->where('is_active', true)->count();
-        $inactivos = User::where('role_id', $studentRole->id)->where('is_active', false)->count();
+        $activos = User::where('role', Role::STUDENT)->where('is_active', true)->count();
+        $inactivos = User::where('role', Role::STUDENT)->where('is_active', false)->count();
 
         return response()->json([
             'success' => true,
@@ -50,9 +48,7 @@ class StudentManagerController extends Controller
     /** Listado de alumnos con filtros por grado, sección, búsqueda y estado. */
     public function index(Request $request)
     {
-        $studentRole = Role::where('name', 'student')->firstOrFail();
-
-        $query = User::where('role_id', $studentRole->id)
+        $query = User::where('role', Role::STUDENT)
             ->leftJoin('salones', 'salones.id', '=', 'users.salon_id')
             ->select('users.*', 'salones.grade as salon_grade', 'salones.section as salon_section');
 
@@ -121,7 +117,6 @@ class StudentManagerController extends Controller
             ], 422);
         }
 
-        $studentRole = Role::where('name', 'student')->firstOrFail();
         $importados = 0;
         $actualizados = 0;
         $errores = [];
@@ -163,7 +158,7 @@ class StudentManagerController extends Controller
 
             $existente = User::where('email', $correo)->first();
             if ($existente) {
-                if ($existente->role_id !== $studentRole->id) {
+                if ($existente->roleName() !== Role::STUDENT) {
                     $errores[] = "Fila {$num}: el correo {$correo} pertenece a una cuenta de otro rol.";
                     continue;
                 }
@@ -184,7 +179,7 @@ class StudentManagerController extends Controller
                 'email' => $correo,
                 'password' => Hash::make($password),
                 'dni' => $dni !== '' ? $dni : null,
-                'role_id' => $studentRole->id,
+                'role' => Role::STUDENT,
                 'salon_id' => $salon->id,
                 'grade' => $grado,
                 'is_active' => true,
@@ -219,8 +214,7 @@ class StudentManagerController extends Controller
     /** Exporta en CSV los alumnos del filtro actual. */
     public function export(Request $request): StreamedResponse
     {
-        $studentRole = Role::where('name', 'student')->firstOrFail();
-        $query = User::where('role_id', $studentRole->id)
+        $query = User::where('role', Role::STUDENT)
             ->leftJoin('salones', 'salones.id', '=', 'users.salon_id')
             ->select('users.*', 'salones.grade as salon_grade', 'salones.section as salon_section');
 
@@ -253,7 +247,7 @@ class StudentManagerController extends Controller
     /** Mueve un alumno de salón (grado + sección) o activa/desactiva su cuenta. */
     public function update(Request $request, $id)
     {
-        $student = User::whereHas('role', fn ($q) => $q->where('name', 'student'))->findOrFail($id);
+        $student = User::where('role', Role::STUDENT)->findOrFail($id);
 
         $validated = $request->validate([
             'grade' => 'sometimes|required_with:section|string',

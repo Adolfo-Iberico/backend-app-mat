@@ -4,8 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Str;
 
-/** Trabajo enviado por un estudiante para una lección, evaluación o examen. */
+/**
+ * Trabajo enviado por un estudiante para una lección o evaluación.
+ *
+ * Desde la consolidación del módulo, los trabajos de origen examen usan
+ * evaluation_id con work_type='exam' (el ID coincide con el de la evaluación
+ * canónica type='exam').
+ */
 class SubmittedWork extends Model
 {
     use HasUuids;
@@ -18,7 +25,6 @@ class SubmittedWork extends Model
         'student_id',
         'lesson_id',
         'evaluation_id',
-        'exam_id',
         'work_type',
         'title',
         'description',
@@ -39,6 +45,9 @@ class SubmittedWork extends Model
         'graded_at' => 'datetime',
     ];
 
+    /** Campos derivados que consumen los paneles de trabajos del frontend. */
+    protected $appends = ['student_name', 'teacher_name', 'area', 'feedback'];
+
     // ========== RELACIONES ==========
 
     /** Estudiante que envió el trabajo. */
@@ -53,16 +62,45 @@ class SubmittedWork extends Model
         return $this->belongsTo(Lesson::class);
     }
 
-    /** Evaluación relacionada con el trabajo, si corresponde. */
+    /** Evaluación (o examen, type='exam') relacionada con el trabajo, si corresponde. */
     public function evaluation()
     {
         return $this->belongsTo(Evaluation::class);
     }
 
-    /** Examen relacionado con el trabajo, si corresponde. */
-    public function exam()
+    // ========== ACCESORES ==========
+
+    /** Nombre completo del estudiante para los listados del panel. */
+    public function getStudentNameAttribute(): ?string
     {
-        return $this->belongsTo(Exam::class);
+        return $this->student?->full_name;
+    }
+
+    /** Docente propietario del contenido asociado al trabajo. */
+    public function getTeacherNameAttribute(): ?string
+    {
+        return $this->evaluation?->teacher?->full_name
+            ?? $this->lesson?->teacher?->full_name;
+    }
+
+    /** Área temática normalizada (clave slug) derivada de la unidad. */
+    public function getAreaAttribute(): ?string
+    {
+        $unit = $this->evaluation?->unit
+            ?? $this->lesson?->unit
+            ?? $this->evaluation?->lesson?->unit;
+
+        if ($unit === null || $unit === '') {
+            return null;
+        }
+
+        return Str::slug($unit) ?: null;
+    }
+
+    /** Alias de compatibilidad del feedback docente. */
+    public function getFeedbackAttribute(): ?string
+    {
+        return $this->teacher_feedback;
     }
 
     // ========== SCOPES ==========

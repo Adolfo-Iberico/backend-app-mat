@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Lesson;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
@@ -29,16 +28,16 @@ class ReportApiTest extends TestCase
     {
         parent::setUp();
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $studentRole = 'student';
+        $teacherRole = 'teacher';
+        $adminRole = 'admin';
 
         $this->teacher = User::create([
             'id' => Str::uuid(),
             'full_name' => 'Teacher Reports',
             'email' => 'teacher.reports@test.com',
             'password' => 'password123',
-            'role_id' => $teacherRole->id,
+            'role' => $teacherRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -49,7 +48,6 @@ class ReportApiTest extends TestCase
             'department' => 'Mathematics',
             'specialization' => 'Calculus',
             'years_experience' => 8,
-            'students_count' => 45,
         ]);
 
         $this->student = User::create([
@@ -57,7 +55,7 @@ class ReportApiTest extends TestCase
             'full_name' => 'Student Reports',
             'email' => 'student.reports@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -66,11 +64,7 @@ class ReportApiTest extends TestCase
             'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'intermediate',
-            'total_lessons_completed' => 5,
-            'average_score' => 17.0,
-            'total_time_spent' => 7200,
             'current_streak' => 10,
-            'badges' => ['first_lesson', 'streak_7'],
         ]);
 
         $this->admin = User::create([
@@ -78,7 +72,7 @@ class ReportApiTest extends TestCase
             'full_name' => 'Admin Reports',
             'email' => 'admin.reports@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Lesson;
 use App\Models\Evaluation;
 use Laravel\Sanctum\Sanctum;
@@ -18,9 +17,7 @@ class AuthApiTest extends TestCase
 
     public function test_can_register_user(): void
     {
-        $studentRole = Role::where('name', 'student')->firstOrCreate(
-            ['id' => \Illuminate\Support\Str::uuid(), 'name' => 'student']
-        );
+        $studentRole = 'student';
 
         $response = $this->postJson("{$this->baseUrl}/auth/register", [
             'full_name' => 'Test Student',
@@ -37,13 +34,13 @@ class AuthApiTest extends TestCase
 
     public function test_can_login(): void
     {
-        $role = Role::firstOrCreate(['name' => 'student']);
+        $role = 'student';
         $user = User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'email' => 'login@example.com',
             'full_name' => 'Login Test',
             'password' => 'password123',
-            'role_id' => $role->id,
+            'role' => $role,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -54,18 +51,19 @@ class AuthApiTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonStructure(['user', 'access_token']);
+            ->assertJsonStructure(['user', 'access_token'])
+            ->assertJsonPath('user.role.name', 'student');
     }
 
     public function test_cannot_login_with_wrong_password(): void
     {
-        $role = Role::firstOrCreate(['name' => 'student']);
+        $role = 'student';
         User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'email' => 'wrong@example.com',
             'full_name' => 'Wrong Test',
             'password' => 'password123',
-            'role_id' => $role->id,
+            'role' => $role,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -86,13 +84,13 @@ class AuthApiTest extends TestCase
 
     public function test_authenticated_user_can_get_profile(): void
     {
-        $role = Role::firstOrCreate(['name' => 'student']);
+        $role = 'student';
         $user = User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'email' => 'profile@example.com',
             'full_name' => 'Profile Test',
             'password' => 'password123',
-            'role_id' => $role->id,
+            'role' => $role,
             'is_active' => true,
             'provider' => 'email',
         ]);

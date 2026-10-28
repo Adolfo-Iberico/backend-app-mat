@@ -23,7 +23,7 @@ class RoleMiddleware
             ], 401);
         }
 
-        $userRole = $user->role?->name;
+        $userRole = $user->roleName();
 
         // Jerarquía: director > coordinador > docente
         $hierarchyMap = [
@@ -33,7 +33,7 @@ class RoleMiddleware
 
         foreach ($roles as $required) {
             $allowed = $hierarchyMap[$required] ?? [$required];
-            if ($userRole && in_array($userRole, $allowed)) {
+            if ($userRole && in_array($userRole, $allowed, true)) {
                 return $next($request);
             }
         }

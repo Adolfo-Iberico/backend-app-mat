@@ -20,6 +20,7 @@ class Evaluation extends Model
         'description',
         'teacher_id',
         'lesson_id',
+        'unit',
         'type',
         'difficulty',
         'time_limit',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** Perfil académico y de gamificación de un usuario estudiante. */
 class StudentProfile extends Model
@@ -17,30 +18,71 @@ class StudentProfile extends Model
         'id',
         'user_id',
         'academic_level',
-        'total_lessons_completed',
-        'average_score',
-        'total_time_spent',
         'current_streak',
         'last_activity_date',
-        'badges',
-        'xp',
         'total_xp',
         'level',
         'rank_points'
     ];
 
     protected $casts = [
-        'badges' => 'array',
-        'average_score' => 'float',
-        'total_time_spent' => 'integer',
-        'total_lessons_completed' => 'integer',
         'current_streak' => 'integer',
         'last_activity_date' => 'date',
-        'xp' => 'integer',
         'total_xp' => 'integer',
         'level' => 'integer',
         'rank_points' => 'integer'
     ];
+
+    protected $appends = [
+        'total_lessons_completed',
+        'average_score',
+        'total_time_spent',
+        'badges',
+        'xp',
+    ];
+
+    public function getTotalLessonsCompletedAttribute(): int
+    {
+        return $this->lessonProgress()
+            ->where('status', LessonProgress::STATUS_COMPLETED)
+            ->count();
+    }
+
+    public function getAverageScoreAttribute(): float
+    {
+        return round((float) ($this->evaluationResults()
+            ->where('status', EvaluationResult::STATUS_COMPLETED)
+            ->avg('score') ?? 0), 2);
+    }
+
+    public function getTotalTimeSpentAttribute(): int
+    {
+        return (int) $this->lessonProgress()->sum('time_spent');
+    }
+
+    public function getBadgesAttribute(): array
+    {
+        return UserAchievement::query()
+            ->join('achievements', 'achievements.id', '=', 'user_achievements.achievement_id')
+            ->where('user_achievements.user_id', $this->user_id)
+            ->pluck('achievements.slug')
+            ->all();
+    }
+
+    public function getXpAttribute(): int
+    {
+        return (int) ($this->attributes['total_xp'] ?? 0);
+    }
+
+    public function lessonProgress(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class, 'user_id', 'user_id');
+    }
+
+    public function evaluationResults(): HasMany
+    {
+        return $this->hasMany(EvaluationResult::class, 'user_id', 'user_id');
+    }
 
     /**
      * XP acumulado necesario para alcanzar un nivel (progresión triangular: 100/200/300...).
@@ -95,7 +137,6 @@ class StudentProfile extends Model
     {
         \DB::transaction(function () use ($amount) {
             $locked = static::whereKey($this->id)->lockForUpdate()->first();
-            $locked->xp += $amount;
             $locked->total_xp += $amount;
             $locked->level = self::levelFromXp($locked->total_xp);
             $locked->save();

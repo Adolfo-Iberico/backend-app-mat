@@ -45,6 +45,8 @@ class Question extends Model
     const TYPE_FILL_BLANK = 'fill_blank';
     const TYPE_DRAG_DROP = 'drag_drop';
     const TYPE_FORMULA = 'formula';
+    const TYPE_TRUE_FALSE = 'true_false';
+    const TYPE_OPEN_ENDED = 'open_ended';
 
     // ========== RELACIONES ==========
     /** Evaluación a la que pertenece la pregunta. */

@@ -60,12 +60,10 @@ class AcademicEventController extends Controller
             'color' => 'nullable|string|max:20',
             'all_day' => 'nullable|boolean',
             'is_public' => 'nullable|boolean',
-            'course_id' => 'nullable|string|max:36',
         ]);
 
         $event = AcademicEvent::create([
             'user_id' => Auth::id(),
-            'course_id' => $validated['course_id'] ?? null,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'start_date' => $validated['start_date'],

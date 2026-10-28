@@ -319,21 +319,18 @@ class EvaluationController extends Controller
         ]);
 
         // Notificar a estudiantes sobre evaluación publicada
-        $studentRole = Role::where('name', Role::STUDENT)->first();
-        if ($studentRole) {
-            $studentIds = User::where('role_id', $studentRole->id)
-                ->where('is_active', true)
-                ->pluck('id')
-                ->toArray();
-            if (!empty($studentIds)) {
-                NotificationController::createBulkNotifications(
-                    $studentIds,
-                    __('notification_evaluation_available_title'),
-                    __('notification_evaluation_published_body', ['title' => $evaluation->title]),
-                    'info',
-                    "/evaluations/{$evaluation->id}"
-                );
-            }
+        $studentIds = User::where('role', Role::STUDENT)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->toArray();
+        if (!empty($studentIds)) {
+            NotificationController::createBulkNotifications(
+                $studentIds,
+                __('notification_evaluation_available_title'),
+                __('notification_evaluation_published_body', ['title' => $evaluation->title]),
+                'info',
+                "/evaluations/{$evaluation->id}"
+            );
         }
 
         return response()->json([
@@ -711,7 +708,6 @@ class EvaluationController extends Controller
                     'completed_at' => now(),
                 ]);
 
-                $this->updateStudentProfile($user->id);
                 ActivityService::log('evaluation_completed', $evaluation);
 
                 return $result;
@@ -1178,23 +1174,6 @@ class EvaluationController extends Controller
             'total_questions' => $totalQuestions,
             'total_points' => $totalPoints
         ]);
-    }
-
-    /**
-     * Actualizar perfil del estudiante
-     */
-    private function updateStudentProfile($userId)
-    {
-        $studentProfile = User::find($userId)?->studentProfile;
-        if (!$studentProfile) return;
-
-        // Calcular nuevo promedio
-        $average = EvaluationResult::where('user_id', $userId)
-            ->where('status', 'completed')
-            ->avg('score');
-
-        $studentProfile->average_score = round($average ?? 0, 2);
-        $studentProfile->save();
     }
 
     /**

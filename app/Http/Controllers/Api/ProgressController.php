@@ -9,6 +9,7 @@ use App\Models\Evaluation;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Models\EvaluationResult;
+use App\Models\Achievement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -90,7 +91,7 @@ class ProgressController extends Controller
             ->get();
 
         return response()->json([
-            'user' => $user->load('role'),
+            'user' => $user,
             'profile' => $studentProfile,
             'stats' => $stats,
             'in_progress_lessons' => $inProgressLessons,
@@ -111,9 +112,8 @@ class ProgressController extends Controller
         $evaluationIds = Evaluation::where('teacher_id', $user->id)->pluck('id');
         
         // Estadísticas del docente
-        $studentRoleId = Role::where('name', Role::STUDENT)->first()?->id;
         $stats = [
-            'total_students' => $studentRoleId ? User::where('role_id', $studentRoleId)->count() : 0,
+            'total_students' => User::where('role', Role::STUDENT)->count(),
             'total_lessons' => Lesson::where('teacher_id', $user->id)->count(),
             'total_evaluations' => Evaluation::where('teacher_id', $user->id)->count(),
             'published_lessons' => Lesson::where('teacher_id', $user->id)
@@ -132,7 +132,7 @@ class ProgressController extends Controller
         ];
 
         // Últimos estudiantes activos
-        $recentStudents = User::where('role_id', $studentRoleId)
+        $recentStudents = User::where('role', Role::STUDENT)
             ->whereNotNull('last_login')
             ->orderBy('last_login', 'desc')
             ->limit(10)
@@ -146,7 +146,7 @@ class ProgressController extends Controller
             ->get();
 
         return response()->json([
-            'user' => $user->load('role', 'teacherProfile'),
+            'user' => $user->load('teacherProfile'),
             'stats' => $stats,
             'recent_students' => $recentStudents,
             'recent_evaluations' => $recentEvaluations
@@ -192,7 +192,7 @@ class ProgressController extends Controller
         ];
 
         return response()->json([
-            'user' => $user->load('role'),
+            'user' => $user,
             'stats' => $stats
         ]);
     }
@@ -281,7 +281,7 @@ class ProgressController extends Controller
                 $updateData['completed_at'] = now();
 
                 // Actualizar perfil del estudiante
-                $this->updateStudentProfileOnCompletion($progress);
+                $this->updateStudentProfileOnCompletion();
             } elseif ($validated['progress'] > 0) {
                 $updateData['status'] = LessonProgress::STATUS_IN_PROGRESS;
             }
@@ -368,6 +368,36 @@ class ProgressController extends Controller
             ],
             'progress_distribution' => $progressDistribution,
             'recent_activity' => $recentActivity
+        ]);
+    }
+
+    /**
+     * Historial completo de lecciones y evaluaciones del estudiante autenticado.
+     */
+    public function myLearningRecord()
+    {
+        $user = Auth::user();
+        $lessonProgress = LessonProgress::where('user_id', $user->id)
+            ->with('lesson:id,title,unit,grade')
+            ->orderByDesc('updated_at')
+            ->get();
+        $evaluationResults = EvaluationResult::where('user_id', $user->id)
+            ->with('evaluation:id,title,lesson_id')
+            ->whereIn('status', ['completed', 'pending'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'lesson_progress' => $lessonProgress,
+            'evaluation_results' => $evaluationResults,
+            'summary' => [
+                'completed_lessons' => $lessonProgress->where('status', LessonProgress::STATUS_COMPLETED)->count(),
+                'in_progress_lessons' => $lessonProgress->where('status', LessonProgress::STATUS_IN_PROGRESS)->count(),
+                'completed_evaluations' => $evaluationResults->where('status', 'completed')->count(),
+                'average_score' => round((float) $evaluationResults
+                    ->where('status', 'completed')
+                    ->avg('score'), 2),
+            ],
         ]);
     }
 
@@ -545,12 +575,10 @@ class ProgressController extends Controller
     /**
      * Actualizar perfil del estudiante al completar una lección
      */
-    private function updateStudentProfileOnCompletion($progress)
+    private function updateStudentProfileOnCompletion()
     {
         $studentProfile = Auth::user()->studentProfile;
         if ($studentProfile) {
-            $studentProfile->increment('total_lessons_completed');
-
             // Streak logic: track consecutive days of activity
             $today = now()->startOfDay();
             $lastActivity = $studentProfile->last_activity_date
@@ -575,31 +603,6 @@ class ProgressController extends Controller
             }
 
             $studentProfile->last_activity_date = $today;
-            
-            // Actualizar tiempo total
-            if ($progress->time_spent) {
-                $studentProfile->increment('total_time_spent', $progress->time_spent);
-            }
-
-            // Calcular nuevo promedio
-            $this->updateAverageScore();
-            
-            $studentProfile->save();
-        }
-    }
-
-    /**
-     * Actualizar puntaje promedio del estudiante
-     */
-    private function updateAverageScore()
-    {
-        $average = EvaluationResult::where('user_id', Auth::id())
-            ->where('status', 'completed')
-            ->avg('score');
-
-        $studentProfile = Auth::user()->studentProfile;
-        if ($studentProfile) {
-            $studentProfile->average_score = round($average ?? 0, 2);
             $studentProfile->save();
         }
     }
@@ -617,8 +620,25 @@ class ProgressController extends Controller
             return [];
         }
 
-        $badges = $studentProfile->badges ?? [];
+        $badges = $user->achievements()->pluck('achievements.slug')->all();
         $newBadges = [];
+        $awardBadge = function (string $badgeId) use ($user, &$badges, &$newBadges): void {
+            if (in_array($badgeId, $badges, true)) {
+                return;
+            }
+
+            $definition = collect(GamificationService::definitions())->firstWhere('slug', $badgeId);
+            if ($definition === null) {
+                throw new \LogicException("No achievement definition exists for [$badgeId].");
+            }
+
+            $achievement = Achievement::firstOrCreate(['slug' => $badgeId], $definition);
+            $user->achievements()->syncWithoutDetaching([
+                $achievement->id => ['unlocked_at' => now()],
+            ]);
+            $badges[] = $badgeId;
+            $newBadges[] = $badgeId;
+        };
 
         // Verificar insignias
         $completedLessons = LessonProgress::where('user_id', $user->id)
@@ -626,27 +646,23 @@ class ProgressController extends Controller
             ->count();
 
         // Primera lección
-        if ($completedLessons >= 1 && !in_array('first_lesson', $badges)) {
-            $badges[] = 'first_lesson';
-            $newBadges[] = 'first_lesson';
+        if ($completedLessons >= 1) {
+            $awardBadge('first_lesson');
         }
 
         // Maestro de lecciones
-        if ($completedLessons >= 10 && !in_array('lesson_master', $badges)) {
-            $badges[] = 'lesson_master';
-            $newBadges[] = 'lesson_master';
+        if ($completedLessons >= 10) {
+            $awardBadge('lesson_master');
         }
 
         // Racha de 7 días
-        if ($studentProfile->current_streak >= 7 && !in_array('streak_7', $badges)) {
-            $badges[] = 'streak_7';
-            $newBadges[] = 'streak_7';
+        if ($studentProfile->current_streak >= 7) {
+            $awardBadge('streak_7');
         }
 
         // Racha de 30 días
-        if ($studentProfile->current_streak >= 30 && !in_array('streak_30', $badges)) {
-            $badges[] = 'streak_30';
-            $newBadges[] = 'streak_30';
+        if ($studentProfile->current_streak >= 30) {
+            $awardBadge('streak_30');
         }
 
         // Puntuación perfecta
@@ -655,9 +671,8 @@ class ProgressController extends Controller
             ->where('score', '>=', 19.9)
             ->exists();
 
-        if ($perfectScore && !in_array('perfect_score', $badges)) {
-            $badges[] = 'perfect_score';
-            $newBadges[] = 'perfect_score';
+        if ($perfectScore) {
+            $awardBadge('perfect_score');
         }
 
         // Genio matemático
@@ -665,14 +680,9 @@ class ProgressController extends Controller
             ->where('status', 'completed')
             ->avg('score');
 
-        if ($averageScore >= 18 && !in_array('math_genius', $badges)) {
-            $badges[] = 'math_genius';
-            $newBadges[] = 'math_genius';
+        if ($averageScore >= 18) {
+            $awardBadge('math_genius');
         }
-
-        // Guardar insignias
-        $studentProfile->badges = $badges;
-        $studentProfile->save();
 
         // Crear notificaciones para nuevas insignias
         foreach ($newBadges as $badgeId) {

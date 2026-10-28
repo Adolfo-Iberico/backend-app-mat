@@ -18,13 +18,11 @@ class TeacherProfile extends Model
         'user_id',
         'department',
         'specialization',
-        'years_experience',
-        'students_count'
+        'years_experience'
     ];
 
     protected $casts = [
-        'years_experience' => 'integer',
-        'students_count' => 'integer'
+        'years_experience' => 'integer'
     ];
 
     // ========== RELACIONES ==========

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
@@ -14,10 +13,10 @@ class GuestStudentLookupTest extends TestCase
 
     public function test_lookup_returns_student_data_with_valid_captcha(): void
     {
-        $studentRole = Role::create(['name' => 'student']);
+        $studentRole = 'student';
         $student = User::create([
             'id' => \Illuminate\Support\Str::uuid(),
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'dni' => '70000003',
             'full_name' => 'Ana Garcia Lopez',
             'email' => 'ana.test@mathflow.com',

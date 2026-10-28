@@ -20,7 +20,6 @@ class Lesson extends Model
         'description',
         'content',
         'teacher_id',
-        'course_id',
         'grade',
         'unit',
         'topic',
@@ -54,12 +53,6 @@ class Lesson extends Model
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
-    }
-
-    /** Curso al que pertenece la lección. */
-    public function course()
-    {
-        return $this->belongsTo(Course::class, 'course_id');
     }
 
     /** Registros de progreso de los estudiantes en la lección. */

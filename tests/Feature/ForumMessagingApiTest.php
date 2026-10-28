@@ -2,78 +2,82 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\Role;
+use App\Models\Conversation;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
-use App\Models\Conversation;
-use App\Models\Message;
 use App\Models\ForumThread;
+use App\Models\Lesson;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class ForumMessagingApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $teacher;
+
     private User $student;
+
     private User $otherStudent;
+
     private User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $teacherRole = 'teacher';
+        $studentRole = 'student';
+        $adminRole = 'admin';
 
         $this->teacher = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Teacher F6',
             'email' => 'teacher-f6@test.com',
             'password' => 'password123',
-            'role_id' => $teacherRole->id,
+            'role' => $teacherRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
 
         $this->student = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Student F6',
             'email' => 'student-f6@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
 
         $this->otherStudent = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Other Student',
             'email' => 'other-f6@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
 
         $this->admin = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Admin F6',
             'email' => 'admin-f6@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
 
         // Relación académica: el docente tiene una evaluación tomada por student (no por otherStudent)
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'F6 Evaluation',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -82,7 +86,7 @@ class ForumMessagingApiTest extends TestCase
         ]);
 
         EvaluationResult::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'evaluation_id' => $evaluation->id,
             'score' => 15,
@@ -130,7 +134,7 @@ class ForumMessagingApiTest extends TestCase
     {
         Sanctum::actingAs($this->teacher, ['web']);
         $conversation = Conversation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'teacher_id' => $this->teacher->id,
             'student_id' => $this->student->id,
             'last_message_at' => now(),
@@ -151,7 +155,7 @@ class ForumMessagingApiTest extends TestCase
     {
         Sanctum::actingAs($this->teacher, ['web']);
         $conversation = Conversation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'teacher_id' => $this->teacher->id,
             'student_id' => $this->student->id,
             'last_message_at' => now(),
@@ -180,23 +184,75 @@ class ForumMessagingApiTest extends TestCase
             ->assertJsonPath('data.teacher_id', (string) $this->teacher->id);
     }
 
-    public function test_student_cannot_create_thread(): void
+    public function test_student_can_create_thread_on_lesson(): void
+    {
+        Sanctum::actingAs($this->student, ['web']);
+
+        $lesson = Lesson::create([
+            'id' => Str::uuid(),
+            'title' => 'Leccion de foro',
+            'description' => 'Leccion de prueba',
+            'content' => '<p>Contenido</p>',
+            'teacher_id' => $this->teacher->id,
+            'unit' => 'Unit 1',
+            'topic' => 'Algebra',
+            'difficulty' => 'basic',
+            'tags' => ['math'],
+            'estimated_time' => 30,
+            'resources' => [],
+            'order' => 1,
+            'is_published' => true,
+            'views_count' => 0,
+        ]);
+
+        $response = $this->postJson("{$this->baseUrl}/forum", [
+            'title' => 'Duda sobre la leccion',
+            'body' => 'No entiendo el paso 2 del ejemplo',
+            'lesson_id' => $lesson->id,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.teacher_id', (string) $this->teacher->id)
+            ->assertJsonPath('data.author_id', (string) $this->student->id)
+            ->assertJsonPath('data.lesson_id', (string) $lesson->id);
+
+        // El autor puede ver su propio hilo y responderlo.
+        $view = $this->getJson("{$this->baseUrl}/forum/{$response->json('data.id')}");
+        $view->assertStatus(200);
+
+        $reply = $this->postJson("{$this->baseUrl}/forum/{$response->json('data.id')}/post", [
+            'body' => 'Agrego mas detalle a mi duda',
+        ]);
+        $reply->assertStatus(201);
+
+        // El docente de la leccion ve el hilo del estudiante.
+        Sanctum::actingAs($this->teacher, ['web']);
+        $teacherView = $this->getJson("{$this->baseUrl}/forum/{$response->json('data.id')}");
+        $teacherView->assertStatus(200);
+
+        // Un estudiante sin relacion con el docente ni autoria no lo ve.
+        Sanctum::actingAs($this->otherStudent, ['web']);
+        $otherView = $this->getJson("{$this->baseUrl}/forum/{$response->json('data.id')}");
+        $otherView->assertStatus(403);
+    }
+
+    public function test_student_cannot_create_thread_without_lesson(): void
     {
         Sanctum::actingAs($this->student, ['web']);
 
         $response = $this->postJson("{$this->baseUrl}/forum", [
-            'title' => 'Hilo no autorizado',
-            'body' => 'no debería poder',
+            'title' => 'Hilo sin leccion',
+            'body' => 'deberia requerir leccion',
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(422);
     }
 
     public function test_linked_student_can_view_and_post_in_thread(): void
     {
         Sanctum::actingAs($this->teacher, ['web']);
         $thread = ForumThread::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'teacher_id' => $this->teacher->id,
             'title' => 'Dudas',
             'body' => 'Pregunten',
@@ -216,7 +272,7 @@ class ForumMessagingApiTest extends TestCase
     {
         Sanctum::actingAs($this->teacher, ['web']);
         $thread = ForumThread::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'teacher_id' => $this->teacher->id,
             'title' => 'Privado',
             'body' => 'solo clase',

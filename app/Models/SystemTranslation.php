@@ -15,10 +15,4 @@ class SystemTranslation extends Model
         'value',
         'group',
     ];
-
-    /** Usuario asociado a la traducción. */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }

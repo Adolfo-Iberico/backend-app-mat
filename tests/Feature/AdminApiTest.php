@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\InstitutionConfig;
 use App\Models\AcademicPeriod;
 use Laravel\Sanctum\Sanctum;
@@ -25,16 +24,16 @@ class AdminApiTest extends TestCase
     {
         parent::setUp();
 
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
+        $adminRole = 'admin';
+        $teacherRole = 'teacher';
+        $studentRole = 'student';
 
         $this->admin = User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'full_name' => 'Admin Test',
             'email' => 'admin@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -44,7 +43,7 @@ class AdminApiTest extends TestCase
             'full_name' => 'Teacher Test',
             'email' => 'teacher@test.com',
             'password' => 'password123',
-            'role_id' => $teacherRole->id,
+            'role' => $teacherRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -54,7 +53,7 @@ class AdminApiTest extends TestCase
             'full_name' => 'Student Test',
             'email' => 'student@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -134,24 +133,24 @@ class AdminApiTest extends TestCase
     {
         Sanctum::actingAs($this->admin, ['web']);
 
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = 'admin';
         User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'full_name' => 'Second Admin',
             'email' => 'secondadmin@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
+        $studentRole = 'student';
         $userToDelete = User::create([
             'id' => \Illuminate\Support\Str::uuid(),
             'full_name' => 'Delete Me',
             'email' => 'deleteme@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);

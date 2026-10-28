@@ -27,12 +27,11 @@ class AdminController extends Controller
     /** Devuelve usuarios paginados, opcionalmente filtrados por rol o búsqueda. */
     public function getUsers(Request $request)
     {
-        $query = User::with('role');
+        $query = User::query();
 
         if ($request->has('role')) {
-            $role = Role::where('name', $request->role)->first();
-            if ($role) {
-                $query->where('role_id', $role->id);
+            if (in_array($request->role, [Role::ADMIN, Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
+                $query->where('role', $request->role);
             }
         }
 
@@ -53,7 +52,7 @@ class AdminController extends Controller
     /** Devuelve un usuario con su rol y perfiles asociados. */
     public function getUser($id)
     {
-        $user = User::with(['role', 'studentProfile', 'teacherProfile'])
+        $user = User::with(['studentProfile', 'teacherProfile'])
             ->findOrFail($id);
 
         return response()->json($user);
@@ -67,23 +66,15 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:teacher,student,director,coordinador',
-            'institution' => 'nullable|string',
             'grade' => 'nullable|string'
         ]);
-
-        $role = Role::where('name', $validated['role'])->first();
-
-        if (!$role) {
-            return response()->json(['message' => __('admin_invalid_role')], 422);
-        }
 
         $user = User::create([
             'id' => Str::uuid(),
             'full_name' => $validated['full_name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role_id' => $role->id,
-            'institution' => $validated['institution'] ?? null,
+            'role' => $validated['role'],
             'grade' => $validated['grade'] ?? null,
             'is_active' => true,
             'provider' => 'email'
@@ -95,7 +86,7 @@ class AdminController extends Controller
                 'user_id' => $user->id,
                 'academic_level' => 'basic'
             ]);
-        } elseif (in_array($validated['role'], [Role::TEACHER, Role::COORDINATOR, Role::DIRECTOR])) {
+        } elseif (in_array($validated['role'], [Role::TEACHER, Role::COORDINATOR, Role::DIRECTOR], true)) {
             TeacherProfile::create([
                 'id' => Str::uuid(),
                 'user_id' => $user->id
@@ -104,7 +95,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => __('user_created'),
-            'user' => $user->load('role')
+            'user' => $user
         ], 201);
     }
 
@@ -117,18 +108,12 @@ class AdminController extends Controller
             'full_name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $id,
             'role' => 'sometimes|in:teacher,student,director,coordinador',
-            'institution' => 'nullable|string',
             'grade' => 'nullable|string',
             'is_active' => 'sometimes|boolean'
         ]);
 
         if (isset($validated['role'])) {
-            $role = Role::where('name', $validated['role'])->first();
-            if (!$role) {
-                return response()->json(['message' => __('admin_invalid_role')], 422);
-            }
-            $validated['role_id'] = $role->id;
-            unset($validated['role']);
+            $validated['role'] = strtolower($validated['role']);
         }
 
         $oldValues = $user->only(array_keys($validated));
@@ -136,7 +121,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => __('user_updated'),
-            'user' => $user->load('role')
+            'user' => $user
         ]);
     }
 
@@ -157,7 +142,7 @@ class AdminController extends Controller
             ], 403);
         }
 
-        $activeAdminCount = User::where('role_id', Role::where('name', 'admin')->first()?->id)
+        $activeAdminCount = User::where('role', Role::ADMIN)
             ->where('is_active', true)
             ->count();
 
@@ -197,7 +182,7 @@ class AdminController extends Controller
                 ], 403);
             }
 
-            $activeAdminCount = User::where('role_id', Role::where('name', 'admin')->first()?->id)
+            $activeAdminCount = User::where('role', Role::ADMIN)
                 ->where('is_active', true)
                 ->count();
 
@@ -376,20 +361,17 @@ class AdminController extends Controller
     /** Devuelve estadísticas del panel administrativo y los diez usuarios más recientes. */
     public function dashboard()
     {
-        $studentRoleId = Role::where('name', Role::STUDENT)->first()?->id;
-        $teacherRoleId = Role::where('name', Role::TEACHER)->first()?->id;
-
         $stats = [
             'total_users' => User::count(),
-            'total_students' => $studentRoleId ? User::where('role_id', $studentRoleId)->count() : 0,
-            'total_teachers' => $teacherRoleId ? User::where('role_id', $teacherRoleId)->count() : 0,
+            'total_students' => User::where('role', Role::STUDENT)->count(),
+            'total_teachers' => User::where('role', Role::TEACHER)->count(),
             'total_lessons' => Lesson::count(),
             'published_lessons' => Lesson::where('is_published', true)->count(),
             'total_evaluations' => Evaluation::count(),
             'active_period' => AcademicPeriod::where('is_active', true)->first()
         ];
 
-        $recentUsers = User::with('role')
+        $recentUsers = User::query()
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -446,8 +428,8 @@ class AdminController extends Controller
                 continue;
             }
 
-            $role = Role::where('name', strtolower($roleName))->first();
-            if (!$role || !in_array($role->name, ['teacher', 'student', 'director', 'coordinador'])) {
+            $role = strtolower($roleName);
+            if (!in_array($role, [Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
                 $errors[] = __('import_row_invalid_role', ['row' => $rowNum, 'role' => $roleName]);
                 continue;
             }
@@ -457,7 +439,7 @@ class AdminController extends Controller
                 'full_name' => $fullName,
                 'email' => $email,
                 'password' => Hash::make($password ?: Str::random(12)),
-                'role_id' => $role->id,
+                'role' => $role,
                 'is_active' => true,
                 'provider' => 'email'
             ]);
@@ -476,12 +458,11 @@ class AdminController extends Controller
     /** Transmite un CSV con los usuarios, opcionalmente filtrados por rol. */
     public function exportUsers(Request $request)
     {
-        $query = User::with('role');
+        $query = User::query();
 
         if ($request->has('role')) {
-            $role = Role::where('name', $request->role)->first();
-            if ($role) {
-                $query->where('role_id', $role->id);
+            if (in_array($request->role, [Role::ADMIN, Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
+                $query->where('role', $request->role);
             }
         }
 

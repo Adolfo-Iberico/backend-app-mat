@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\Achievement;
 use App\Models\AcademicEvent;
@@ -27,16 +26,16 @@ class NewFeaturesApiTest extends TestCase
     {
         parent::setUp();
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $studentRole = 'student';
+        $teacherRole = 'teacher';
+        $adminRole = 'admin';
 
         $this->admin = User::create([
             'id' => Str::uuid(),
             'full_name' => 'Admin New',
             'email' => 'admin.new@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -46,7 +45,7 @@ class NewFeaturesApiTest extends TestCase
             'full_name' => 'Teacher New',
             'email' => 'teacher.new@test.com',
             'password' => 'password123',
-            'role_id' => $teacherRole->id,
+            'role' => $teacherRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -56,7 +55,7 @@ class NewFeaturesApiTest extends TestCase
             'full_name' => 'Student New',
             'email' => 'student.new@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -65,15 +64,10 @@ class NewFeaturesApiTest extends TestCase
             'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'basic',
-            'total_lessons_completed' => 0,
-            'average_score' => 0,
-            'total_time_spent' => 0,
             'current_streak' => 0,
-            'xp' => 0,
             'total_xp' => 0,
             'level' => 1,
             'rank_points' => 0,
-            'badges' => [],
         ]);
     }
 
@@ -161,7 +155,7 @@ class NewFeaturesApiTest extends TestCase
             'full_name' => 'Other Teacher',
             'email' => 'other.teacher@test.com',
             'password' => 'password123',
-            'role_id' => $this->teacher->role_id,
+            'role' => $this->teacher->roleName(),
             'is_active' => true,
             'provider' => 'email',
         ]);

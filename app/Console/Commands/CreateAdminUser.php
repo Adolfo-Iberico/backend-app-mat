@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Models\Role;
 use App\Models\StudentProfile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
@@ -35,18 +34,12 @@ class CreateAdminUser extends Command
             return 1;
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
-        if (!$adminRole) {
-            $this->error('El rol "admin" no existe. Ejecuta php artisan db:seed --class=RoleSeeder primero.');
-            return 1;
-        }
-
         $user = User::create([
             'id' => Str::uuid(),
             'email' => $email,
             'full_name' => $name,
             'password' => Hash::make($password),
-            'role_id' => $adminRole->id,
+            'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
             'provider' => 'email'

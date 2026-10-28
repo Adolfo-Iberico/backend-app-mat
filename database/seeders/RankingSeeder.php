@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\SubmittedWork;
-use App\Models\LessonProgress;
-use App\Models\EvaluationResult;
-use App\Models\ExamAttempt;
-use App\Models\Lesson;
 use App\Models\Evaluation;
+use App\Models\EvaluationResult;
 use App\Models\Exam;
+use App\Models\Lesson;
+use App\Models\LessonProgress;
+use App\Models\SubmittedWork;
 use Illuminate\Database\Seeder;
 
 /**
@@ -31,7 +30,7 @@ class RankingSeeder extends Seeder
                 ->where('work_type', 'lesson')
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 $lesson = Lesson::find($lp->lesson_id);
                 SubmittedWork::create([
                     'student_id' => $lp->user_id,
@@ -48,7 +47,12 @@ class RankingSeeder extends Seeder
             }
         }
 
-        $evalResults = EvaluationResult::where('status', 'completed')->get();
+        // Resultados de evaluaciones (excluyendo exámenes, que generan su propio tipo).
+        $examIds = Exam::pluck('id');
+
+        $evalResults = EvaluationResult::where('status', 'completed')
+            ->whereNotIn('evaluation_id', $examIds)
+            ->get();
 
         foreach ($evalResults as $er) {
             $exists = SubmittedWork::where('student_id', $er->user_id)
@@ -56,7 +60,7 @@ class RankingSeeder extends Seeder
                 ->where('work_type', 'evaluation')
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 $evaluation = Evaluation::find($er->evaluation_id);
                 $scaledScore = $er->max_score > 0 ? (int) round(($er->score / $er->max_score) * 20) : rand(10, 20);
                 SubmittedWork::create([
@@ -74,20 +78,23 @@ class RankingSeeder extends Seeder
             }
         }
 
-        $examAttempts = ExamAttempt::where('status', 'completed')->get();
+        // Intentos de exámenes (evaluation_results de evaluaciones type='exam').
+        $examAttempts = EvaluationResult::where('status', 'completed')
+            ->whereIn('evaluation_id', $examIds)
+            ->get();
 
         foreach ($examAttempts as $ea) {
-            $exists = SubmittedWork::where('student_id', $ea->student_id)
-                ->where('exam_id', $ea->exam_id)
+            $exists = SubmittedWork::where('student_id', $ea->user_id)
+                ->where('evaluation_id', $ea->evaluation_id)
                 ->where('work_type', 'exam')
                 ->exists();
 
-            if (!$exists) {
-                $exam = Exam::find($ea->exam_id);
-                $scaledScore = $ea->total_points > 0 ? (int) round(($ea->score / $ea->total_points) * 20) : rand(10, 20);
+            if (! $exists) {
+                $exam = Exam::find($ea->evaluation_id);
+                $scaledScore = $ea->max_score > 0 ? (int) round(($ea->score / $ea->max_score) * 20) : rand(10, 20);
                 SubmittedWork::create([
-                    'student_id' => $ea->student_id,
-                    'exam_id' => $ea->exam_id,
+                    'student_id' => $ea->user_id,
+                    'evaluation_id' => $ea->evaluation_id,
                     'work_type' => 'exam',
                     'title' => $exam?->title ?? 'Exam Work',
                     'status' => 'graded',

@@ -5,12 +5,9 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Exam;
-use App\Models\ExamAttempt;
-use App\Models\ExamQuestion;
-use App\Models\Evaluation;
-use App\Models\EvaluationQuestion;
+use App\Models\EvaluationResult;
+use App\Models\Question;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
@@ -22,13 +19,13 @@ class SecurityFixesTest extends TestCase
 
     private function createUser(string $roleName, array $overrides = []): User
     {
-        $role = Role::firstOrCreate(['name' => $roleName]);
+        $role = $roleName;
         return User::create(array_merge([
             'id' => Str::uuid(),
             'email' => $roleName . '_' . Str::random(6) . '@example.com',
             'full_name' => ucfirst($roleName) . ' User',
             'password' => 'password123',
-            'role_id' => $role->id,
+            'role' => $role,
             'is_active' => true,
             'provider' => 'email',
         ], $overrides));
@@ -70,14 +67,17 @@ class SecurityFixesTest extends TestCase
             'teacher_id' => $teacher->id,
             'title' => 'Math Exam',
             'is_active' => true,
-            'duration_minutes' => 30,
         ]);
 
-        $attempt = ExamAttempt::create([
+        $attempt = EvaluationResult::create([
             'id' => Str::uuid(),
-            'exam_id' => $exam->id,
-            'student_id' => $studentB->id,
-            'status' => 'in_progress',
+            'user_id' => $studentB->id,
+            'evaluation_id' => $exam->id,
+            'max_score' => 20,
+            'total_questions' => 1,
+            'status' => 'pending',
+            'started_at' => now(),
+            'attempt_number' => 1,
             'tab_switch_count' => 0,
             'cheat_log' => [],
         ]);
@@ -101,12 +101,11 @@ class SecurityFixesTest extends TestCase
             'teacher_id' => $teacher->id,
             'title' => 'Secret Exam',
             'is_active' => true,
-            'duration_minutes' => 30,
         ]);
 
-        ExamQuestion::create([
+        Question::create([
             'id' => Str::uuid(),
-            'exam_id' => $exam->id,
+            'evaluation_id' => $exam->id,
             'type' => 'multiple_choice',
             'question_text' => 'What is 2+2?',
             'options' => ['3', '4', '5'],

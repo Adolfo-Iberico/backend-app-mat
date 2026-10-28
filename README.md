@@ -63,6 +63,27 @@ La API está versionada bajo `/api/v1`.
 
 Las rutas protegidas requieren una sesión válida de Sanctum, usuario activo y los permisos del rol correspondiente. También se aplican límites de frecuencia, auditoría y caché donde corresponde.
 
+### Integración con E-Lean Studio
+
+El frontend `E-LeanStudio-app-mat` consume esta API desde acciones de servidor de Next.js. La URL base debe apuntar al prefijo versionado:
+
+```text
+http://127.0.0.1:8000/api/v1
+```
+
+En el frontend se configura como `API_BASE_URL` en `.env.local`. Para producción usa la URL HTTPS pública del backend terminada en `/api/v1`; no uses `localhost` ni `127.0.0.1` en Vercel. El token de Sanctum lo conserva el frontend en una cookie `httpOnly` y lo envía como Bearer en las solicitudes autenticadas.
+
+Los flujos del frontend utilizan, entre otros, estos grupos de rutas:
+
+- `/auth`: registro, acceso y recuperación de contraseña.
+- `/user`: perfil, cambio de contraseña y cierre de sesión.
+- `/lessons`, `/evaluations`: catálogo, contenidos, progreso y evaluaciones.
+- `/dashboard`, `/notifications`: paneles y notificaciones.
+- `/forum`, `/announcements`: foro y novedades.
+- `/admin`: operaciones de administración autorizadas por rol.
+
+Para desarrollo local, inicia Laravel en el puerto 8000 y el frontend en el puerto 9002. El frontend realiza las llamadas al backend desde el servidor de Next.js, no directamente desde el navegador; por ello CORS no interviene en ese patrón. Si se habilitan llamadas desde el navegador en el futuro, agrega el origen exacto del frontend a `CORS_ALLOWED_ORIGINS` y verifica la configuración de Sanctum correspondiente. No guardes secretos del backend en el frontend.
+
 ## Requisitos
 
 - PHP 8.2 o superior.
@@ -138,11 +159,14 @@ Usa `.env.example` como plantilla. Entre las variables esperadas están:
 - Sesión, caché y cola: `SESSION_*`, `CACHE_STORE`, `QUEUE_CONNECTION`, `REDIS_*`.
 - Correo: `MAIL_*`.
 - Google OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
+- Frontend web: `FRONTEND_URL` (URL base usada para volver al inicio de sesión tras Google OAuth).
 - Sanctum y CORS: `SANCTUM_*`, `SESSION_DOMAIN`, `CORS_ALLOWED_ORIGINS`.
 - IA: `GROQ_API_KEY`.
 - Push: `FCM_*` y las variables requeridas por Web Push.
 
 No coloques valores reales en este README, `.env.example`, commits, logs, capturas ni issues. El archivo `.env` debe permanecer fuera del control de versiones. Las claves secretas de proveedores deben existir únicamente en el entorno del backend y nunca en variables `VITE_*`.
+
+Para el entorno local, registra `http://localhost:8000/api/v1/auth/google/callback` como URI de retorno autorizado en Google y configura `FRONTEND_URL=http://localhost:9002`. En producción, usa el URI HTTPS público de la API y el origen HTTPS del frontend.
 
 ## Estructura
 

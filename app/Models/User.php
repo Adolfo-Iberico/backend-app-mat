@@ -23,11 +23,10 @@ class User extends Authenticatable
         'password',
         'full_name',
         'dni',
-        'role_id',
+        'role',
         'is_active',
         'last_login',
         'profile_image',
-        'institution',
         'grade',
         'salon_id',
         'google_id',
@@ -42,6 +41,8 @@ class User extends Authenticatable
         'google_token',
     ];
 
+    protected $appends = ['institution', 'role'];
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_login' => 'datetime',
@@ -50,10 +51,22 @@ class User extends Authenticatable
     ];
 
     // ========== RELACIONES ==========
-    /** Rol asignado a la cuenta. */
-    public function role()
+    /** Institución única configurada para toda la plataforma. */
+    public function getInstitutionAttribute(): ?string
     {
-        return $this->belongsTo(Role::class);
+        return InstitutionConfig::canonicalName();
+    }
+
+    /** Devuelve el formato de rol que ya consume la API, sin una tabla aparte. */
+    public function getRoleAttribute(): ?object
+    {
+        $role = $this->attributes['role'] ?? null;
+        return $role === null ? null : (object) ['name' => $role];
+    }
+
+    public function roleName(): ?string
+    {
+        return $this->attributes['role'] ?? null;
     }
 
     /** Perfil de estudiante, si la cuenta lo tiene. */
@@ -134,51 +147,51 @@ class User extends Authenticatable
     /** Indica si el rol actual es administrador. */
     public function isAdmin()
     {
-        return $this->role?->name === Role::ADMIN;
+        return $this->roleName() === Role::ADMIN;
     }
 
     /** Indica si el rol permite actuar como docente, incluidos coordinador y director. */
     public function isTeacher()
     {
         // Jerarquía: coordinador y director también actúan como docentes
-        return in_array($this->role?->name, Role::TEACHING_ROLES);
+        return in_array($this->roleName(), Role::TEACHING_ROLES, true);
     }
 
     /** Indica si el rol actual es director. */
     public function isDirector()
     {
-        return $this->role?->name === Role::DIRECTOR;
+        return $this->roleName() === Role::DIRECTOR;
     }
 
     /** Indica si el rol actual es coordinador. */
     public function isCoordinator()
     {
-        return $this->role?->name === Role::COORDINATOR;
+        return $this->roleName() === Role::COORDINATOR;
     }
 
     /** Indica si el usuario tiene alcance de docente o coordinador. */
     public function isScopedTeacher()
     {
         // Docente/coordinador ven solo lo suyo; admin y director ven todo (global)
-        return in_array($this->role?->name, [Role::TEACHER, Role::COORDINATOR]);
+        return in_array($this->roleName(), [Role::TEACHER, Role::COORDINATOR], true);
     }
 
     /** Indica si el rol actual es estudiante. */
     public function isStudent()
     {
-        return $this->role?->name === Role::STUDENT;
+        return $this->roleName() === Role::STUDENT;
     }
 
     /** Comprueba si el rol coincide con el nombre indicado. */
     public function hasRole($roleName)
     {
-        return $this->role?->name === $roleName;
+        return $this->roleName() === $roleName;
     }
 
     /** Comprueba si el rol está incluido en la lista proporcionada. */
     public function hasAnyRole($roles)
     {
-        return in_array($this->role?->name, $roles);
+        return in_array($this->roleName(), $roles, true);
     }
 
     /** Indica si la cuenta usa Google como proveedor de autenticación. */

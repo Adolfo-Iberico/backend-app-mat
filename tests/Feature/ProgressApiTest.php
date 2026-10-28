@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\Lesson;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
 use App\Models\LessonProgress;
 use App\Models\StudentProfile;
 use App\Models\TeacherProfile;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\Str;
 
@@ -29,16 +30,16 @@ class ProgressApiTest extends TestCase
     {
         parent::setUp();
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $studentRole = 'student';
+        $teacherRole = 'teacher';
+        $adminRole = 'admin';
 
         $this->teacher = User::create([
             'id' => Str::uuid(),
             'full_name' => 'Teacher Progress',
             'email' => 'teacher.progress@test.com',
             'password' => 'password123',
-            'role_id' => $teacherRole->id,
+            'role' => $teacherRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -49,7 +50,6 @@ class ProgressApiTest extends TestCase
             'department' => 'Mathematics',
             'specialization' => 'Algebra',
             'years_experience' => 5,
-            'students_count' => 30,
         ]);
 
         $this->student = User::create([
@@ -57,7 +57,7 @@ class ProgressApiTest extends TestCase
             'full_name' => 'Student Progress',
             'email' => 'student.progress@test.com',
             'password' => 'password123',
-            'role_id' => $studentRole->id,
+            'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -66,11 +66,7 @@ class ProgressApiTest extends TestCase
             'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'intermediate',
-            'total_lessons_completed' => 3,
-            'average_score' => 16.5,
-            'total_time_spent' => 3600,
             'current_streak' => 5,
-            'badges' => ['first_lesson'],
         ]);
 
         $this->admin = User::create([
@@ -78,7 +74,7 @@ class ProgressApiTest extends TestCase
             'full_name' => 'Admin Progress',
             'email' => 'admin.progress@test.com',
             'password' => 'password123',
-            'role_id' => $adminRole->id,
+            'role' => $adminRole,
             'is_active' => true,
             'provider' => 'email',
         ]);
@@ -127,6 +123,34 @@ class ProgressApiTest extends TestCase
 
     public function test_student_can_get_stats(): void
     {
+        $evaluation = Evaluation::create([
+            'id' => Str::uuid(),
+            'title' => 'Progress test evaluation',
+            'teacher_id' => $this->teacher->id,
+            'lesson_id' => $this->lesson->id,
+            'type' => 'quiz',
+        ]);
+
+        EvaluationResult::create([
+            'id' => Str::uuid(),
+            'user_id' => $this->student->id,
+            'evaluation_id' => $evaluation->id,
+            'score' => 16.5,
+            'max_score' => 20,
+            'total_questions' => 1,
+            'status' => EvaluationResult::STATUS_COMPLETED,
+        ]);
+
+        LessonProgress::create([
+            'id' => Str::uuid(),
+            'user_id' => $this->student->id,
+            'lesson_id' => $this->lesson->id,
+            'progress' => 100,
+            'status' => LessonProgress::STATUS_COMPLETED,
+            'time_spent' => 3600,
+            'completed_at' => now(),
+        ]);
+
         Sanctum::actingAs($this->student, ['web']);
 
         $response = $this->getJson("{$this->baseUrl}/dashboard/student/stats");
@@ -148,6 +172,54 @@ class ProgressApiTest extends TestCase
             ])
             ->assertJsonPath('stats.current_streak', 5)
             ->assertJsonPath('stats.average_score', 16.5);
+    }
+
+    public function test_student_can_get_full_learning_record(): void
+    {
+        $evaluation = Evaluation::create([
+            'id' => Str::uuid(),
+            'title' => 'Learning record evaluation',
+            'teacher_id' => $this->teacher->id,
+            'lesson_id' => $this->lesson->id,
+            'type' => 'quiz',
+        ]);
+        EvaluationResult::create([
+            'id' => Str::uuid(),
+            'user_id' => $this->student->id,
+            'evaluation_id' => $evaluation->id,
+            'score' => 16.5,
+            'max_score' => 20,
+            'total_questions' => 1,
+            'status' => EvaluationResult::STATUS_COMPLETED,
+        ]);
+        LessonProgress::create([
+            'id' => Str::uuid(),
+            'user_id' => $this->student->id,
+            'lesson_id' => $this->lesson->id,
+            'progress' => 100,
+            'status' => LessonProgress::STATUS_COMPLETED,
+            'time_spent' => 900,
+            'completed_at' => now(),
+        ]);
+
+        Sanctum::actingAs($this->student, ['web']);
+
+        $this->getJson("{$this->baseUrl}/progress/my-record")
+            ->assertOk()
+            ->assertJsonPath('summary.completed_lessons', 1)
+            ->assertJsonPath('summary.completed_evaluations', 1)
+            ->assertJsonPath('summary.average_score', 16.5)
+            ->assertJsonStructure([
+                'lesson_progress' => [['lesson' => ['id', 'title']]],
+                'evaluation_results' => [['evaluation' => ['id', 'title']]],
+            ]);
+    }
+
+    public function test_teacher_cannot_get_student_learning_record(): void
+    {
+        Sanctum::actingAs($this->teacher, ['web']);
+
+        $this->getJson("{$this->baseUrl}/progress/my-record")->assertForbidden();
     }
 
     public function test_student_can_update_lesson_progress(): void
@@ -177,8 +249,45 @@ class ProgressApiTest extends TestCase
         ]);
     }
 
+    public function test_completing_a_lesson_stores_badges_in_user_achievements(): void
+    {
+        Sanctum::actingAs($this->student, ['web']);
+
+        $response = $this->postJson("{$this->baseUrl}/lessons/{$this->lesson->id}/progress", [
+            'progress' => 100,
+            'time_spent' => 300,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('badges.0', 'first_lesson');
+
+        $achievementId = Achievement::where('slug', 'first_lesson')->value('id');
+        $this->assertDatabaseHas('user_achievements', [
+            'user_id' => $this->student->id,
+            'achievement_id' => $achievementId,
+        ]);
+
+        $this->assertSame(1, $this->student->studentProfile->fresh()->total_lessons_completed);
+        $this->assertSame(300, $this->student->studentProfile->fresh()->total_time_spent);
+    }
+
     public function test_student_can_get_badges(): void
     {
+        $achievement = Achievement::create([
+            'slug' => 'first_lesson',
+            'name' => ['es' => 'Primera lección', 'en' => 'First lesson'],
+            'description' => ['es' => 'Completa una lección.', 'en' => 'Complete a lesson.'],
+            'icon' => '🎓',
+            'xp_reward' => 25,
+            'category' => 'lessons',
+            'criteria' => ['completed_lessons' => 1],
+        ]);
+
+        UserAchievement::create([
+            'user_id' => $this->student->id,
+            'achievement_id' => $achievement->id,
+        ]);
+
         Sanctum::actingAs($this->student, ['web']);
 
         $response = $this->getJson("{$this->baseUrl}/progress/badges");

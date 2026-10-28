@@ -4,17 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
-use App\Models\ExamQuestion;
-use App\Models\ExamAttempt;
+use App\Models\Question;
+use App\Models\EvaluationResult;
 use App\Models\Notification;
 use App\Models\Role;
+use App\Support\EvaluationAnswerFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Gestiona exámenes e intentos de estudiantes, incluidas calificaciones e incidencias.
+ * Gestiona exámenes (evaluaciones type='exam' con supervisión anti-cheat)
+ * e intentos de estudiantes, incluidas calificaciones e incidencias.
+ *
+ * Desde la consolidación del módulo, el almacenamiento es el canónico:
+ * preguntas en `questions`, intentos en `evaluation_results`. La API y los
+ * payloads se mantienen compatibles con el frontend /exams/*.
  */
 class ExamController extends Controller
 {
@@ -29,13 +35,14 @@ class ExamController extends Controller
                 $query->where('teacher_id', Auth::id());
             }
         } elseif (Auth::user()->isStudent()) {
-            $query->where('is_active', true);
+            $query->where('is_published', true);
         } else {
             abort(403, 'No tienes permiso');
         }
 
+        // Compatibilidad: el parámetro is_active del flujo antiguo mapea a is_published.
         if ($request->has('is_active') && $request->is_active !== null) {
-            $query->where('is_active', $request->boolean('is_active'));
+            $query->where('is_published', $request->boolean('is_active'));
         }
 
         if ($request->filled('unit')) {
@@ -59,10 +66,10 @@ class ExamController extends Controller
 
         // Calcular el intento del estudiante con una sola query (evita N+1 y fuga de correct_answer)
         if (Auth::user()->isStudent()) {
-            $attempts = ExamAttempt::where('student_id', Auth::id())
-                ->whereIn('exam_id', $exams->pluck('id'))
+            $attempts = EvaluationResult::where('user_id', Auth::id())
+                ->whereIn('evaluation_id', $exams->pluck('id'))
                 ->get()
-                ->keyBy('exam_id');
+                ->keyBy('evaluation_id');
 
             $exams->getCollection()->transform(function ($exam) use ($attempts) {
                 $exam->user_attempt = $attempts->get($exam->id);
@@ -113,20 +120,19 @@ class ExamController extends Controller
                 'teacher_id' => Auth::id(),
                 'unit' => $validated['unit'] ?? null,
                 'difficulty' => $validated['difficulty'] ?? 'basic',
-                'time_limit' => $validated['time_limit'] ?? null,
+                'time_limit' => $validated['time_limit'] ?? 30,
                 'max_attempts' => $validated['max_attempts'] ?? 1,
                 'auto_correct' => $validated['auto_correct'] ?? true,
                 'randomize_questions' => $validated['randomize_questions'] ?? false,
-                'is_active' => false,
                 'is_published' => false,
                 'total_questions' => count($validated['questions']),
                 'total_points' => $totalPoints,
             ]);
 
             foreach ($validated['questions'] as $index => $q) {
-                ExamQuestion::create([
+                Question::create([
                     'id' => Str::uuid(),
-                    'exam_id' => $exam->id,
+                    'evaluation_id' => $exam->id,
                     'type' => $q['type'],
                     'question_text' => $q['question_text'],
                     'options' => $q['options'] ?? null,
@@ -155,13 +161,15 @@ class ExamController extends Controller
         }
     }
 
-    /** Devuelve el examen y sus preguntas, ocultando las respuestas a estudiantes. */
+    /** Devuelve el examen y sus preguntas, ocultando las respuestas a no gestores. */
     public function show($id)
     {
         $exam = Exam::with(['teacher', 'questions'])->findOrFail($id);
 
-        if (Auth::user()->isStudent()) {
-            if (!$exam->is_active && Auth::user()->isStudent()) {
+        if (!$this->canManage($exam)) {
+            // Estudiantes: gate de visibilidad. Resto de no gestores (p. ej. padres):
+            // pueden ver el examen pero nunca las respuestas correctas.
+            if (Auth::user()->isStudent() && !$exam->is_published) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Examen no disponible'
@@ -169,14 +177,13 @@ class ExamController extends Controller
             }
 
             if (Auth::user()->isStudent()) {
-                $attempt = ExamAttempt::where('student_id', Auth::id())
-                    ->where('exam_id', $id)
+                $exam->user_attempt = EvaluationResult::where('user_id', Auth::id())
+                    ->where('evaluation_id', $id)
                     ->first();
-                $exam->user_attempt = $attempt;
             }
 
             foreach ($exam->questions as $question) {
-                $question->makeHidden(['correct_answer']);
+                $question->makeHidden(['correct_answer', 'correct_answer_display']);
             }
         }
 
@@ -221,20 +228,28 @@ class ExamController extends Controller
         DB::beginTransaction();
 
         try {
+            // El alias is_active del payload mapea a is_published.
+            if (array_key_exists('is_active', $validated)) {
+                $validated['is_published'] = $validated['is_active'];
+                unset($validated['is_active']);
+            }
+
             $examFields = collect($validated)->except('questions')->filter()->toArray();
             if (!empty($examFields)) {
                 $exam->update($examFields);
             }
 
             if (isset($validated['questions'])) {
-                $exam->questions()->delete();
+                // Question usa SoftDeletes: borrado físico para permitir reutilizar
+                // los mismos IDs de pregunta que conserva el editor del frontend.
+                $exam->questions()->forceDelete();
 
                 $totalPoints = 0;
                 foreach ($validated['questions'] as $index => $q) {
                     $totalPoints += $q['points'] ?? 1;
-                    ExamQuestion::create([
+                    Question::create([
                         'id' => $q['id'] ?? Str::uuid(),
-                        'exam_id' => $exam->id,
+                        'evaluation_id' => $exam->id,
                         'type' => $q['type'],
                         'question_text' => $q['question_text'],
                         'options' => $q['options'] ?? null,
@@ -296,7 +311,7 @@ class ExamController extends Controller
         ]);
     }
 
-    /** Publica y activa un examen después de comprobar que tenga preguntas. */
+    /** Publica (activa) un examen después de comprobar que tenga preguntas. */
     public function activate($id)
     {
         $exam = Exam::findOrFail($id);
@@ -316,7 +331,6 @@ class ExamController extends Controller
         }
 
         $exam->update([
-            'is_active' => true,
             'is_published' => true,
             'published_at' => now(),
         ]);
@@ -341,7 +355,7 @@ class ExamController extends Controller
         }
 
         $exam->update([
-            'is_active' => false,
+            'is_published' => false,
         ]);
 
         return response()->json([
@@ -356,7 +370,7 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$exam->is_active) {
+        if (!$exam->is_published) {
             return response()->json([
                 'success' => false,
                 'message' => 'Este examen no está disponible'
@@ -370,18 +384,18 @@ class ExamController extends Controller
         $result = \DB::transaction(function () use ($exam, $studentId, $id) {
             $lockedExam = Exam::whereKey($exam->id)->lockForUpdate()->first();
 
-            $existingAttempt = ExamAttempt::where('exam_id', $id)
-                ->where('student_id', $studentId)
-                ->where('status', ExamAttempt::STATUS_IN_PROGRESS)
+            $existingAttempt = EvaluationResult::where('evaluation_id', $id)
+                ->where('user_id', $studentId)
+                ->where('status', EvaluationResult::STATUS_PENDING)
                 ->first();
 
             if ($existingAttempt) {
                 return ['attempt' => $existingAttempt, 'resumed' => true];
             }
 
-            $completedAttempts = ExamAttempt::where('exam_id', $id)
-                ->where('student_id', $studentId)
-                ->where('status', ExamAttempt::STATUS_COMPLETED)
+            $completedAttempts = EvaluationResult::where('evaluation_id', $id)
+                ->where('user_id', $studentId)
+                ->where('status', EvaluationResult::STATUS_COMPLETED)
                 ->count();
 
             if ($completedAttempts >= $lockedExam->max_attempts) {
@@ -389,13 +403,16 @@ class ExamController extends Controller
             }
 
             return [
-                'attempt' => ExamAttempt::create([
+                'attempt' => EvaluationResult::create([
                     'id' => Str::uuid(),
-                    'exam_id' => $lockedExam->id,
-                    'student_id' => $studentId,
-                    'status' => ExamAttempt::STATUS_IN_PROGRESS,
-                    'total_points' => $lockedExam->total_points,
+                    'user_id' => $studentId,
+                    'evaluation_id' => $lockedExam->id,
+                    'max_score' => 20,
+                    'total_questions' => $lockedExam->total_questions,
+                    'status' => EvaluationResult::STATUS_PENDING,
                     'started_at' => now(),
+                    'attempt_number' => $completedAttempts + 1,
+                    'total_points' => $lockedExam->total_points,
                 ]),
                 'resumed' => false,
             ];
@@ -405,7 +422,7 @@ class ExamController extends Controller
         $resumed = $result['resumed'];
 
         $questions = $exam->questions()->orderBy('order')->get()->map(function ($q) {
-            $q->makeHidden(['correct_answer']);
+            $q->makeHidden(['correct_answer', 'correct_answer_display']);
             return $q;
         });
 
@@ -446,16 +463,16 @@ class ExamController extends Controller
     /** Califica y registra las respuestas del estudiante para un intento en curso. */
     public function submitAttempt(Request $request, $attemptId)
     {
-        $attempt = ExamAttempt::findOrFail($attemptId);
+        $attempt = EvaluationResult::findOrFail($attemptId);
 
-        if ((string) $attempt->student_id !== (string) Auth::id()) {
+        if ((string) $attempt->user_id !== (string) Auth::id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tiene permiso para enviar este intento'
             ], 403);
         }
 
-        if ($attempt->status !== ExamAttempt::STATUS_IN_PROGRESS) {
+        if ($attempt->status !== EvaluationResult::STATUS_PENDING) {
             return response()->json([
                 'success' => false,
                 'message' => 'Este intento ya fue enviado o no está en curso'
@@ -464,12 +481,12 @@ class ExamController extends Controller
 
         $validated = $request->validate([
             'answers' => 'required|array|min:1',
-            'answers.*.question_id' => 'required|string|exists:exam_questions,id',
+            'answers.*.question_id' => 'required|string|exists:questions,id',
             'answers.*.answer' => 'required|string',
             'time_spent' => 'nullable|integer|min:0',
         ]);
 
-        $exam = $attempt->exam;
+        $exam = $attempt->evaluation;
         $questions = $exam->questions()->get()->keyBy('id');
 
         DB::beginTransaction();
@@ -485,7 +502,11 @@ class ExamController extends Controller
                     continue;
                 }
 
-                $isCorrect = $this->normalizeAnswer($answerData['answer']) === $this->normalizeAnswer($question->correct_answer);
+                // Comparación tolerante: coincidencia normalizada directa
+                // (true/false en español, símbolos matemáticos) o resolución de
+                // índice<->texto vía el formatter del ecosistema de evaluaciones.
+                $isCorrect = $this->normalizeAnswer($answerData['answer']) === $this->normalizeAnswer($question->correct_answer)
+                    || EvaluationAnswerFormatter::isCorrect($question, (string) $answerData['answer']);
                 $pointsEarned = $isCorrect ? $question->points : 0;
 
                 if ($isCorrect) {
@@ -507,11 +528,16 @@ class ExamController extends Controller
                 ? round(($earnedPoints / $exam->total_points) * 20)
                 : 0;
 
+            // Se normaliza el intento para que también alimente reportes y
+            // rankings del ecosistema de evaluaciones (correct_answers y
+            // total_questions ahora quedan informados como en el otro flujo).
             $attempt->update([
-                'status' => ExamAttempt::STATUS_COMPLETED,
+                'status' => EvaluationResult::STATUS_COMPLETED,
                 'score' => $score,
+                'correct_answers' => $correctCount,
+                'total_questions' => $exam->total_questions,
                 'answers' => $answersResult,
-                'time_spent' => $validated['time_spent'] ?? 0,
+                'time_taken' => $validated['time_spent'] ?? 0,
                 'completed_at' => now(),
             ]);
 
@@ -565,9 +591,9 @@ class ExamController extends Controller
     /** Registra una incidencia de integridad y actualiza el estado del intento si corresponde. */
     public function reportCheating(Request $request, $attemptId)
     {
-        $attempt = ExamAttempt::findOrFail($attemptId);
+        $attempt = EvaluationResult::findOrFail($attemptId);
 
-        if ((string) $attempt->student_id !== (string) $request->user()->id) {
+        if ((string) $attempt->user_id !== (string) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permiso para realizar esta acción.',
@@ -593,17 +619,17 @@ class ExamController extends Controller
             'tab_switch_count' => $newTabCount,
         ];
 
-        if ($newTabCount >= 3 && $attempt->status === ExamAttempt::STATUS_IN_PROGRESS) {
-            $updateData['status'] = ExamAttempt::STATUS_CHEATING_DETECTED;
+        if ($newTabCount >= 3 && $attempt->status === EvaluationResult::STATUS_PENDING) {
+            $updateData['status'] = EvaluationResult::STATUS_CHEATING_DETECTED;
 
             Notification::create([
                 'id' => Str::uuid(),
-                'user_id' => $attempt->exam->teacher_id,
+                'user_id' => $attempt->evaluation->teacher_id,
                 'title' => 'Actividad sospechosa detectada',
-                'message' => "El estudiante #" . substr($attempt->student_id, 0, 8) . " ha sido marcado por actividad sospechosa en el examen \"{$attempt->exam->title}\" ({$newTabCount} cambios de pestaña).",
+                'message' => "El estudiante #" . substr($attempt->user_id, 0, 8) . " ha sido marcado por actividad sospechosa en el examen \"{$attempt->evaluation->title}\" ({$newTabCount} cambios de pestaña).",
                 'type' => Notification::TYPE_WARNING,
                 'is_read' => false,
-                'link' => "/exams/{$attempt->exam_id}/attempts/{$attempt->id}",
+                'link' => "/exams/{$attempt->evaluation_id}/attempts/{$attempt->id}",
             ]);
         }
 
@@ -631,9 +657,9 @@ class ExamController extends Controller
             ], 403);
         }
 
-        $attempts = ExamAttempt::where('exam_id', $id)->get();
-        $completedAttempts = $attempts->where('status', ExamAttempt::STATUS_COMPLETED);
-        $cheatingIncidents = $attempts->where('status', ExamAttempt::STATUS_CHEATING_DETECTED);
+        $attempts = EvaluationResult::where('evaluation_id', $id)->get();
+        $completedAttempts = $attempts->where('status', EvaluationResult::STATUS_COMPLETED);
+        $cheatingIncidents = $attempts->where('status', EvaluationResult::STATUS_CHEATING_DETECTED);
 
         $scores = $completedAttempts->pluck('score')->filter()->values();
         $totalScores = $scores->count();
@@ -659,7 +685,7 @@ class ExamController extends Controller
         $stats = [
             'total_attempts' => $attempts->count(),
             'completed_attempts' => $completedAttempts->count(),
-            'in_progress_attempts' => $attempts->where('status', ExamAttempt::STATUS_IN_PROGRESS)->count(),
+            'in_progress_attempts' => $attempts->where('status', EvaluationResult::STATUS_PENDING)->count(),
             'average_score' => $totalScores > 0 ? round($scores->sum() / $totalScores, 2) : 0,
             'max_score' => $totalScores > 0 ? $scores->max() : 0,
             'min_score' => $totalScores > 0 ? $scores->min() : 0,
@@ -668,7 +694,7 @@ class ExamController extends Controller
             'total_cheat_events' => $attempts->sum('tab_switch_count'),
             'score_distribution' => $distribution,
             'average_time_spent' => $completedAttempts->count() > 0
-                ? round($completedAttempts->avg('time_spent'))
+                ? round($completedAttempts->avg('time_taken'))
                 : 0,
         ];
 
@@ -681,19 +707,24 @@ class ExamController extends Controller
     /** Historial de intentos y calificaciones del estudiante autenticado. */
     public function myAttempts(Request $request)
     {
-        $attempts = ExamAttempt::where('student_id', Auth::id())
-            ->with('exam:id,title,unit,difficulty,total_questions,total_points')
+        $attempts = EvaluationResult::where('user_id', Auth::id())
+            ->whereHas('evaluation', fn ($q) => $q->where('type', Exam::TYPE))
+            ->with('evaluation:id,title,unit,difficulty,total_questions,total_points')
             ->orderByDesc('created_at')
             ->paginate(min((int) ($request->per_page ?? 15), 50));
 
         $summary = [
-            'total_attempts' => ExamAttempt::where('student_id', Auth::id())->count(),
-            'completed' => ExamAttempt::where('student_id', Auth::id())
-                ->where('status', ExamAttempt::STATUS_COMPLETED)->count(),
-            'in_progress' => ExamAttempt::where('student_id', Auth::id())
-                ->where('status', ExamAttempt::STATUS_IN_PROGRESS)->count(),
-            'average_score' => (float) ExamAttempt::where('student_id', Auth::id())
-                ->where('status', ExamAttempt::STATUS_COMPLETED)->avg('score'),
+            'total_attempts' => EvaluationResult::where('user_id', Auth::id())
+                ->whereHas('evaluation', fn ($q) => $q->where('type', Exam::TYPE))->count(),
+            'completed' => EvaluationResult::where('user_id', Auth::id())
+                ->whereHas('evaluation', fn ($q) => $q->where('type', Exam::TYPE))
+                ->where('status', EvaluationResult::STATUS_COMPLETED)->count(),
+            'in_progress' => EvaluationResult::where('user_id', Auth::id())
+                ->whereHas('evaluation', fn ($q) => $q->where('type', Exam::TYPE))
+                ->where('status', EvaluationResult::STATUS_PENDING)->count(),
+            'average_score' => (float) EvaluationResult::where('user_id', Auth::id())
+                ->whereHas('evaluation', fn ($q) => $q->where('type', Exam::TYPE))
+                ->where('status', EvaluationResult::STATUS_COMPLETED)->avg('score'),
         ];
 
         return response()->json([

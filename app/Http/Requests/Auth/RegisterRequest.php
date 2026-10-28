@@ -24,7 +24,6 @@ class RegisterRequest extends FormRequest
             'password' => 'required|string|min:8|confirmed',
             'role' => 'sometimes|in:student',
             'academic_level' => 'required_if:role,student|in:basic,intermediate,advanced',
-            'institution' => 'nullable|string|max:255',
             'grade' => 'nullable|string|max:50',
             'department' => 'required_if:role,teacher|string|max:255',
             'specialization' => 'required_if:role,teacher|string|max:255'

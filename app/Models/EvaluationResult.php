@@ -26,7 +26,10 @@ class EvaluationResult extends Model
         'started_at',
         'completed_at',
         'attempt_number',
-        'tab_switch_count'
+        'tab_switch_count',
+        'total_points',
+        'answers',
+        'cheat_log'
     ];
 
     protected $casts = [
@@ -37,6 +40,9 @@ class EvaluationResult extends Model
         'time_taken' => 'integer',
         'attempt_number' => 'integer',
         'tab_switch_count' => 'integer',
+        'total_points' => 'integer',
+        'answers' => 'array',
+        'cheat_log' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime'
     ];
@@ -45,6 +51,7 @@ class EvaluationResult extends Model
     const STATUS_PENDING = 'pending';
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
+    const STATUS_CHEATING_DETECTED = 'cheating_detected';
 
     // ========== RELACIONES ==========
     /** Estudiante que obtuvo el resultado. */

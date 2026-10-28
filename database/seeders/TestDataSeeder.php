@@ -2,20 +2,21 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\StudentProfile;
-use App\Models\TeacherProfile;
+use App\Models\AcademicPeriod;
+use App\Models\Evaluation;
+use App\Models\EvaluationResult;
+use App\Models\InstitutionConfig;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
-use App\Models\Evaluation;
-use App\Models\Question;
-use App\Models\EvaluationResult;
-use App\Models\StudentAnswer;
-use App\Models\AcademicPeriod;
 use App\Models\Notification;
-use App\Models\InstitutionConfig;
+use App\Models\Question;
+use App\Models\Role;
+use App\Models\StudentAnswer;
+use App\Models\StudentProfile;
+use App\Models\TeacherProfile;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 /**
@@ -24,9 +25,13 @@ use Illuminate\Support\Str;
 class TestDataSeeder extends Seeder
 {
     private array $teachers = [];
+
     private array $students = [];
+
     private array $lessons = [];
+
     private array $evaluations = [];
+
     private array $questions = [];
 
     /**
@@ -56,7 +61,6 @@ class TestDataSeeder extends Seeder
      */
     private function createTeachers(): void
     {
-        $teacherRole = Role::where('name', Role::TEACHER)->first();
 
         $teachersData = [
             [
@@ -85,16 +89,15 @@ class TestDataSeeder extends Seeder
         foreach ($teachersData as $data) {
             $teacher = User::where('email', $data['email'])->first();
 
-            if (!$teacher) {
+            if (! $teacher) {
                 $teacher = User::create([
                     'id' => Str::uuid(),
                     'full_name' => $data['full_name'],
                     'email' => $data['email'],
                     'password' => 'password123',
-                    'role_id' => $teacherRole->id,
+                    'role' => Role::TEACHER,
                     'is_active' => true,
                     'provider' => 'email',
-                    'institution' => 'Instituto Aulamate',
                     'email_verified_at' => now(),
                 ]);
 
@@ -104,7 +107,6 @@ class TestDataSeeder extends Seeder
                     'department' => $data['department'],
                     'specialization' => $data['specialization'],
                     'years_experience' => $data['years_experience'],
-                    'students_count' => 0,
                 ]);
             }
 
@@ -119,7 +121,6 @@ class TestDataSeeder extends Seeder
      */
     private function createStudents(): void
     {
-        $studentRole = Role::where('name', Role::STUDENT)->first();
 
         $studentsData = [
             ['full_name' => 'Ana Garcia Lopez', 'grade' => '3ro Secundaria', 'academic_level' => 'advanced'],
@@ -135,19 +136,18 @@ class TestDataSeeder extends Seeder
         ];
 
         foreach ($studentsData as $i => $data) {
-            $email = 'estudiante' . ($i + 1) . '@mathflow.com';
+            $email = 'estudiante'.($i + 1).'@mathflow.com';
             $student = User::where('email', $email)->first();
 
-            if (!$student) {
+            if (! $student) {
                 $student = User::create([
                     'id' => Str::uuid(),
                     'full_name' => $data['full_name'],
                     'email' => $email,
                     'password' => 'password123',
-                    'role_id' => $studentRole->id,
+                    'role' => Role::STUDENT,
                     'is_active' => true,
                     'provider' => 'email',
-                    'institution' => 'Instituto Aulamate',
                     'grade' => $data['grade'],
                     'email_verified_at' => now(),
                 ]);
@@ -156,11 +156,7 @@ class TestDataSeeder extends Seeder
                     'id' => Str::uuid(),
                     'user_id' => $student->id,
                     'academic_level' => $data['academic_level'],
-                    'total_lessons_completed' => 0,
-                    'average_score' => 0,
-                    'total_time_spent' => 0,
                     'current_streak' => 0,
-                    'badges' => [],
                 ]);
             }
 
@@ -181,9 +177,10 @@ class TestDataSeeder extends Seeder
             // Unidad 1: Algebra
             [
                 'title' => 'Ecuaciones Lineales',
+                'grade' => '1ro',
                 'description' => 'Aprende a resolver ecuaciones de primer grado con una incognita.',
                 'content' => '<h2>Ecuaciones Lineales</h2><p>Una <strong>ecuacion lineal</strong> es una igualdad matematica que contiene una o mas variables elevadas a la potencia unitaria.</p><h3>Forma general</h3><p>La forma general de una ecuacion lineal es:</p><p><code>ax + b = c</code></p><p>Donde:</p><ul><li><strong>a</strong>, <strong>b</strong> y <strong>c</strong> son constantes</li><li><strong>x</strong> es la variable incognita</li></ul><h3>Pasos para resolver</h3><ol><li>Eliminar parentesis aplicando la propiedad distributiva</li><li>Agrupar terminos semejantes</li><li>Despejar la variable</li></ol><h3>Ejemplo</h3><p>Resolver: 3x + 5 = 20</p><p>3x = 20 - 5</p><p>3x = 15</p><p>x = 5</p>',
-                'unit' => 'Algebra',
+                'unit' => 'Álgebra',
                 'topic' => 'Ecuaciones',
                 'difficulty' => 'basic',
                 'tags' => ['algebra', 'ecuaciones', 'lineales'],
@@ -191,9 +188,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Desigualdades Lineales',
+                'grade' => '1ro',
                 'description' => 'Resolucion de desigualdades y representacion en la recta numerica.',
                 'content' => '<h2>Desigualdades Lineales</h2><p>Una <strong>desigualdad lineal</strong> relaciona dos expresiones mediante un signo de desigualdad.</p><h3>Signos de desigualdad</h3><ul><li><strong>&lt;</strong> menor que</li><li><strong>&gt;</strong> mayor que</li><li><strong>&le;</strong> menor o igual que</li><li><strong>&ge;</strong> mayor o igual que</li></ul><h3>Regla importante</h3><p>Al multiplicar o dividir ambos lados por un numero negativo, el sentido de la desigualdad se <strong>invierte</strong>.</p><h3>Ejemplo</h3><p>Resolver: 2x - 3 &gt; 7</p><p>2x &gt; 10</p><p>x &gt; 5</p>',
-                'unit' => 'Algebra',
+                'unit' => 'Álgebra',
                 'topic' => 'Desigualdades',
                 'difficulty' => 'basic',
                 'tags' => ['algebra', 'desigualdades'],
@@ -201,9 +199,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Funciones Lineales y Cuadraticas',
+                'grade' => '2do',
                 'description' => 'Estudio de funciones de primer y segundo grado, graficas y propiedades.',
                 'content' => '<h2>Funciones</h2><h3>Funcion Lineal</h3><p>Una funcion lineal tiene la forma: <code>f(x) = mx + b</code></p><ul><li><strong>m</strong> = pendiente (inclinacion de la recta)</li><li><strong>b</strong> = ordenada al origen</li></ul><h3>Funcion Cuadratica</h3><p>Una funcion cuadratica tiene la forma: <code>f(x) = ax² + bx + c</code></p><p>Donde <strong>a &ne; 0</strong>. Su grafica es una <strong>parabola</strong>.</p><h3>Vertice de la parabola</h3><p>El vertice se encuentra en: <code>x = -b / (2a)</code></p><h3>Ejemplo</h3><p>f(x) = x² - 4x + 3</p><p>Vertice: x = 4/2 = 2</p><p>f(2) = 4 - 8 + 3 = -1</p><p>Vertice: (2, -1)</p>',
-                'unit' => 'Algebra',
+                'unit' => 'Álgebra',
                 'topic' => 'Funciones',
                 'difficulty' => 'intermediate',
                 'tags' => ['algebra', 'funciones', 'lineales', 'cuadraticas'],
@@ -211,9 +210,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Sistemas de Ecuaciones',
+                'grade' => '2do',
                 'description' => 'Metodos de resolucion: sustitucion, igualacion y reduccion.',
                 'content' => '<h2>Sistemas de Ecuaciones</h2><p>Un <strong>sistema de ecuaciones</strong> es un conjunto de dos o mas ecuaciones con las mismas incognitas.</p><h3>Metodo de Sustitucion</h3><ol><li>Despejar una variable de una ecuacion</li><li>Sustituir en la otra ecuacion</li><li>Resolver la ecuacion resultante</li></ol><h3>Metodo de Reduccion</h3><ol><li>Multiplicar ecuaciones para igualar coeficientes</li><li>Sumar o restar para eliminar una variable</li><li>Resolver la ecuacion resultante</li></ol><h3>Ejemplo</h3><p>x + y = 10</p><p>x - y = 4</p><p>Solucionando: 2x = 14, x = 7, y = 3</p>',
-                'unit' => 'Algebra',
+                'unit' => 'Álgebra',
                 'topic' => 'Sistemas',
                 'difficulty' => 'intermediate',
                 'tags' => ['algebra', 'sistemas', 'ecuaciones'],
@@ -222,9 +222,10 @@ class TestDataSeeder extends Seeder
             // Unidad 2: Geometria
             [
                 'title' => 'Triangulos y sus Propiedades',
+                'grade' => '1ro',
                 'description' => 'Clasificacion, angulos, perimetro y area de triangulos.',
                 'content' => '<h2>Triangulos</h2><p>Un <strong>triangulo</strong> es un poligono de tres lados y tres vertices.</p><h3>Clasificacion por lados</h3><ul><li><strong>Equilatero:</strong> los tres lados son iguales</li><li><strong>Isosceles:</strong> dos lados iguales</li><li><strong>Escaleno:</strong> los tres lados diferentes</li></ul><h3>Clasificacion por angulos</h3><ul><li><strong>Acutangulo:</strong> todos los angulos menores a 90°</li><li><strong>Rectangulo:</strong> tiene un angulo de 90°</li><li><strong>Obtusangulo:</strong> tiene un angulo mayor a 90°</li></ul><h3>Area</h3><p><code>A = (base × altura) / 2</code></p><h3>Teorema de Pitagoras</h3><p>En un triangulo rectangulo: <code>c² = a² + b²</code></p>',
-                'unit' => 'Geometria',
+                'unit' => 'Geometría',
                 'topic' => 'Triangulos',
                 'difficulty' => 'basic',
                 'tags' => ['geometria', 'triangulos', 'area'],
@@ -232,9 +233,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Circunferencia y Circulo',
+                'grade' => '2do',
                 'description' => 'Propiedades del circulo, perimetro y area.',
                 'content' => '<h2>Circunferencia y Circulo</h2><h3>Circunferencia</h3><p>Es el conjunto de puntos que estan a una distancia fija (radio) de un punto central.</p><p><strong>Longitud:</strong> <code>L = 2πr</code></p><h3>Circulo</h3><p>Es la region delimitada por la circunferencia.</p><p><strong>Area:</strong> <code>A = πr²</code></p><h3>Relaciones importantes</h3><ul><li><strong>Diametro:</strong> <code>d = 2r</code></li><li><strong>Arco:</strong> porcion de la circunferencia</li><li><strong>Chord:</strong> segmento que une dos puntos de la circunferencia</li></ul><h3>Ejemplo</h3><p>Radio = 5 cm</p><p>L = 2 × 3.1416 × 5 = 31.42 cm</p><p>A = 3.1416 × 25 = 78.54 cm²</p>',
-                'unit' => 'Geometria',
+                'unit' => 'Geometría',
                 'topic' => 'Circulos',
                 'difficulty' => 'basic',
                 'tags' => ['geometria', 'circulos', 'pi'],
@@ -242,9 +244,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Areas de Poligonos',
+                'grade' => '3ro',
                 'description' => 'Calculo de areas de rectangulos, trapecios, rombos y poligonos regulares.',
                 'content' => '<h2>Areas de Poligonos</h2><h3>Rectangulo</h3><p><code>A = base × altura</code></p><h3>Cuadrado</h3><p><code>A = lado²</code></p><h3>Trapecio</h3><p><code>A = (base mayor + base menor) × altura / 2</code></p><h3>Rombo</h3><p><code>A = (diagonal mayor × diagonal menor) / 2</code></p><h3>Poligono Regular</h3><p><code>A = (perimetro × apotema) / 2</code></p><h3>Ejemplo - Trapecio</h3><p>B1 = 10, B2 = 6, h = 4</p><p>A = (10 + 6) × 4 / 2 = 32 cm²</p>',
-                'unit' => 'Geometria',
+                'unit' => 'Geometría',
                 'topic' => 'Areas',
                 'difficulty' => 'intermediate',
                 'tags' => ['geometria', 'areas', 'poligonos'],
@@ -252,9 +255,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Volumenes de Solidos',
+                'grade' => '4to',
                 'description' => 'Calculo de volumenes de cubos, cilindros, conos y esferas.',
                 'content' => '<h2>Volumenes de Solidos</h2><h3>Cubo</h3><p><code>V = lado³</code></p><h3>Paralelepipedo</h3><p><code>V = largo × ancho × alto</code></p><h3>Cilindro</h3><p><code>V = πr²h</code></h3><h3>Cono</h3><p><code>V = πr²h / 3</code></p><h3>Esfera</h3><p><code>V = 4πr³ / 3</code></p><h3>Ejemplo - Cilindro</h3><p>r = 3 cm, h = 10 cm</p><p>V = 3.1416 × 9 × 10 = 282.74 cm³</p>',
-                'unit' => 'Geometria',
+                'unit' => 'Geometría',
                 'topic' => 'Volumenes',
                 'difficulty' => 'advanced',
                 'tags' => ['geometria', 'volumenes', 'solidos'],
@@ -263,9 +267,10 @@ class TestDataSeeder extends Seeder
             // Unidad 3: Numeros
             [
                 'title' => 'Fracciones y Operaciones',
+                'grade' => '1ro',
                 'description' => 'Operaciones con fracciones: suma, resta, multiplicacion y division.',
                 'content' => '<h2>Fracciones</h2><p>Una <strong>fraccion</strong> representa una parte de un todo.</p><h3>Partes</h3><ul><li><strong>Numerador:</strong> parte que se toma</li><li><strong>Denominador:</strong> total de partes iguales</li></ul><h3>Suma y Resta</h3><p>Mismo denominador: <code>a/c ± b/c = (a ± b)/c</code></p><p>Distinto denominador: buscar MCM</p><h3>Multiplicacion</h3><p><code>(a/b) × (c/d) = (a×c)/(b×d)</code></p><h3>Division</h3><p><code>(a/b) ÷ (c/d) = (a/b) × (d/c)</code></p><h3>Ejemplo</h3><p>1/2 + 1/3 = 3/6 + 2/6 = 5/6</p>',
-                'unit' => 'Numeros',
+                'unit' => 'Números',
                 'topic' => 'Fracciones',
                 'difficulty' => 'basic',
                 'tags' => ['numeros', 'fracciones', 'operaciones'],
@@ -273,9 +278,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Decimales y Porcentajes',
+                'grade' => '1ro',
                 'description' => 'Conversion entre decimales, fracciones y porcentajes.',
                 'content' => '<h2>Decimales y Porcentajes</h2><h3>Decimales</h3><p>Los numeros decimales tienen una parte entera y una parte decimal separadas por una coma o punto.</p><h3>Conversion Decimal a Fraccion</h3><p>Escribir los decimales como numerador y 10, 100, 1000... como denominador.</p><p>Ejemplo: 0.75 = 75/100 = 3/4</p><h3>Porcentajes</h3><p>Un <strong>porcentaje</strong> es una fraccion con denominador 100.</p><p><code>% = decimal × 100</code></p><h3>Calculo de descuentos</h3><p><code>Precio final = Precio × (1 - descuento/100)</code></p><h3>Ejemplo</h3><p>25% de 80 = 0.25 × 80 = 20</p>',
-                'unit' => 'Numeros',
+                'unit' => 'Números',
                 'topic' => 'Decimales',
                 'difficulty' => 'basic',
                 'tags' => ['numeros', 'decimales', 'porcentajes'],
@@ -283,9 +289,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Potencias y Raices',
+                'grade' => '3ro',
                 'description' => 'Propiedades de potencias, raices cuadradas y cubicas.',
                 'content' => '<h2>Potencias y Raices</h2><h3>Potencias</h3><p><code>a^n = a × a × ... × a</code> (n veces)</p><h3>Propiedades</h3><ul><li><code>a^m × a^n = a^(m+n)</code></li><li><code>a^m / a^n = a^(m-n)</code></li><li><code>(a^m)^n = a^(m×n)</code></li><li><code>a^0 = 1</code></li><li><code>a^(-n) = 1/a^n</code></li></ul><h3>Raices</h3><p>La raiz enesima de a es el numero que elevado a n da a.</p><p><code>√a = a^(1/2)</code></p><h3>Ejemplo</h3><p>2^3 × 2^4 = 2^7 = 128</p><p>√144 = 12</p>',
-                'unit' => 'Numeros',
+                'unit' => 'Números',
                 'topic' => 'Potencias',
                 'difficulty' => 'intermediate',
                 'tags' => ['numeros', 'potencias', 'raices'],
@@ -293,9 +300,10 @@ class TestDataSeeder extends Seeder
             ],
             [
                 'title' => 'Notacion Cientifica',
+                'grade' => '5to',
                 'description' => 'Expresar numeros grandes y pequenos en notacion cientifica.',
                 'content' => '<h2>Notacion Cientifica</h2><p>La <strong>notacion cientifica</strong> expresa numeros como el producto de un numero entre 1 y 10 por una potencia de 10.</p><h3>Formato</h3><p><code>a × 10^n</code></p><p>Donde 1 &le; |a| &lt; 10 y n es un entero.</p><h3>Para numeros grandes (n &gt; 0)</h3><p>3,500,000 = 3.5 × 10^6</p><h3>Para numeros pequenos (n &lt; 0)</h3><p>0.00042 = 4.2 × 10^(-4)</p><h3>Operaciones</h3><p>Multiplicar: multiplicar coeficientes y sumar exponentes</p><p>Dividir: dividir coeficientes y restar exponentes</p><h3>Ejemplo</h3><p>(2 × 10^3) × (3 × 10^4) = 6 × 10^7</p>',
-                'unit' => 'Numeros',
+                'unit' => 'Números',
                 'topic' => 'Notacion Cientifica',
                 'difficulty' => 'advanced',
                 'tags' => ['numeros', 'notacion', 'cientifica'],
@@ -310,6 +318,7 @@ class TestDataSeeder extends Seeder
                 'description' => $data['description'],
                 'content' => $data['content'],
                 'teacher_id' => $teacher->id,
+                'grade' => $data['grade'],
                 'unit' => $data['unit'],
                 'topic' => $data['topic'],
                 'difficulty' => $data['difficulty'],
@@ -332,21 +341,25 @@ class TestDataSeeder extends Seeder
     private function generateResources(string $unit): array
     {
         $resources = [
-            'Algebra' => [
+            'Álgebra' => [
                 ['type' => 'pdf', 'url' => '/resources/algebra-guia.pdf', 'title' => 'Guia de Algebra'],
                 ['type' => 'video', 'url' => 'https://www.youtube.com/watch?v=example1', 'title' => 'Video explicativo'],
             ],
-            'Geometria' => [
+            'Geometría' => [
                 ['type' => 'pdf', 'url' => '/resources/geometria-formulas.pdf', 'title' => 'Formulas Geometricas'],
                 ['type' => 'image', 'url' => '/resources/geometria-diagrama.png', 'title' => 'Diagramas geometricos'],
             ],
-            'Numeros' => [
+            'Números' => [
                 ['type' => 'pdf', 'url' => '/resources/numeros-ejercicios.pdf', 'title' => 'Ejercicios de Numeros'],
                 ['type' => 'link', 'url' => 'https://www.khanacademy.org/math', 'title' => 'Khan Academy'],
             ],
         ];
 
-        return $resources[$unit] ?? [];
+        $unitResources = $resources[$unit] ?? [];
+
+        return collect($unitResources)
+            ->map(fn (array $resource) => array_merge(['id' => Str::uuid()], $resource))
+            ->all();
     }
 
     /**
@@ -958,14 +971,6 @@ class TestDataSeeder extends Seeder
     {
         $count = 0;
         foreach ($this->students as $student) {
-            $completedLessons = LessonProgress::where('user_id', $student->id)
-                ->where('status', LessonProgress::STATUS_COMPLETED)
-                ->count();
-
-            $avgScore = EvaluationResult::where('user_id', $student->id)
-                ->where('status', EvaluationResult::STATUS_COMPLETED)
-                ->avg('score');
-
             $activityDates = LessonProgress::where('user_id', $student->id)
                 ->whereNotNull('completed_at')
                 ->pluck('completed_at')
@@ -979,14 +984,14 @@ class TestDataSeeder extends Seeder
             $streak = 0;
             if ($activityDates->isNotEmpty()) {
                 $days = $activityDates
-                    ->map(fn ($d) => \Carbon\Carbon::parse($d)->toDateString())
+                    ->map(fn ($d) => Carbon::parse($d)->toDateString())
                     ->unique()
                     ->sortDesc()
                     ->values();
                 $streak = 1;
-                $previous = \Carbon\Carbon::parse($days[0]);
+                $previous = Carbon::parse($days[0]);
                 for ($i = 1; $i < $days->count(); $i++) {
-                    $current = \Carbon\Carbon::parse($days[$i]);
+                    $current = Carbon::parse($days[$i]);
                     if ($previous->copy()->subDay()->eq($current)) {
                         $streak++;
                         $previous = $current;
@@ -997,8 +1002,6 @@ class TestDataSeeder extends Seeder
             }
 
             StudentProfile::where('user_id', $student->id)->update([
-                'total_lessons_completed' => $completedLessons,
-                'average_score' => round((float) $avgScore, 1),
                 'current_streak' => $streak,
             ]);
             $count++;
@@ -1012,18 +1015,20 @@ class TestDataSeeder extends Seeder
      */
     private function createAcademicPeriods(): void
     {
-        AcademicPeriod::create([
-            'id' => Str::uuid(),
+        AcademicPeriod::firstOrCreate([
             'name' => 'Periodo 2026-I',
+        ], [
+            'id' => Str::uuid(),
             'start_date' => '2026-01-15 00:00:00',
             'end_date' => '2026-06-30 23:59:59',
             'is_active' => true,
             'description' => 'Primer semestre del ano academico 2026',
         ]);
 
-        AcademicPeriod::create([
-            'id' => Str::uuid(),
+        AcademicPeriod::firstOrCreate([
             'name' => 'Periodo 2025-II',
+        ], [
+            'id' => Str::uuid(),
             'start_date' => '2025-08-01 00:00:00',
             'end_date' => '2025-12-20 23:59:59',
             'is_active' => false,
@@ -1081,7 +1086,7 @@ class TestDataSeeder extends Seeder
      */
     private function createInstitutionConfig(): void
     {
-        InstitutionConfig::create([
+        InstitutionConfig::firstOrCreate([], [
             'id' => Str::uuid(),
             'institution_name' => 'Instituto Aulamate',
             'primary_color' => '#004AC6',

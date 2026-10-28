@@ -24,20 +24,16 @@ class LessonController extends Controller
     public function index(Request $request)
     {
         $query = Lesson::query()->with(['teacher']);
-
         // Filtros
         if ($request->has('difficulty') && $request->difficulty) {
             $query->where('difficulty', $request->difficulty);
         }
-
         if ($request->has('unit') && $request->unit) {
             $query->where('unit', 'LIKE', '%' . $request->unit . '%');
         }
-
         if ($request->has('topic') && $request->topic) {
             $query->where('topic', 'LIKE', '%' . $request->topic . '%');
         }
-
         if ($request->has('search') && $request->search) {
             $query->where(function($q) use ($request) {
                 $q->where('title', 'LIKE', '%' . $request->search . '%')
@@ -45,11 +41,9 @@ class LessonController extends Controller
                   ->orWhere('content', 'LIKE', '%' . $request->search . '%');
             });
         }
-
         if ($request->has('tag') && $request->tag) {
             $query->whereJsonContains('tags', $request->tag);
         }
-
         // Si es estudiante, solo mostrar lecciones publicadas
         if (Auth::user()->isStudent()) {
             $query->where('is_published', true);
@@ -59,40 +53,29 @@ class LessonController extends Controller
             $grade = $this->studentGrade(Auth::user());
             $query->where('grade', $grade ?? '__sin_grado__');
         }
-
         // Si es docente, mostrar sus lecciones
         if (Auth::user()->isTeacher()) {
             $query->where('teacher_id', Auth::id());
         }
-
         $lessons = $query->orderBy('order', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(min((int) ($request->per_page ?? 15), 50));
-
         // Agregar información de progreso para estudiantes (una sola query agrupada, evita N+1)
         if (Auth::user()->isStudent()) {
             $myProgress = LessonProgress::where('user_id', Auth::id())
                 ->whereIn('lesson_id', $lessons->pluck('id'))
                 ->get()
                 ->keyBy('lesson_id');
-
             $lessons->getCollection()->transform(function ($lesson) use ($myProgress) {
                 $lesson->user_progress = $myProgress->get($lesson->id);
                 return $lesson;
             });
         }
-
         return response()->json([
             'success' => true,
             'data' => $lessons
         ]);
     }
-
-    /**
-     * Grado escolar canónico del estudiante (1ro..5to). Prioriza el grado de
-     * su salón; si no tiene salón, normaliza el campo grade del usuario
-     * (acepta variantes como "2ro", "1ro Secundaria"). Null si es indefinido.
-     */
     private function studentGrade($user): ?string
     {
         $raw = $user->salon?->grade ?: $user->grade;
@@ -100,14 +83,12 @@ class LessonController extends Controller
         if (!is_string($raw) || trim($raw) === '') {
             return null;
         }
-
         if (preg_match('/^([1-5])/', trim($raw), $m)) {
             return ['1' => '1ro', '2' => '2do', '3' => '3ro', '4' => '4to', '5' => '5to'][$m[1]];
         }
 
         return null;
     }
-
     /**
      * Mostrar una lección específica con su contenido completo
      */
@@ -244,21 +225,18 @@ class LessonController extends Controller
         ]);
 
         // Notificar a estudiantes sobre nueva lección
-        $studentRole = Role::where('name', Role::STUDENT)->first();
-        if ($studentRole) {
-            $studentIds = User::where('role_id', $studentRole->id)
-                ->where('is_active', true)
-                ->pluck('id')
-                ->toArray();
-            if (!empty($studentIds)) {
-                NotificationController::createBulkNotifications(
-                    $studentIds,
-                    __('notification_lesson_available_title'),
-                    __('notification_lesson_created_body', ['title' => $lesson->title]),
-                    'info',
-                    "/lessons/{$lesson->id}"
-                );
-            }
+        $studentIds = User::where('role', Role::STUDENT)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->toArray();
+        if (!empty($studentIds)) {
+            NotificationController::createBulkNotifications(
+                $studentIds,
+                __('notification_lesson_available_title'),
+                __('notification_lesson_created_body', ['title' => $lesson->title]),
+                'info',
+                "/lessons/{$lesson->id}"
+            );
         }
 
         return response()->json([
@@ -437,21 +415,18 @@ class LessonController extends Controller
         ]);
 
         // Notificar a estudiantes sobre lección publicada
-        $studentRole = Role::where('name', Role::STUDENT)->first();
-        if ($studentRole) {
-            $studentIds = User::where('role_id', $studentRole->id)
-                ->where('is_active', true)
-                ->pluck('id')
-                ->toArray();
-            if (!empty($studentIds)) {
-                NotificationController::createBulkNotifications(
-                    $studentIds,
-                    __('notification_lesson_published_title'),
-                    __('notification_lesson_published_body', ['title' => $lesson->title]),
-                    'info',
-                    "/lessons/{$lesson->id}"
-                );
-            }
+        $studentIds = User::where('role', Role::STUDENT)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->toArray();
+        if (!empty($studentIds)) {
+            NotificationController::createBulkNotifications(
+                $studentIds,
+                __('notification_lesson_published_title'),
+                __('notification_lesson_published_body', ['title' => $lesson->title]),
+                'info',
+                "/lessons/{$lesson->id}"
+            );
         }
 
         return response()->json([

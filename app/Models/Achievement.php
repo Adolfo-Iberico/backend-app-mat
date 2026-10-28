@@ -5,17 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/** Logro configurable con traducciones, criterios y recompensa de experiencia. */
+/**
+ * Logro configurable con traducciones, criterios y recompensa de experiencia.
+ *
+ * Desde Fase 3 las traducciones viven en dos columnas JSON (name, description)
+ * con los idiomas como claves: {"es": "...", "en": "...", "qu": "..."}.
+ * Los accessores name_es/name_en/... mantienen la compatibilidad con el
+ * código existente (GamificationService, ExamController, ProgressController).
+ */
 class Achievement extends Model
 {
+    public const LOCALES = ['es', 'en', 'qu'];
+
     protected $fillable = [
         'slug',
-        'name_es',
-        'name_en',
-        'name_qu',
-        'description_es',
-        'description_en',
-        'description_qu',
+        'name',
+        'description',
         'icon',
         'xp_reward',
         'category',
@@ -23,6 +28,8 @@ class Achievement extends Model
     ];
 
     protected $casts = [
+        'name' => 'array',
+        'description' => 'array',
         'criteria' => 'array',
         'xp_reward' => 'integer',
     ];
@@ -38,12 +45,44 @@ class Achievement extends Model
     /** Devuelve el nombre traducido, usando español si falta la traducción solicitada. */
     public function name(string $locale = 'es'): string
     {
-        return $this->{"name_{$locale}"} ?? $this->name_es;
+        return $this->name[$locale] ?? $this->name['es'] ?? '';
     }
 
     /** Devuelve la descripción traducida, usando español como respaldo. */
     public function description(string $locale = 'es'): string
     {
-        return $this->{"description_{$locale}"} ?? $this->description_es;
+        return $this->description[$locale] ?? $this->description['es'] ?? '';
+    }
+
+    // ========== ACCESORES DE COMPATIBILIDAD (columnas planas legacy) ==========
+
+    public function getNameEsAttribute(): string
+    {
+        return $this->name('es');
+    }
+
+    public function getNameEnAttribute(): string
+    {
+        return $this->name('en');
+    }
+
+    public function getNameQuAttribute(): ?string
+    {
+        return $this->name['qu'] ?? null;
+    }
+
+    public function getDescriptionEsAttribute(): string
+    {
+        return $this->description('es');
+    }
+
+    public function getDescriptionEnAttribute(): string
+    {
+        return $this->description('en');
+    }
+
+    public function getDescriptionQuAttribute(): ?string
+    {
+        return $this->description['qu'] ?? null;
     }
 }

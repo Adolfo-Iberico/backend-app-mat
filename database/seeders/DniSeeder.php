@@ -16,8 +16,7 @@ class DniSeeder extends Seeder
     public function run(): void
     {
         $students = DB::table('users')
-            ->join('roles', 'roles.id', '=', 'users.role_id')
-            ->where('roles.name', 'student')
+            ->where('role', 'student')
             ->select('users.id')
             ->get();
 

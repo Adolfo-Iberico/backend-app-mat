@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Exam;
+use App\Models\Question;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use App\Models\User;
-use App\Models\Exam;
-use App\Models\ExamQuestion;
 
 /**
  * Carga exámenes de demostración y sus preguntas de opción múltiple.
@@ -20,7 +20,7 @@ class ExamSeeder extends Seeder
     {
         $teacher = User::where('email', 'profesor.math@mathflow.com')->first();
 
-        if (!$teacher) {
+        if (! $teacher) {
             return;
         }
 
@@ -101,13 +101,21 @@ class ExamSeeder extends Seeder
             ]));
 
             foreach ($questions as $q) {
-                ExamQuestion::create([
+                // Convención canónica: correct_answer es el TEXTO de la opción
+                // (el índice solo se acepta como entrada del seeder legado).
+                $options = $q['options'];
+                $correct = $q['correct_answer'];
+                if (ctype_digit($correct) && isset($options[(int) $correct])) {
+                    $correct = (string) $options[(int) $correct];
+                }
+
+                Question::create([
                     'id' => Str::uuid(),
-                    'exam_id' => $exam->id,
+                    'evaluation_id' => $exam->id,
                     'type' => 'multiple_choice',
                     'question_text' => $q['question_text'],
-                    'options' => $q['options'],
-                    'correct_answer' => $q['correct_answer'],
+                    'options' => $options,
+                    'correct_answer' => $correct,
                     'explanation' => $q['explanation'],
                     'points' => $q['points'],
                     'order' => $q['order'],

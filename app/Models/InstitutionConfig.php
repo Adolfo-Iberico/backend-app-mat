@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Facades\Cache;
 
 /** Configuración institucional almacenada para su uso en la aplicación. */
 class InstitutionConfig extends Model
@@ -33,4 +34,19 @@ class InstitutionConfig extends Model
         'last_backup' => 'datetime',
         'allow_tab_switches' => 'boolean'
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('institution_config.canonical_name'));
+        static::deleted(fn () => Cache::forget('institution_config.canonical_name'));
+    }
+
+    public static function canonicalName(): ?string
+    {
+        return Cache::remember(
+            'institution_config.canonical_name',
+            now()->addMinutes(5),
+            fn () => static::query()->value('institution_name')
+        );
+    }
 }

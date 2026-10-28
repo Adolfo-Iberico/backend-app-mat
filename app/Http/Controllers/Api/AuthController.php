@@ -36,9 +36,7 @@ class AuthController extends Controller
         }
 
         $roleName = $validated['role'] ?? Role::STUDENT;
-        $role = Role::where('name', $roleName)->first();
-
-        if (!$role) {
+        if (!in_array($roleName, [Role::STUDENT, Role::TEACHER], true)) {
             return response()->json([
                 'message' => __('invalid_role')
             ], 422);
@@ -49,8 +47,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'full_name' => $validated['full_name'],
-            'role_id' => $role->id,
-            'institution' => $validated['institution'] ?? null,
+            'role' => $roleName,
             'grade' => $validated['grade'] ?? null,
             'is_active' => true,
             'provider' => 'email'
@@ -76,7 +73,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => __('register_success'),
-            'user' => $user->load('role'),
+            'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer'
         ], 201);
@@ -116,7 +113,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => __('login_success'),
-            'user' => $user->load('role'),
+            'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer'
         ]);
@@ -128,7 +125,7 @@ class AuthController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        $user->load(['role', 'studentProfile', 'teacherProfile']);
+        $user->load(['studentProfile', 'teacherProfile']);
         
         return response()->json([
             'user' => $user
@@ -144,7 +141,6 @@ class AuthController extends Controller
         
         $validated = $request->validate([
             'full_name' => 'sometimes|string|max:255',
-            'institution' => 'nullable|string|max:255',
             'grade' => 'nullable|string|max:50',
             'profile_image' => 'nullable|string|url'
         ]);

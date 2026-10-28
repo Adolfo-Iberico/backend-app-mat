@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Hilo del foro vinculado a una lección y a un docente. */
 class ForumThread extends Model
@@ -12,11 +12,13 @@ class ForumThread extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
         'id',
         'teacher_id',
+        'author_id',
         'lesson_id',
         'title',
         'body',
@@ -24,12 +26,19 @@ class ForumThread extends Model
     ];
 
     const STATUS_OPEN = 'open';
+
     const STATUS_CLOSED = 'closed';
 
     /** Docente responsable del hilo. */
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    /** Usuario que abrió el hilo (docente o estudiante). */
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     /** Lección relacionada con el hilo. */

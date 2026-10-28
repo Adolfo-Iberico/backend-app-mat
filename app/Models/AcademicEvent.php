@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
-/** Evento académico asociado a un usuario y, opcionalmente, a un curso. */
+/** Evento académico personal o institucional. */
 class AcademicEvent extends Model
 {
     protected $fillable = [
         'user_id',
-        'course_id',
         'title',
         'description',
         'start_date',
