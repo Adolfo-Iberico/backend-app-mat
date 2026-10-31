@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Evaluation;
 use App\Models\EvaluationResult;
 use App\Models\Exam;
 use App\Models\Lesson;
 use App\Models\Role;
 use App\Models\Salon;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Panel institucional para directores y coordinadores: métricas globales,
@@ -23,8 +22,8 @@ class InstitutionController extends Controller
     {
 
         $totalSalones = Salon::count();
-        $totalTeachers = User::where('role', Role::TEACHER)->where('is_active', true)->count();
-        $totalStudents = User::where('role', Role::STUDENT)->where('is_active', true)->count();
+        $totalTeachers = User::forRole(Role::TEACHER)->where('is_active', true)->count();
+        $totalStudents = User::forRole(Role::STUDENT)->where('is_active', true)->count();
 
         $averageScore = (float) EvaluationResult::where('status', 'completed')->avg('score');
 
@@ -58,7 +57,7 @@ class InstitutionController extends Controller
     /** Lista el personal docente con métricas de su actividad académica. */
     public function teachers()
     {
-        $teachers = User::where('role', Role::TEACHER)
+        $teachers = User::forRole(Role::TEACHER)
             ->where('is_active', true)
             ->select('id', 'full_name', 'email', 'last_login')
             ->orderBy('full_name')
@@ -68,7 +67,7 @@ class InstitutionController extends Controller
             ->groupBy('teacher_id')
             ->pluck('total', 'teacher_id');
 
-        $evaluationCounts = \App\Models\Evaluation::selectRaw('teacher_id, COUNT(*) as total')
+        $evaluationCounts = Evaluation::selectRaw('teacher_id, COUNT(*) as total')
             ->groupBy('teacher_id')
             ->pluck('total', 'teacher_id');
 
@@ -104,7 +103,7 @@ class InstitutionController extends Controller
                 'id' => $salon->id,
                 'grade' => $salon->grade,
                 'section' => $salon->section,
-                'display_name' => $salon->display_name ?? ($salon->grade . ' - ' . $salon->section),
+                'display_name' => $salon->display_name ?? ($salon->grade.' - '.$salon->section),
                 'total_students' => $salon->students_count,
             ];
         });

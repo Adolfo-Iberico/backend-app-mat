@@ -2,19 +2,21 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\Notification;
-use Laravel\Sanctum\Sanctum;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class NotificationApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $student;
+
     private User $otherStudent;
 
     protected function setUp(): void

@@ -1,7 +1,19 @@
 <?php
+
+use App\Http\Middleware\ApiRateLimit;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\CacheResponse;
+use App\Http\Middleware\Cors;
+use App\Http\Middleware\GlobalRateLimit;
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetRequestLocale;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,25 +24,25 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'cors' => \App\Http\Middleware\Cors::class,
-            'auth.active' => \App\Http\Middleware\Authenticate::class,
-            'rate.limit' => \App\Http\Middleware\ApiRateLimit::class,
-            'cache.api' => \App\Http\Middleware\CacheResponse::class,
+            'role' => RoleMiddleware::class,
+            'cors' => Cors::class,
+            'auth.active' => Authenticate::class,
+            'rate.limit' => ApiRateLimit::class,
+            'cache.api' => CacheResponse::class,
         ]);
         $middleware->prepend([
-            \App\Http\Middleware\Cors::class,
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\GlobalRateLimit::class,
-            \App\Http\Middleware\SetRequestLocale::class,
+            Cors::class,
+            SecurityHeaders::class,
+            GlobalRateLimit::class,
+            SetRequestLocale::class,
         ]);
         $middleware->redirectGuestsTo(fn ($request) => $request->expectsJson() ? null : '/');
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->renderable(function (\Throwable $e, \Illuminate\Http\Request $request) {
+        $exceptions->renderable(function (Throwable $e, Request $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
-                if ($e instanceof \Illuminate\Auth\AuthenticationException ||
-                    $e instanceof \Illuminate\Validation\ValidationException) {
+                if ($e instanceof AuthenticationException ||
+                    $e instanceof ValidationException) {
                     return null;
                 }
 

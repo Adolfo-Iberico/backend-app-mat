@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class ActivityService
 {
     /** Crea una entrada de auditoría con tipo, sujeto y metadatos opcionales. */
-    public static function log(string $activityType, $subject = null, array $metadata = null): ActivityLog
+    public static function log(string $activityType, $subject = null, ?array $metadata = null): ActivityLog
     {
         $user = Auth::user();
 

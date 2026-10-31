@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Exam;
-use App\Models\Question;
 use App\Models\EvaluationResult;
+use App\Models\Exam;
 use App\Models\Notification;
+use App\Models\Question;
 use App\Models\Role;
+use App\Services\GamificationService;
 use App\Support\EvaluationAnswerFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Gestiona exámenes (evaluaciones type='exam' con supervisión anti-cheat)
@@ -31,7 +32,7 @@ class ExamController extends Controller
 
         if (Auth::user()->isTeacher()) {
             // Coordinador y director ven todos; el docente solo los suyos.
-            if (!Auth::user()->isCoordinator() && !Auth::user()->isDirector()) {
+            if (! Auth::user()->isCoordinator() && ! Auth::user()->isDirector()) {
                 $query->where('teacher_id', Auth::id());
             }
         } elseif (Auth::user()->isStudent()) {
@@ -54,7 +55,7 @@ class ExamController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = '%' . $request->search . '%';
+            $search = '%'.$request->search.'%';
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'LIKE', $search)
                     ->orWhere('description', 'LIKE', $search);
@@ -73,13 +74,14 @@ class ExamController extends Controller
 
             $exams->getCollection()->transform(function ($exam) use ($attempts) {
                 $exam->user_attempt = $attempts->get($exam->id);
+
                 return $exam;
             });
         }
 
         return response()->json([
             'success' => true,
-            'data' => $exams
+            'data' => $exams,
         ]);
     }
 
@@ -148,15 +150,16 @@ class ExamController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Examen creado como borrador',
-                'data' => $exam->load(['teacher', 'questions'])
+                'data' => $exam->load(['teacher', 'questions']),
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el examen'
+                'message' => 'Error al crear el examen',
             ], 500);
         }
     }
@@ -166,13 +169,13 @@ class ExamController extends Controller
     {
         $exam = Exam::with(['teacher', 'questions'])->findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             // Estudiantes: gate de visibilidad. Resto de no gestores (p. ej. padres):
             // pueden ver el examen pero nunca las respuestas correctas.
-            if (Auth::user()->isStudent() && !$exam->is_published) {
+            if (Auth::user()->isStudent() && ! $exam->is_published) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Examen no disponible'
+                    'message' => 'Examen no disponible',
                 ], 403);
             }
 
@@ -189,7 +192,7 @@ class ExamController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $exam
+            'data' => $exam,
         ]);
     }
 
@@ -198,10 +201,10 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para editar este examen'
+                'message' => 'No tiene permiso para editar este examen',
             ], 403);
         }
 
@@ -235,7 +238,7 @@ class ExamController extends Controller
             }
 
             $examFields = collect($validated)->except('questions')->filter()->toArray();
-            if (!empty($examFields)) {
+            if (! empty($examFields)) {
                 $exam->update($examFields);
             }
 
@@ -271,15 +274,16 @@ class ExamController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Examen actualizado',
-                'data' => $exam->load(['teacher', 'questions'])
+                'data' => $exam->load(['teacher', 'questions']),
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el examen'
+                'message' => 'Error al actualizar el examen',
             ], 500);
         }
     }
@@ -289,17 +293,17 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para eliminar este examen'
+                'message' => 'No tiene permiso para eliminar este examen',
             ], 403);
         }
 
         if ($exam->attempts()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se puede eliminar un examen que ya tiene intentos registrados'
+                'message' => 'No se puede eliminar un examen que ya tiene intentos registrados',
             ], 400);
         }
 
@@ -307,7 +311,7 @@ class ExamController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Examen eliminado'
+            'message' => 'Examen eliminado',
         ]);
     }
 
@@ -316,17 +320,17 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para activar este examen'
+                'message' => 'No tiene permiso para activar este examen',
             ], 403);
         }
 
         if ($exam->questions()->count() === 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'El examen debe tener al menos una pregunta para activarlo'
+                'message' => 'El examen debe tener al menos una pregunta para activarlo',
             ], 400);
         }
 
@@ -338,7 +342,7 @@ class ExamController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Examen activado y publicado',
-            'data' => $exam
+            'data' => $exam,
         ]);
     }
 
@@ -347,10 +351,10 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para desactivar este examen'
+                'message' => 'No tiene permiso para desactivar este examen',
             ], 403);
         }
 
@@ -361,7 +365,7 @@ class ExamController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Examen desactivado',
-            'data' => $exam
+            'data' => $exam,
         ]);
     }
 
@@ -370,10 +374,10 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$exam->is_published) {
+        if (! $exam->is_published) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este examen no está disponible'
+                'message' => 'Este examen no está disponible',
             ], 403);
         }
 
@@ -423,6 +427,7 @@ class ExamController extends Controller
 
         $questions = $exam->questions()->orderBy('order')->get()->map(function ($q) {
             $q->makeHidden(['correct_answer', 'correct_answer_display']);
+
             return $q;
         });
 
@@ -431,10 +436,10 @@ class ExamController extends Controller
         }
 
         // Caso A: se alcanzó el máximo de intentos
-        if (!$attempt) {
+        if (! $attempt) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ha alcanzado el número máximo de intentos para este examen'
+                'message' => 'Ha alcanzado el número máximo de intentos para este examen',
             ], 403);
         }
 
@@ -446,7 +451,7 @@ class ExamController extends Controller
                 'data' => [
                     'attempt' => $attempt,
                     'questions' => $questions,
-                ]
+                ],
             ]);
         }
 
@@ -456,7 +461,7 @@ class ExamController extends Controller
             'data' => [
                 'attempt' => $attempt,
                 'questions' => $questions,
-            ]
+            ],
         ], 201);
     }
 
@@ -468,14 +473,14 @@ class ExamController extends Controller
         if ((string) $attempt->user_id !== (string) Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para enviar este intento'
+                'message' => 'No tiene permiso para enviar este intento',
             ], 403);
         }
 
         if ($attempt->status !== EvaluationResult::STATUS_PENDING) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este intento ya fue enviado o no está en curso'
+                'message' => 'Este intento ya fue enviado o no está en curso',
             ], 400);
         }
 
@@ -498,7 +503,7 @@ class ExamController extends Controller
 
             foreach ($validated['answers'] as $answerData) {
                 $question = $questions->get($answerData['question_id']);
-                if (!$question) {
+                if (! $question) {
                     continue;
                 }
 
@@ -548,10 +553,10 @@ class ExamController extends Controller
             try {
                 $user = auth()->user();
                 if ($user?->isStudent()) {
-                    $gamificationService = app(\App\Services\GamificationService::class);
-                    $xp = \App\Services\GamificationService::XP_EVALUATION_COMPLETED;
+                    $gamificationService = app(GamificationService::class);
+                    $xp = GamificationService::XP_EVALUATION_COMPLETED;
                     if ($score >= 19.9) {
-                        $xp += \App\Services\GamificationService::XP_PERFECT_SCORE;
+                        $xp += GamificationService::XP_PERFECT_SCORE;
                     }
                     $gamification = $gamificationService->awardXp($user, $xp, 'exam_completed');
                     $gamification['new_achievements'] = array_map(
@@ -581,9 +586,10 @@ class ExamController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar el examen'
+                'message' => 'Error al enviar el examen',
             ], 500);
         }
     }
@@ -626,7 +632,7 @@ class ExamController extends Controller
                 'id' => Str::uuid(),
                 'user_id' => $attempt->evaluation->teacher_id,
                 'title' => 'Actividad sospechosa detectada',
-                'message' => "El estudiante #" . substr($attempt->user_id, 0, 8) . " ha sido marcado por actividad sospechosa en el examen \"{$attempt->evaluation->title}\" ({$newTabCount} cambios de pestaña).",
+                'message' => 'El estudiante #'.substr($attempt->user_id, 0, 8)." ha sido marcado por actividad sospechosa en el examen \"{$attempt->evaluation->title}\" ({$newTabCount} cambios de pestaña).",
                 'type' => Notification::TYPE_WARNING,
                 'is_read' => false,
                 'link' => "/exams/{$attempt->evaluation_id}/attempts/{$attempt->id}",
@@ -641,7 +647,7 @@ class ExamController extends Controller
             'data' => [
                 'tab_switch_count' => $newTabCount,
                 'status' => $attempt->fresh()->status,
-            ]
+            ],
         ]);
     }
 
@@ -650,10 +656,10 @@ class ExamController extends Controller
     {
         $exam = Exam::findOrFail($id);
 
-        if (!$this->canManage($exam)) {
+        if (! $this->canManage($exam)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para ver las estadísticas de este examen'
+                'message' => 'No tiene permiso para ver las estadísticas de este examen',
             ], 403);
         }
 
@@ -673,14 +679,20 @@ class ExamController extends Controller
         ];
 
         foreach ($scores as $score) {
-            if ($score < 7) $distribution['0-6']++;
-            elseif ($score < 12) $distribution['7-11']++;
-            elseif ($score < 15) $distribution['12-14']++;
-            elseif ($score < 18) $distribution['15-17']++;
-            else $distribution['18-20']++;
+            if ($score < 7) {
+                $distribution['0-6']++;
+            } elseif ($score < 12) {
+                $distribution['7-11']++;
+            } elseif ($score < 15) {
+                $distribution['12-14']++;
+            } elseif ($score < 18) {
+                $distribution['15-17']++;
+            } else {
+                $distribution['18-20']++;
+            }
         }
 
-        $passingCount = $scores->filter(fn($s) => $s >= 12)->count();
+        $passingCount = $scores->filter(fn ($s) => $s >= 12)->count();
 
         $stats = [
             'total_attempts' => $attempts->count(),
@@ -700,7 +712,7 @@ class ExamController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 
@@ -743,7 +755,7 @@ class ExamController extends Controller
     {
         $user = Auth::user();
 
-        if (in_array($user->role?->name, [Role::COORDINATOR, Role::DIRECTOR])) {
+        if (in_array($user->roleName(), [Role::COORDINATOR, Role::DIRECTOR], true)) {
             return true;
         }
 

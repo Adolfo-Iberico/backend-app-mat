@@ -32,18 +32,30 @@ class PushSubscriptionController extends Controller
             'user_agent' => 'nullable|string|max:500',
         ]);
 
-        $subscription = PushSubscription::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'endpoint' => $validated['endpoint'],
-            ],
-            [
-                'p256dh' => $validated['p256dh'],
-                'auth' => $validated['auth'],
-                'user_agent' => $validated['user_agent'] ?? null,
-                'is_active' => true,
-            ]
-        );
+        $subscription = PushSubscription::where('token', $validated['endpoint'])->first();
+
+        if ($subscription && (
+            $subscription->platform !== 'web'
+            || $subscription->user_id !== Auth::id()
+        )) {
+            return response()->json([
+                'message' => 'This push endpoint is already registered to another account or device type.',
+            ], 409);
+        }
+
+        $subscription ??= new PushSubscription;
+        $subscription->fill([
+            'user_id' => Auth::id(),
+            'token' => $validated['endpoint'],
+            'platform' => 'web',
+            'p256dh' => $validated['p256dh'],
+            'auth' => $validated['auth'],
+            'device_name' => isset($validated['user_agent'])
+                ? mb_substr($validated['user_agent'], 0, 255)
+                : null,
+            'is_active' => true,
+        ]);
+        $subscription->save();
 
         return response()->json([
             'message' => __('push_subscribed'),
@@ -61,7 +73,8 @@ class PushSubscriptionController extends Controller
         ]);
 
         PushSubscription::where('user_id', Auth::id())
-            ->where('endpoint', $validated['endpoint'])
+            ->where('platform', 'web')
+            ->where('token', $validated['endpoint'])
             ->delete();
 
         return response()->json(['message' => __('push_unsubscribed')]);

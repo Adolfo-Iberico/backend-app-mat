@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Lesson;
+use App\Models\User;
 
 /** Autoriza acciones sobre lecciones según rol, propiedad y publicación. */
 class LessonPolicy

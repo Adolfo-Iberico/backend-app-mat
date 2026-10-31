@@ -2,23 +2,27 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\Evaluation;
+use App\Models\EvaluationResult;
 use App\Models\Lesson;
 use App\Models\Question;
-use App\Models\EvaluationResult;
-use Illuminate\Support\Facades\Http;
-use Laravel\Sanctum\Sanctum;
+use App\Models\Salon;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class EvaluationApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $teacher;
+
     private User $student;
 
     protected function setUp(): void
@@ -29,7 +33,7 @@ class EvaluationApiTest extends TestCase
         $studentRole = 'student';
 
         $this->teacher = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Teacher Test',
             'email' => 'teacher-eval@test.com',
             'password' => 'password123',
@@ -39,15 +43,20 @@ class EvaluationApiTest extends TestCase
         ]);
 
         $this->student = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Student Test',
             'email' => 'student-eval@test.com',
             'password' => 'password123',
             'role' => $studentRole,
             'is_active' => true,
             'provider' => 'email',
-            'grade' => '1ro',
         ]);
+
+        $salon = Salon::create([
+            'grade' => '1ro',
+            'section' => 'A',
+        ]);
+        $this->student->update(['salon_id' => $salon->id]);
     }
 
     /**
@@ -57,7 +66,7 @@ class EvaluationApiTest extends TestCase
     private function gradedLessonId(): string
     {
         $lesson = Lesson::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Lección de prueba',
             'content' => 'Contenido de la lección',
             'teacher_id' => $this->teacher->id,
@@ -72,7 +81,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Midterm Exam',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_EXAM,
@@ -98,7 +107,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->student, ['web']);
 
         Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Published Quiz',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -107,7 +116,7 @@ class EvaluationApiTest extends TestCase
         ]);
 
         Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Draft Quiz',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -164,7 +173,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Old Title',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_EXAM,
@@ -187,7 +196,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Quiz With Questions',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -226,7 +235,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Ready To Publish',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_EXAM,
@@ -235,7 +244,7 @@ class EvaluationApiTest extends TestCase
         ]);
 
         Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_FILL_BLANK,
             'question_text' => 'Solve: x + 3 = 7',
@@ -260,7 +269,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Empty Evaluation',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -279,7 +288,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Submittable Quiz',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -291,7 +300,7 @@ class EvaluationApiTest extends TestCase
         ]);
 
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_MULTIPLE_CHOICE,
             'question_text' => 'What is 3 x 3?',
@@ -331,7 +340,7 @@ class EvaluationApiTest extends TestCase
     public function test_numeric_answer_key_is_resolved_to_its_option_and_duration_uses_server_times(): void
     {
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Legacy answer key',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -342,7 +351,7 @@ class EvaluationApiTest extends TestCase
             'lesson_id' => $this->gradedLessonId(),
         ]);
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_MULTIPLE_CHOICE,
             'question_text' => '¿Qué significa que sean congruentes?',
@@ -386,7 +395,7 @@ class EvaluationApiTest extends TestCase
     public function test_json_encoded_legacy_options_are_displayed_and_graded(): void
     {
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Legacy options',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -396,7 +405,7 @@ class EvaluationApiTest extends TestCase
             'lesson_id' => $this->gradedLessonId(),
         ]);
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_MULTIPLE_CHOICE,
             'question_text' => 'Elige la alternativa correcta',
@@ -423,7 +432,7 @@ class EvaluationApiTest extends TestCase
     public function test_numeric_answer_matching_the_raw_key_is_graded_correctly(): void
     {
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Clave numerica cruda',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -433,7 +442,7 @@ class EvaluationApiTest extends TestCase
             'lesson_id' => $this->gradedLessonId(),
         ]);
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_MULTIPLE_CHOICE,
             'question_text' => 'Cual opcion es correcta?',
@@ -481,7 +490,7 @@ class EvaluationApiTest extends TestCase
         ]);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Partial credit',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_QUIZ,
@@ -491,7 +500,7 @@ class EvaluationApiTest extends TestCase
             'lesson_id' => $this->gradedLessonId(),
         ]);
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_FILL_BLANK,
             'question_text' => 'Explica qué significa congruencia.',
@@ -534,8 +543,7 @@ class EvaluationApiTest extends TestCase
         $response->assertOk()
             ->assertHeader('content-type', 'text/event-stream; charset=UTF-8');
         $this->assertStringContainsString('fracción representa partes iguales', $response->streamedContent());
-        Http::assertSent(fn ($request) =>
-            $request->url() === config('services.groq.url')
+        Http::assertSent(fn ($request) => $request->url() === config('services.groq.url')
             && $request['messages'][1]['content'] === 'Ayúdame con matemáticas'
             && $request['messages'][3]['content'] === '¿Qué es una fracción?'
         );
@@ -574,7 +582,7 @@ class EvaluationApiTest extends TestCase
         Sanctum::actingAs($this->teacher, ['web']);
 
         $evaluation = Evaluation::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Evaluated Quiz',
             'teacher_id' => $this->teacher->id,
             'type' => Evaluation::TYPE_EXAM,
@@ -583,7 +591,7 @@ class EvaluationApiTest extends TestCase
         ]);
 
         $question = Question::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'evaluation_id' => $evaluation->id,
             'type' => Question::TYPE_FORMULA,
             'question_text' => 'Calculate 5 + 5',

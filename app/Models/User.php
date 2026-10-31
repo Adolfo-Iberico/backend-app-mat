@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-/** Cuenta autenticable con rol, perfiles y relaciones académicas del usuario. */
+/** Cuenta autenticable con rol, perfiles y relaciones acadÃ©micas del usuario. */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuids, SoftDeletes;
+    use HasApiTokens, HasFactory, HasUuids, Notifiable, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -24,15 +26,15 @@ class User extends Authenticatable
         'full_name',
         'dni',
         'role',
+        'role_id',
         'is_active',
         'last_login',
         'profile_image',
-        'grade',
         'salon_id',
         'google_id',
         'google_token',
         'provider',
-        'email_verified_at'
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -41,7 +43,7 @@ class User extends Authenticatable
         'google_token',
     ];
 
-    protected $appends = ['institution', 'role'];
+    protected $appends = ['institution', 'role', 'grade'];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
@@ -51,79 +53,97 @@ class User extends Authenticatable
     ];
 
     // ========== RELACIONES ==========
-    /** Institución única configurada para toda la plataforma. */
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function setRoleAttribute($value): void
+    {
+        if ($value instanceof Role) {
+            $value = $value->name;
+        }
+
+        if (is_string($value) && $value !== '') {
+            $this->attributes['role_id'] = Role::firstOrCreate(['name' => $value])->id;
+        }
+    }
+
+    public function getRoleAttribute(): ?Role
+    {
+        return $this->getRelationValue('role');
+    }
+
     public function getInstitutionAttribute(): ?string
     {
         return InstitutionConfig::canonicalName();
     }
 
-    /** Devuelve el formato de rol que ya consume la API, sin una tabla aparte. */
-    public function getRoleAttribute(): ?object
-    {
-        $role = $this->attributes['role'] ?? null;
-        return $role === null ? null : (object) ['name' => $role];
-    }
-
     public function roleName(): ?string
     {
-        return $this->attributes['role'] ?? null;
+        return $this->role?->name;
     }
 
-    /** Perfil de estudiante, si la cuenta lo tiene. */
+    public function scopeForRole(Builder $query, string $roleName): Builder
+    {
+        return $query->whereHas('role', fn (Builder $roles) => $roles->where('name', $roleName));
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class, 'user_id');
+    }
+
     public function studentProfile()
     {
-        return $this->hasOne(StudentProfile::class);
+        return $this->hasOne(StudentProfile::class, 'user_id');
     }
 
-    /** Perfil docente, si la cuenta lo tiene. */
     public function teacherProfile()
     {
-        return $this->hasOne(TeacherProfile::class);
+        return $this->hasOne(TeacherProfile::class, 'user_id');
     }
 
-    /** Salón asignado al usuario. */
     public function salon()
     {
         return $this->belongsTo(Salon::class, 'salon_id');
     }
 
-    /** Lecciones impartidas por el usuario como docente. */
+    public function getGradeAttribute(): ?string
+    {
+        return $this->salon?->grade;
+    }
+
     public function lessons()
     {
         return $this->hasMany(Lesson::class, 'teacher_id');
     }
 
-    /** Evaluaciones creadas por el usuario como docente. */
     public function evaluations()
     {
         return $this->hasMany(Evaluation::class, 'teacher_id');
     }
 
-    /** Registros del progreso del usuario en lecciones. */
     public function lessonProgress()
     {
         return $this->hasMany(LessonProgress::class);
     }
 
-    /** Resultados de evaluaciones del usuario. */
     public function evaluationResults()
     {
         return $this->hasMany(EvaluationResult::class);
     }
 
-    /** Respuestas enviadas por el usuario a preguntas. */
     public function studentAnswers()
     {
         return $this->hasMany(StudentAnswer::class);
     }
 
-    /** Notificaciones destinadas al usuario. */
     public function notifications()
     {
         return $this->hasMany(Notification::class);
     }
 
-    /** Logros del usuario, con fecha de desbloqueo en la tabla pivote. */
     public function achievements()
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')
@@ -131,72 +151,59 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    /** Eventos académicos del usuario. */
     public function academicEvents()
     {
         return $this->hasMany(AcademicEvent::class);
     }
 
-    /** Suscripciones web push del usuario. */
     public function pushSubscriptions()
     {
-        return $this->hasMany(PushSubscription::class);
+        return $this->hasMany(PushSubscription::class)->where('platform', 'web');
     }
 
-    // ========== MÉTODOS DE AYUDA ==========
-    /** Indica si el rol actual es administrador. */
+    // ========== MÃ‰TODOS DE AYUDA ==========
     public function isAdmin()
     {
         return $this->roleName() === Role::ADMIN;
     }
 
-    /** Indica si el rol permite actuar como docente, incluidos coordinador y director. */
     public function isTeacher()
     {
-        // Jerarquía: coordinador y director también actúan como docentes
         return in_array($this->roleName(), Role::TEACHING_ROLES, true);
     }
 
-    /** Indica si el rol actual es director. */
     public function isDirector()
     {
         return $this->roleName() === Role::DIRECTOR;
     }
 
-    /** Indica si el rol actual es coordinador. */
     public function isCoordinator()
     {
         return $this->roleName() === Role::COORDINATOR;
     }
 
-    /** Indica si el usuario tiene alcance de docente o coordinador. */
     public function isScopedTeacher()
     {
-        // Docente/coordinador ven solo lo suyo; admin y director ven todo (global)
         return in_array($this->roleName(), [Role::TEACHER, Role::COORDINATOR], true);
     }
 
-    /** Indica si el rol actual es estudiante. */
     public function isStudent()
     {
         return $this->roleName() === Role::STUDENT;
     }
 
-    /** Comprueba si el rol coincide con el nombre indicado. */
     public function hasRole($roleName)
     {
         return $this->roleName() === $roleName;
     }
 
-    /** Comprueba si el rol está incluido en la lista proporcionada. */
     public function hasAnyRole($roles)
     {
         return in_array($this->roleName(), $roles, true);
     }
 
-    /** Indica si la cuenta usa Google como proveedor de autenticación. */
     public function isGoogleUser()
     {
         return $this->provider === 'google';
     }
-} 
+}

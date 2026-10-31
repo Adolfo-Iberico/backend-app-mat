@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Anuncio global publicado por el administrador para los usuarios de la plataforma. */
 class Announcement extends Model
@@ -11,6 +11,7 @@ class Announcement extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -19,16 +20,18 @@ class Announcement extends Model
         'body',
         'type',
         'is_active',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     // ========== CONSTANTES ==========
     const TYPE_INFO = 'info';
+
     const TYPE_WARNING = 'warning';
+
     const TYPE_SUCCESS = 'success';
 
     // ========== RELACIONES ==========

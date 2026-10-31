@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
-use App\Models\Message;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
+use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,15 +22,15 @@ class MessageController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $role = $user->role?->name;
+        $role = $user->roleName();
 
         $query = Conversation::with(['teacher:id,full_name', 'student:id,full_name', 'evaluation:id,title'])
             ->where(function ($q) use ($user) {
-                $q->where('teacher_id', $user->id)->orWhere('student_id', $user->id);
+                $q->where('created_by', $user->id)->orWhere('student_id', $user->id);
             });
 
         if ($role === 'teacher' || $role === 'coordinador' || $role === 'director') {
-            $query->where('teacher_id', $user->id);
+            $query->where('created_by', $user->id);
         } elseif ($role === 'student') {
             $query->where('student_id', $user->id);
         }
@@ -37,7 +38,7 @@ class MessageController extends Controller
         $conversations = $query->orderByDesc('last_message_at')->get()
             ->each(function ($conversation) use ($user) {
                 $conversation->unread_count = $conversation->messages()
-                    ->where('sender_id', '!=', $user->id)
+                    ->where('user_id', '!=', $user->id)
                     ->whereNull('read_at')
                     ->count();
             });
@@ -60,7 +61,7 @@ class MessageController extends Controller
 
         // Marcar como leídos los mensajes ajenos
         $conversation->messages()
-            ->where('sender_id', '!=', $user->id)
+            ->where('user_id', '!=', $user->id)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
@@ -82,9 +83,9 @@ class MessageController extends Controller
             'evaluation_id' => 'nullable|exists:evaluations,id',
         ]);
 
-        $recipient = \App\Models\User::findOrFail($validated['recipient_id']);
-        $senderRole = $user->role?->name;
-        $recipientRole = $recipient->role?->name;
+        $recipient = User::findOrFail($validated['recipient_id']);
+        $senderRole = $user->roleName();
+        $recipientRole = $recipient->roleName();
 
         $isSenderTeacher = in_array($senderRole, ['teacher', 'coordinador', 'director']);
         $isRecipientTeacher = in_array($recipientRole, ['teacher', 'coordinador', 'director']);
@@ -107,7 +108,7 @@ class MessageController extends Controller
 
         $conversation = Conversation::firstOrCreate(
             [
-                'teacher_id' => $teacherId,
+                'created_by' => $teacherId,
                 'student_id' => $studentId,
                 'evaluation_id' => $evaluationId,
             ],
@@ -162,7 +163,7 @@ class MessageController extends Controller
     {
         $conversation = Conversation::find($conversationId);
 
-        if (!$conversation) {
+        if (! $conversation) {
             abort(404, 'Conversación no encontrada');
         }
 
@@ -180,15 +181,16 @@ class MessageController extends Controller
     {
         if ($evaluationId) {
             $eval = Evaluation::find($evaluationId);
-            if (!$eval || (string) $eval->teacher_id !== (string) $teacherId) {
+            if (! $eval || (string) $eval->teacher_id !== (string) $teacherId) {
                 abort(403, 'No tienes relación con esta evaluación');
             }
             $hasResult = EvaluationResult::where('evaluation_id', $evaluationId)
                 ->where('user_id', $studentId)
                 ->exists();
-            if (!$hasResult) {
+            if (! $hasResult) {
                 abort(403, 'El estudiante no está relacionado con esta evaluación');
             }
+
             return;
         }
 
@@ -197,7 +199,7 @@ class MessageController extends Controller
             ->whereIn('evaluation_id', Evaluation::where('teacher_id', $teacherId)->pluck('id'))
             ->exists();
 
-        if (!$hasRelation) {
+        if (! $hasRelation) {
             abort(403, 'No tienes relación académica con este estudiante');
         }
     }

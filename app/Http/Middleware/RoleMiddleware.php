@@ -17,9 +17,9 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'message' => 'No autenticado'
+                'message' => 'No autenticado',
             ], 401);
         }
 
@@ -39,7 +39,7 @@ class RoleMiddleware
         }
 
         return response()->json([
-            'message' => 'No tienes permisos para acceder a este recurso'
+            'message' => 'No tienes permisos para acceder a este recurso',
         ], 403);
     }
 }

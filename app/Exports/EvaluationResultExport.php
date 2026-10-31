@@ -4,8 +4,8 @@ namespace App\Exports;
 
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
-use App\Models\User;
 use App\Models\InstitutionConfig;
+use App\Models\User;
 use App\Support\EvaluationAnswerFormatter;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -79,6 +79,7 @@ class EvaluationResultExport implements FromCollection, WithHeadings
     private function formatDuration(?int $seconds): string
     {
         $seconds = max(0, (int) $seconds);
+
         return sprintf('%02d:%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60), $seconds % 60);
     }
 }

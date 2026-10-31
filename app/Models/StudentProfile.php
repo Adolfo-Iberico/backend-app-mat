@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** Perfil académico y de gamificación de un usuario estudiante. */
@@ -11,26 +11,34 @@ class StudentProfile extends Model
 {
     use HasUuids;
 
+    protected $table = 'user_profiles';
+
+    protected $primaryKey = 'user_id';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'id',
         'user_id',
         'academic_level',
         'current_streak',
         'last_activity_date',
         'total_xp',
+        'xp',
         'level',
-        'rank_points'
+        'rank_points',
+        'department',
+        'specialization',
+        'years_experience',
     ];
 
     protected $casts = [
         'current_streak' => 'integer',
         'last_activity_date' => 'date',
-        'total_xp' => 'integer',
+        'xp' => 'integer',
         'level' => 'integer',
-        'rank_points' => 'integer'
+        'rank_points' => 'integer',
     ];
 
     protected $appends = [
@@ -71,7 +79,17 @@ class StudentProfile extends Model
 
     public function getXpAttribute(): int
     {
-        return (int) ($this->attributes['total_xp'] ?? 0);
+        return (int) ($this->attributes['xp'] ?? 0);
+    }
+
+    public function getTotalXpAttribute(): int
+    {
+        return $this->getXpAttribute();
+    }
+
+    public function setTotalXpAttribute(int $value): void
+    {
+        $this->attributes['xp'] = $value;
     }
 
     public function lessonProgress(): HasMany
@@ -92,6 +110,7 @@ class StudentProfile extends Model
         if ($level <= 1) {
             return 0;
         }
+
         return 100 * ($level - 1) * $level / 2;
     }
 
@@ -104,6 +123,7 @@ class StudentProfile extends Model
         while (self::cumulativeXpForLevel($level + 1) <= $totalXp) {
             $level++;
         }
+
         return $level;
     }
 
@@ -136,7 +156,7 @@ class StudentProfile extends Model
     public function addXp(int $amount): array
     {
         \DB::transaction(function () use ($amount) {
-            $locked = static::whereKey($this->id)->lockForUpdate()->first();
+            $locked = static::whereKey($this->user_id)->lockForUpdate()->first();
             $locked->total_xp += $amount;
             $locked->level = self::levelFromXp($locked->total_xp);
             $locked->save();

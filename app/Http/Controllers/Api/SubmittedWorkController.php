@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\SubmittedWorksExport;
 use App\Http\Controllers\Controller;
-use App\Models\SubmittedWork;
-use App\Models\LessonProgress;
-use App\Models\EvaluationResult;
 use App\Models\Evaluation;
+use App\Models\EvaluationResult;
+use App\Models\Exam;
+use App\Models\Lesson;
+use App\Models\LessonProgress;
 use App\Models\Role;
+use App\Models\SubmittedWork;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -39,13 +42,13 @@ class SubmittedWorkController extends Controller
         } elseif ($user->isTeacher()) {
             // Evaluaciones (incluye exámenes) y lecciones del docente.
             $teacherEvaluationIds = Evaluation::where('teacher_id', $user->id)->pluck('id');
-            $teacherLessonIds = \App\Models\Lesson::where('teacher_id', $user->id)->pluck('id');
+            $teacherLessonIds = Lesson::where('teacher_id', $user->id)->pluck('id');
 
             $query->where(function ($q) use ($teacherEvaluationIds, $teacherLessonIds) {
                 $q->whereIn('evaluation_id', $teacherEvaluationIds)
-                  ->orWhereIn('lesson_id', $teacherLessonIds);
+                    ->orWhereIn('lesson_id', $teacherLessonIds);
             });
-        } elseif (in_array($user->role?->name, [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR])) {
+        } elseif (in_array($user->roleName(), [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR], true)) {
             // El staff directivo ve todos los trabajos.
         } else {
             abort(403);
@@ -71,26 +74,26 @@ class SubmittedWorkController extends Controller
             $query->where('work_type', $request->work_type);
         }
         if ($request->filled('student')) {
-            $needle = '%' . $request->student . '%';
+            $needle = '%'.$request->student.'%';
             $query->whereHas('student', fn ($sq) => $sq
                 ->where('full_name', 'LIKE', $needle)
                 ->orWhere('email', 'LIKE', $needle));
         }
         if ($request->filled('teacher')) {
-            $needle = '%' . $request->teacher . '%';
+            $needle = '%'.$request->teacher.'%';
             $query->where(function ($q) use ($needle) {
                 $q->whereHas('evaluation.teacher', fn ($tq) => $tq->where('full_name', 'LIKE', $needle))
-                  ->orWhereHas('lesson.teacher', fn ($tq) => $tq->where('full_name', 'LIKE', $needle));
+                    ->orWhereHas('lesson.teacher', fn ($tq) => $tq->where('full_name', 'LIKE', $needle));
             });
         }
         if ($request->filled('course')) {
             // Búsqueda por área/unidad (collation unicode_ci: 'algebra' encuentra 'Álgebra').
-            $needle = '%' . $request->course . '%';
+            $needle = '%'.$request->course.'%';
             $query->where(function ($q) use ($needle) {
                 $q->whereHas('lesson', fn ($lq) => $lq->where('unit', 'LIKE', $needle))
-                  ->orWhereHas('evaluation', fn ($eq) => $eq
-                      ->where('unit', 'LIKE', $needle)
-                      ->orWhereHas('lesson', fn ($lq) => $lq->where('unit', 'LIKE', $needle)));
+                    ->orWhereHas('evaluation', fn ($eq) => $eq
+                        ->where('unit', 'LIKE', $needle)
+                        ->orWhereHas('lesson', fn ($lq) => $lq->where('unit', 'LIKE', $needle)));
             });
         }
         if ($request->filled('date_from')) {
@@ -132,7 +135,7 @@ class SubmittedWorkController extends Controller
         $targetEvaluationId = $request->evaluation_id ?? $request->exam_id;
         $targetLessonId = $request->lesson_id;
 
-        if (!$targetLessonId && !$targetEvaluationId) {
+        if (! $targetLessonId && ! $targetEvaluationId) {
             return response()->json(['message' => 'At least one of lesson_id, evaluation_id, or exam_id is required.'], 422);
         }
 
@@ -208,7 +211,7 @@ class SubmittedWorkController extends Controller
         $work = SubmittedWork::findOrFail($id);
 
         $user = Auth::user();
-        if (!$this->canGrade($user, $work)) {
+        if (! $this->canGrade($user, $work)) {
             return response()->json(['message' => __('work_grade_forbidden')], 403);
         }
 
@@ -243,8 +246,9 @@ class SubmittedWorkController extends Controller
             $works = SubmittedWork::whereIn('id', $validated['work_ids'])->lockForUpdate()->get();
 
             foreach ($works as $work) {
-                if (!$this->canGrade($user, $work)) {
+                if (! $this->canGrade($user, $work)) {
                     $skipped++;
+
                     continue;
                 }
 
@@ -277,7 +281,7 @@ class SubmittedWorkController extends Controller
         $work = SubmittedWork::findOrFail($id);
 
         $user = Auth::user();
-        if (!$this->canGrade($user, $work)) {
+        if (! $this->canGrade($user, $work)) {
             return response()->json(['message' => __('work_grade_forbidden')], 403);
         }
 
@@ -295,10 +299,10 @@ class SubmittedWorkController extends Controller
      */
     private function canGrade($user, $work)
     {
-        if (in_array($user->role?->name, [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR])) {
+        if (in_array($user->roleName(), [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR], true)) {
             return true;
         }
-        if (!$user->isTeacher()) {
+        if (! $user->isTeacher()) {
             return false;
         }
 
@@ -308,7 +312,7 @@ class SubmittedWorkController extends Controller
                 ->where('teacher_id', $user->id)->exists();
         }
         if ($work->lesson_id) {
-            return \App\Models\Lesson::where('id', $work->lesson_id)
+            return Lesson::where('id', $work->lesson_id)
                 ->where('teacher_id', $user->id)->exists();
         }
 
@@ -344,10 +348,10 @@ class SubmittedWorkController extends Controller
                 ->whereHas('lesson', fn ($q) => $q->where('unit', $area))
                 ->orWhere(function ($q) use ($studentId, $area) {
                     $q->where('student_id', $studentId)
-                      ->where('status', 'graded')
-                      ->whereHas('evaluation', fn ($eq) => $eq->where('lesson_id', function ($lq) use ($area) {
-                          $lq->select('id')->from('lessons')->where('unit', $area);
-                      }));
+                        ->where('status', 'graded')
+                        ->whereHas('evaluation', fn ($eq) => $eq->where('lesson_id', function ($lq) use ($area) {
+                            $lq->select('id')->from('lessons')->where('unit', $area);
+                        }));
                 })
                 ->get();
 
@@ -379,7 +383,7 @@ class SubmittedWorkController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->role?->name, [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR])) {
+        if (! in_array($user->roleName(), [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR], true)) {
             return response()->json(['message' => __('work_grade_forbidden')], 403);
         }
 
@@ -415,7 +419,7 @@ class SubmittedWorkController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->role?->name, [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR])) {
+        if (! in_array($user->roleName(), [Role::ADMIN, Role::COORDINATOR, Role::DIRECTOR], true)) {
             return response()->json(['message' => __('work_grade_forbidden')], 403);
         }
 
@@ -446,15 +450,15 @@ class SubmittedWorkController extends Controller
 
         $works = $query->get();
         $format = strtolower($validated['format'] ?? 'csv');
-        $filename = 'trabajos_' . now()->format('Y-m-d');
+        $filename = 'trabajos_'.now()->format('Y-m-d');
 
         if ($format === 'xlsx' || $format === 'excel') {
-            return Excel::download(new \App\Exports\SubmittedWorksExport($works), $filename . '.xlsx');
+            return Excel::download(new SubmittedWorksExport($works), $filename.'.xlsx');
         }
 
         if ($format === 'pdf') {
             return Pdf::loadView('exports.works-pdf', ['works' => $works])
-                ->download($filename . '.pdf');
+                ->download($filename.'.pdf');
         }
 
         // CSV (por defecto)
@@ -482,7 +486,7 @@ class SubmittedWorkController extends Controller
             fclose($out);
         }, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
         ]);
     }
 
@@ -493,32 +497,32 @@ class SubmittedWorkController extends Controller
     {
         $user = Auth::user();
 
-        $teacherLessonIds = \App\Models\Lesson::where('teacher_id', $user->id)->pluck('id')->toArray();
+        $teacherLessonIds = Lesson::where('teacher_id', $user->id)->pluck('id')->toArray();
         $teacherEvaluationIds = Evaluation::where('teacher_id', $user->id)->pluck('id')->toArray();
 
         // Solo los exámenes del docente (type='exam') generan trabajos de tipo exam.
-        $teacherExamIds = \App\Models\Exam::where('teacher_id', $user->id)->pluck('id')->toArray();
+        $teacherExamIds = Exam::where('teacher_id', $user->id)->pluck('id')->toArray();
 
         // Preload titles (evita N+1 de find por fila)
-        $lessons = \App\Models\Lesson::whereIn('id', $teacherLessonIds)->pluck('title', 'id');
+        $lessons = Lesson::whereIn('id', $teacherLessonIds)->pluck('title', 'id');
         $evaluations = Evaluation::whereIn('id', $teacherEvaluationIds)->pluck('title', 'id');
-        $exams = \App\Models\Exam::whereIn('id', $teacherExamIds)->pluck('title', 'id');
+        $exams = Exam::whereIn('id', $teacherExamIds)->pluck('title', 'id');
 
         // Claves existentes en una sola query por tipo (evita exists() por fila)
         $existingLessonKeys = SubmittedWork::where('work_type', 'lesson')
             ->whereIn('lesson_id', $teacherLessonIds)
             ->get(['student_id', 'lesson_id'])
-            ->mapWithKeys(fn ($w) => [$w->student_id . '|' . $w->lesson_id => true]);
+            ->mapWithKeys(fn ($w) => [$w->student_id.'|'.$w->lesson_id => true]);
 
         $existingEvalKeys = SubmittedWork::where('work_type', 'evaluation')
             ->whereIn('evaluation_id', $teacherEvaluationIds)
             ->get(['student_id', 'evaluation_id'])
-            ->mapWithKeys(fn ($w) => [$w->student_id . '|' . $w->evaluation_id => true]);
+            ->mapWithKeys(fn ($w) => [$w->student_id.'|'.$w->evaluation_id => true]);
 
         $existingExamKeys = SubmittedWork::where('work_type', 'exam')
             ->whereIn('evaluation_id', $teacherExamIds)
             ->get(['student_id', 'evaluation_id'])
-            ->mapWithKeys(fn ($w) => [$w->student_id . '|' . $w->evaluation_id => true]);
+            ->mapWithKeys(fn ($w) => [$w->student_id.'|'.$w->evaluation_id => true]);
 
         $newWorks = [];
         $now = now();
@@ -529,7 +533,7 @@ class SubmittedWorkController extends Controller
             ->get();
 
         foreach ($completedLessons as $lp) {
-            if (isset($existingLessonKeys[$lp->user_id . '|' . $lp->lesson_id])) {
+            if (isset($existingLessonKeys[$lp->user_id.'|'.$lp->lesson_id])) {
                 continue;
             }
             $newWorks[] = [
@@ -555,7 +559,7 @@ class SubmittedWorkController extends Controller
             ->get();
 
         foreach ($evalResults as $er) {
-            if (isset($existingEvalKeys[$er->user_id . '|' . $er->evaluation_id])) {
+            if (isset($existingEvalKeys[$er->user_id.'|'.$er->evaluation_id])) {
                 continue;
             }
             $scaledScore = $er->max_score > 0 ? (int) round(($er->score / $er->max_score) * 20) : 0;
@@ -582,7 +586,7 @@ class SubmittedWorkController extends Controller
             ->get();
 
         foreach ($examResults as $er) {
-            if (isset($existingExamKeys[$er->user_id . '|' . $er->evaluation_id])) {
+            if (isset($existingExamKeys[$er->user_id.'|'.$er->evaluation_id])) {
                 continue;
             }
             $scaledScore = $er->max_score > 0 ? (int) round(($er->score / $er->max_score) * 20) : 0;

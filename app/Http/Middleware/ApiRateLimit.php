@@ -26,7 +26,7 @@ class ApiRateLimit
             $retryAfter = RateLimiter::availableIn($limiterKey);
 
             return response()->json([
-                'message' => 'Demasiadas solicitudes. Intenta de nuevo en ' . $retryAfter . ' segundos.',
+                'message' => 'Demasiadas solicitudes. Intenta de nuevo en '.$retryAfter.' segundos.',
             ], 429)->withHeaders([
                 'Retry-After' => $retryAfter,
                 'X-RateLimit-Limit' => $maxAttempts,
@@ -50,9 +50,9 @@ class ApiRateLimit
         $ip = $request->ip();
 
         if ($userId) {
-            return 'api_token_' . $userId;
+            return 'api_token_'.$userId;
         }
 
-        return 'api_ip_' . $ip;
+        return 'api_ip_'.$ip;
     }
 }

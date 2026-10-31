@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
-use App\Models\Lesson;
-use App\Models\Evaluation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class AuthApiTest extends TestCase
 {
@@ -36,7 +35,7 @@ class AuthApiTest extends TestCase
     {
         $role = 'student';
         $user = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'email' => 'login@example.com',
             'full_name' => 'Login Test',
             'password' => 'password123',
@@ -59,7 +58,7 @@ class AuthApiTest extends TestCase
     {
         $role = 'student';
         User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'email' => 'wrong@example.com',
             'full_name' => 'Wrong Test',
             'password' => 'password123',
@@ -86,7 +85,7 @@ class AuthApiTest extends TestCase
     {
         $role = 'student';
         $user = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'email' => 'profile@example.com',
             'full_name' => 'Profile Test',
             'password' => 'password123',

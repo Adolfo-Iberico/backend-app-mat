@@ -30,7 +30,6 @@ class Exam extends Evaluation
         'time_limit',
         'due_date',
         'is_published',
-        'is_active',
         'auto_correct',
         'randomize_questions',
         'max_attempts',

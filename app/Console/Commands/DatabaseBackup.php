@@ -22,15 +22,16 @@ class DatabaseBackup extends Command
     {
         $dbConfig = config('database.connections.mysql');
 
-        if (!$dbConfig) {
+        if (! $dbConfig) {
             $this->error('Configuración MySQL no encontrada.');
+
             return self::FAILURE;
         }
 
-        $filename = 'backup_' . now()->format('Y-m-d_His') . '.sql';
+        $filename = 'backup_'.now()->format('Y-m-d_His').'.sql';
         $backupPath = storage_path('app/backups');
 
-        if (!file_exists($backupPath)) {
+        if (! file_exists($backupPath)) {
             mkdir($backupPath, 0750, true);
         }
 
@@ -47,11 +48,11 @@ class DatabaseBackup extends Command
             escapeshellarg($port),
             escapeshellarg($username),
             escapeshellarg($database),
-            escapeshellarg($backupPath . '/' . $filename)
+            escapeshellarg($backupPath.'/'.$filename)
         );
 
         $oldPwd = getenv('MYSQL_PWD');
-        putenv('MYSQL_PWD=' . $password);
+        putenv('MYSQL_PWD='.$password);
 
         $output = [];
         $returnCode = 0;
@@ -60,12 +61,13 @@ class DatabaseBackup extends Command
         if ($oldPwd === false) {
             putenv('MYSQL_PWD');
         } else {
-            putenv('MYSQL_PWD=' . $oldPwd);
+            putenv('MYSQL_PWD='.$oldPwd);
         }
 
         if ($returnCode !== 0) {
-            report('Backup failed: ' . implode("\n", $output));
+            report('Backup failed: '.implode("\n", $output));
             $this->error('Error al generar el respaldo.');
+
             return self::FAILURE;
         }
 
@@ -74,7 +76,7 @@ class DatabaseBackup extends Command
             $config->update(['last_backup' => now()]);
         }
 
-        $this->info("Respaldo creado: {$filename} (" . filesize($backupPath . '/' . $filename) . ' bytes)');
+        $this->info("Respaldo creado: {$filename} (".filesize($backupPath.'/'.$filename).' bytes)');
 
         if ($this->option('prune')) {
             $this->pruneOldBackups($backupPath);
@@ -88,7 +90,7 @@ class DatabaseBackup extends Command
      */
     private function pruneOldBackups(string $backupPath): void
     {
-        $files = glob($backupPath . '/backup_*.sql');
+        $files = glob($backupPath.'/backup_*.sql');
 
         if (empty($files)) {
             return;
@@ -98,7 +100,7 @@ class DatabaseBackup extends Command
 
         foreach ($files as $file) {
             $day = date('Y-m-d', filemtime($file));
-            if (!isset($byDay[$day]) || filemtime($file) > filemtime($byDay[$day])) {
+            if (! isset($byDay[$day]) || filemtime($file) > filemtime($byDay[$day])) {
                 $byDay[$day] = $file;
             }
         }
@@ -106,9 +108,9 @@ class DatabaseBackup extends Command
         $keep = array_values($byDay);
 
         foreach ($files as $file) {
-            if (!in_array($file, $keep, true)) {
+            if (! in_array($file, $keep, true)) {
                 unlink($file);
-                $this->info("Respaldo viejo eliminado: " . basename($file));
+                $this->info('Respaldo viejo eliminado: '.basename($file));
             }
         }
     }
@@ -120,7 +122,7 @@ class DatabaseBackup extends Command
     {
         $binaryPath = config('database.connections.mysql.dump.dump_binary_path', '');
         $binary = trim((string) $binaryPath) !== ''
-            ? rtrim($binaryPath, '\\/') . DIRECTORY_SEPARATOR . 'mysqldump'
+            ? rtrim($binaryPath, '\\/').DIRECTORY_SEPARATOR.'mysqldump'
             : 'mysqldump';
 
         if (DIRECTORY_SEPARATOR === '\\') {

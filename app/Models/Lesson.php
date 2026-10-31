@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /** Lección impartida por un docente dentro de un curso, con progreso y evaluaciones. */
@@ -12,6 +12,7 @@ class Lesson extends Model
     use HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -30,7 +31,7 @@ class Lesson extends Model
         'published_at',
         'resources',
         'order',
-        'views_count'
+        'views_count',
     ];
 
     protected $casts = [
@@ -40,12 +41,14 @@ class Lesson extends Model
         'published_at' => 'datetime',
         'estimated_time' => 'integer',
         'order' => 'integer',
-        'views_count' => 'integer'
+        'views_count' => 'integer',
     ];
 
     // ========== CONSTANTES ==========
     const DIFFICULTY_BASIC = 'basic';
+
     const DIFFICULTY_INTERMEDIATE = 'intermediate';
+
     const DIFFICULTY_ADVANCED = 'advanced';
 
     // ========== RELACIONES ==========
@@ -65,6 +68,12 @@ class Lesson extends Model
     public function evaluations()
     {
         return $this->hasMany(Evaluation::class);
+    }
+
+    /** Fragmentos de contenido de la lección (Micro-lecciones). */
+    public function segments()
+    {
+        return $this->hasMany(LessonSegment::class)->orderBy('order', 'asc');
     }
 
     // ========== SCOPES ==========

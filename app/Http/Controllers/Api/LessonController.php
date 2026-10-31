@@ -10,11 +10,11 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Gestiona el contenido y publicación de lecciones, recursos y recomendaciones de progreso.
+ * Gestiona el contenido y publicaciÃ³n de lecciones, recursos y recomendaciones de progreso.
  */
 class LessonController extends Controller
 {
@@ -29,16 +29,16 @@ class LessonController extends Controller
             $query->where('difficulty', $request->difficulty);
         }
         if ($request->has('unit') && $request->unit) {
-            $query->where('unit', 'LIKE', '%' . $request->unit . '%');
+            $query->where('unit', 'LIKE', '%'.$request->unit.'%');
         }
         if ($request->has('topic') && $request->topic) {
-            $query->where('topic', 'LIKE', '%' . $request->topic . '%');
+            $query->where('topic', 'LIKE', '%'.$request->topic.'%');
         }
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('description', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('content', 'LIKE', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('description', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('content', 'LIKE', '%'.$request->search.'%');
             });
         }
         if ($request->has('tag') && $request->tag) {
@@ -60,7 +60,7 @@ class LessonController extends Controller
         $lessons = $query->orderBy('order', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(min((int) ($request->per_page ?? 15), 50));
-        // Agregar información de progreso para estudiantes (una sola query agrupada, evita N+1)
+        // Agregar informaciÃ³n de progreso para estudiantes (una sola query agrupada, evita N+1)
         if (Auth::user()->isStudent()) {
             $myProgress = LessonProgress::where('user_id', Auth::id())
                 ->whereIn('lesson_id', $lessons->pluck('id'))
@@ -68,19 +68,22 @@ class LessonController extends Controller
                 ->keyBy('lesson_id');
             $lessons->getCollection()->transform(function ($lesson) use ($myProgress) {
                 $lesson->user_progress = $myProgress->get($lesson->id);
+
                 return $lesson;
             });
         }
+
         return response()->json([
             'success' => true,
-            'data' => $lessons
+            'data' => $lessons,
         ]);
     }
+
     private function studentGrade($user): ?string
     {
         $raw = $user->salon?->grade ?: $user->grade;
 
-        if (!is_string($raw) || trim($raw) === '') {
+        if (! is_string($raw) || trim($raw) === '') {
             return null;
         }
         if (preg_match('/^([1-5])/', trim($raw), $m)) {
@@ -89,20 +92,21 @@ class LessonController extends Controller
 
         return null;
     }
+
     /**
-     * Mostrar una lección específica con su contenido completo
+     * Mostrar una lecciÃ³n especÃ­fica con su contenido completo
      */
     public function show($id)
     {
-        $lesson = Lesson::with(['teacher', 'evaluations'])
+        $lesson = Lesson::with(['teacher', 'evaluations', 'segments'])
             ->findOrFail($id);
 
-        // Verificar si el estudiante puede ver esta lección
+        // Verificar si el estudiante puede ver esta lecciÃ³n
         if (Auth::user()->isStudent()) {
-            if (!$lesson->is_published) {
+            if (! $lesson->is_published) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('lesson_not_available')
+                    'message' => __('lesson_not_available'),
                 ], 403);
             }
 
@@ -110,7 +114,7 @@ class LessonController extends Controller
             if ($lesson->grade !== $this->studentGrade(Auth::user())) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('lesson_not_available')
+                    'message' => __('lesson_not_available'),
                 ], 403);
             }
         }
@@ -121,7 +125,7 @@ class LessonController extends Controller
                 ->where('lesson_id', $id)
                 ->first();
 
-            if (!$progress) {
+            if (! $progress) {
                 $progress = LessonProgress::create([
                     'id' => Str::uuid(),
                     'user_id' => Auth::id(),
@@ -129,7 +133,7 @@ class LessonController extends Controller
                     'progress' => 0,
                     'status' => LessonProgress::STATUS_NOT_STARTED,
                     'time_spent' => 0,
-                    'last_position' => 0
+                    'last_position' => 0,
                 ]);
             }
 
@@ -141,12 +145,12 @@ class LessonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $lesson
+            'data' => $lesson,
         ]);
     }
 
     /**
-     * Contenido completo de una lección — optimizado para mobile
+     * Contenido completo de una lecciÃ³n â€” optimizado para mobile
      * Retorna solo el contenido HTML/Markdown sin metadata pesada
      */
     public function content($id)
@@ -154,18 +158,18 @@ class LessonController extends Controller
         $lesson = Lesson::findOrFail($id);
 
         if (Auth::user()->isStudent()) {
-            if (!$lesson->is_published) {
+            if (! $lesson->is_published) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('lesson_not_available')
+                    'message' => __('lesson_not_available'),
                 ], 403);
             }
 
-            // Aislamiento por grado también en el endpoint de contenido.
+            // Aislamiento por grado tambiÃ©n en el endpoint de contenido.
             if ($lesson->grade !== $this->studentGrade(Auth::user())) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('lesson_not_available')
+                    'message' => __('lesson_not_available'),
                 ], 403);
             }
         }
@@ -177,12 +181,12 @@ class LessonController extends Controller
                 'title' => $lesson->title,
                 'content' => $lesson->content,
                 'estimated_time' => $lesson->estimated_time,
-            ]
+            ],
         ]);
     }
 
     /**
-     * Crear una nueva lección
+     * Crear una nueva lecciÃ³n
      */
     public function store(Request $request)
     {
@@ -201,7 +205,7 @@ class LessonController extends Controller
             'resources.*.url' => 'required|string|url',
             'resources.*.title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'grade' => 'nullable|in:1ro,2do,3ro,4to,5to'
+            'grade' => 'nullable|in:1ro,2do,3ro,4to,5to',
         ]);
 
         $validated['content'] = $this->sanitizeHtml($validated['content']);
@@ -221,15 +225,15 @@ class LessonController extends Controller
             'order' => $validated['order'] ?? 0,
             'grade' => $validated['grade'] ?? null,
             'is_published' => false,
-            'views_count' => 0
+            'views_count' => 0,
         ]);
 
-        // Notificar a estudiantes sobre nueva lección
-        $studentIds = User::where('role', Role::STUDENT)
+        // Notificar a estudiantes sobre nueva lecciÃ³n
+        $studentIds = User::forRole(Role::STUDENT)
             ->where('is_active', true)
             ->pluck('id')
             ->toArray();
-        if (!empty($studentIds)) {
+        if (! empty($studentIds)) {
             NotificationController::createBulkNotifications(
                 $studentIds,
                 __('notification_lesson_available_title'),
@@ -242,33 +246,46 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_created'),
-            'data' => $lesson->load('teacher')
+            'data' => $lesson->load('teacher'),
         ], 201);
     }
 
     /**
      * Subir un recurso local (archivo del PC del docente)
+     * IMPLEMENTACION SEGURA v2.1
      */
     public function uploadResource(Request $request)
     {
+        // 1. Validacion basica de existencia y tamaño maximo global
         $request->validate([
-            'file' => 'required|file|max:102400',
+            'file' => 'required|file|max:102400', // 100MB max
         ]);
 
         $file = $request->file('file');
         $extension = strtolower($file->getClientOriginalExtension());
-        $mime = strtolower($file->getClientMimeType());
 
+        // 2. Blacklist de extensiones peligrosas (Proteccion proactiva)
+        $blacklist = ['php', 'phtml', 'php3', 'php4', 'php5', 'phps', 'exe', 'bat', 'sh', 'js', 'html', 'htm'];
+        if (in_array($extension, $blacklist)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El tipo de archivo no está permitido por razones de seguridad.',
+            ], 422);
+        }
+
+        // 3. Definicion de tipos permitidos y sus extensiones validas (MIME-Type estricto)
         $allowed = [
-            'pdf' => ['pdf'],
-            'image' => ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'],
-            'video' => ['mp4', 'webm', 'mov', 'avi'],
-            'audio' => ['mp3', 'wav', 'ogg', 'm4a'],
+            'pdf' => ['application/pdf'],
+            'image' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+            'video' => ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'],
+            'audio' => ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/x-m4a'],
         ];
 
+        // Validacion de MIME-Type real (analiza el contenido, no solo la extension)
+        $mime = strtolower($file->getMimeType());
         $type = null;
-        foreach ($allowed as $candidateType => $extensions) {
-            if (in_array($extension, $extensions)) {
+        foreach ($allowed as $candidateType => $mimes) {
+            if (in_array($mime, $mimes)) {
                 $type = $candidateType;
                 break;
             }
@@ -281,11 +298,12 @@ class LessonController extends Controller
             ], 422);
         }
 
+        // 4. Limites de tamaño dinámicos por tipo
         $sizeLimits = [
-            'video' => 100 * 1024 * 1024,
-            'image' => 10 * 1024 * 1024,
-            'audio' => 20 * 1024 * 1024,
-            'pdf' => 20 * 1024 * 1024,
+            'video' => 100 * 1024 * 1024, // 100MB
+            'image' => 10 * 1024 * 1024,  // 10MB
+            'audio' => 20 * 1024 * 1024,  // 20MB
+            'pdf' => 20 * 1024 * 1024,    // 20MB
         ];
 
         if ($file->getSize() > $sizeLimits[$type]) {
@@ -295,30 +313,34 @@ class LessonController extends Controller
             ], 422);
         }
 
-        $name = Str::uuid() . '.' . $extension;
-        $file->storeAs('lesson-resources', $name, 'public');
+        // 5. Almacenamiento seguro con UUID (evita Path Traversal y colisiones)
+        $safeName = Str::uuid().'.'.$extension;
+        $file->storeAs('lesson-resources', $safeName, 'public');
+
+        // 6. Sanitizacion del nombre original para la respuesta (evita XSS)
+        $originalName = strip_tags($file->getClientOriginalName());
 
         return response()->json([
             'success' => true,
-            'url' => $request->root() . '/storage/lesson-resources/' . $name,
+            'url' => $request->root().'/storage/lesson-resources/'.$safeName,
             'type' => $type,
             'size' => $file->getSize(),
-            'original_name' => $file->getClientOriginalName(),
+            'original_name' => $originalName,
         ], 201);
     }
 
     /**
-     * Actualizar una lección existente
+     * Actualizar una lecciÃ³n existente
      */
     public function update(Request $request, $id)
     {
         $lesson = Lesson::findOrFail($id);
 
         // Verificar que el usuario sea el propietario o admin
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_edit')
+                'message' => __('lesson_no_permission_edit'),
             ], 403);
         }
 
@@ -338,7 +360,7 @@ class LessonController extends Controller
             'resources.*.title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
             'is_published' => 'nullable|boolean',
-            'grade' => 'nullable|in:1ro,2do,3ro,4to,5to'
+            'grade' => 'nullable|in:1ro,2do,3ro,4to,5to',
         ]);
 
         if (isset($validated['content'])) {
@@ -351,22 +373,22 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_updated'),
-            'data' => $lesson->load('teacher')
+            'data' => $lesson->load('teacher'),
         ]);
     }
 
     /**
-     * Eliminar una lección (soft delete)
+     * Eliminar una lecciÃ³n (soft delete)
      */
     public function destroy($id)
     {
         $lesson = Lesson::findOrFail($id);
 
         // Verificar que el usuario sea el propietario o admin
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_delete')
+                'message' => __('lesson_no_permission_delete'),
             ], 403);
         }
 
@@ -374,7 +396,7 @@ class LessonController extends Controller
         if ($lesson->evaluations()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_cannot_delete_has_evaluations')
+                'message' => __('lesson_cannot_delete_has_evaluations'),
             ], 400);
         }
 
@@ -382,22 +404,22 @@ class LessonController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => __('lesson_deleted')
+            'message' => __('lesson_deleted'),
         ]);
     }
 
     /**
-     * Publicar una lección
+     * Publicar una lecciÃ³n
      */
     public function publish($id)
     {
         $lesson = Lesson::findOrFail($id);
 
         // Verificar que el usuario sea el propietario o admin
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_publish')
+                'message' => __('lesson_no_permission_publish'),
             ], 403);
         }
 
@@ -405,24 +427,24 @@ class LessonController extends Controller
         if (empty($lesson->content)) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_must_have_content_to_publish')
+                'message' => __('lesson_must_have_content_to_publish'),
             ], 400);
         }
 
         $lesson->update([
             'is_published' => true,
-            'published_at' => now()
+            'published_at' => now(),
         ]);
 
-        // Notificar a estudiantes sobre lección publicada
-        $studentIds = User::where('role', Role::STUDENT)
+        // Notificar a estudiantes sobre lecciÃ³n publicada
+        $studentIds = User::forRole(Role::STUDENT)
             ->where('is_active', true)
             ->pluck('id')
             ->toArray();
-        if (!empty($studentIds)) {
+        if (! empty($studentIds)) {
             NotificationController::createBulkNotifications(
                 $studentIds,
-                __('notification_lesson_published_title'),
+                __('notification_lesson_available_title'),
                 __('notification_lesson_published_body', ['title' => $lesson->title]),
                 'info',
                 "/lessons/{$lesson->id}"
@@ -432,58 +454,112 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_published'),
-            'data' => $lesson
+            'data' => $lesson,
         ]);
     }
 
     /**
-     * Despublicar una lección
+     * Despublicar una lecciÃ³n
      */
     public function unpublish($id)
     {
         $lesson = Lesson::findOrFail($id);
 
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_unpublish')
+                'message' => __('lesson_no_permission_unpublish'),
             ], 403);
         }
 
         $lesson->update([
-            'is_published' => false
+            'is_published' => false,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => __('lesson_unpublished')
+            'message' => __('lesson_unpublished'),
         ]);
     }
 
     /**
-     * Obtener recursos de una lección
+     * Importar archivos fÃ­sicos desde la carpeta de recursos al registro de la lecciÃ³n
      */
+    public function importResourcesFromStorage($id)
+    {
+        $lesson = Lesson::findOrFail($id);
+
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('lesson_no_permission_import'),
+            ], 403);
+        }
+
+        $files = Storage::disk('public')->files('lesson-resources');
+        $existingResources = $lesson->resources ?? [];
+        $existingUrls = array_column($existingResources, 'url');
+
+        $importedCount = 0;
+        $newResources = $existingResources;
+
+        foreach ($files as $file) {
+            $publicUrl = asset('storage/'.$file);
+
+            if (! in_array($publicUrl, $existingUrls)) {
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+
+                // Determinar tipo segÃºn extensiÃ³n
+                $type = match ($extension) {
+                    'pdf' => 'pdf',
+                    'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg' => 'image',
+                    'mp4', 'webm', 'mov', 'avi' => 'video',
+                    'mp3', 'wav', 'ogg', 'm4a' => 'audio',
+                    default => 'link',
+                };
+
+                $newResources[] = [
+                    'id' => Str::uuid(),
+                    'type' => $type,
+                    'url' => $publicUrl,
+                    'title' => pathinfo($file, PATHINFO_FILENAME),
+                    'description' => 'Importado automÃ¡ticamente desde storage',
+                    'created_at' => now(),
+                ];
+                $importedCount++;
+            }
+        }
+
+        $lesson->update(['resources' => $newResources]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Se han importado $importedCount nuevos recursos.",
+            'data' => $newResources,
+        ]);
+    }
+
     public function getResources($id)
     {
         $lesson = Lesson::findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'data' => $lesson->resources ?? []
+            'data' => $lesson->resources ?? [],
         ]);
     }
 
     /**
-     * Agregar recurso a una lección
+     * Agregar recurso a una lecciÃ³n
      */
     public function addResource(Request $request, $id)
     {
         $lesson = Lesson::findOrFail($id);
 
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_add_resources')
+                'message' => __('lesson_no_permission_add_resources'),
             ], 403);
         }
 
@@ -491,7 +567,7 @@ class LessonController extends Controller
             'type' => 'required|in:pdf,video,image,link,audio',
             'url' => 'required|string|url',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $resources = $lesson->resources ?? [];
@@ -501,7 +577,7 @@ class LessonController extends Controller
             'url' => $validated['url'],
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'created_at' => now()
+            'created_at' => now(),
         ];
 
         $lesson->update(['resources' => $resources]);
@@ -509,25 +585,25 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_resource_added'),
-            'data' => $resources
+            'data' => $resources,
         ]);
     }
 
     /**
-     * Eliminar recurso de una lección
+     * Eliminar recurso de una lecciÃ³n
      */
     public function removeResource($id, $resourceId)
     {
         $lesson = Lesson::findOrFail($id);
 
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_delete_resources')
+                'message' => __('lesson_no_permission_delete_resources'),
             ], 403);
         }
 
-        $resources = array_filter($lesson->resources ?? [], function($resource) use ($resourceId) {
+        $resources = array_filter($lesson->resources ?? [], function ($resource) use ($resourceId) {
             return $resource['id'] !== $resourceId;
         });
 
@@ -536,27 +612,27 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_resource_deleted'),
-            'data' => array_values($resources)
+            'data' => array_values($resources),
         ]);
     }
 
     /**
-     * Duplicar una lección
+     * Duplicar una lecciÃ³n
      */
     public function duplicate($id)
     {
         $originalLesson = Lesson::findOrFail($id);
 
-        if ((string) $originalLesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $originalLesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_duplicate')
+                'message' => __('lesson_no_permission_duplicate'),
             ], 403);
         }
 
         $newLesson = $originalLesson->replicate();
         $newLesson->id = Str::uuid();
-        $newLesson->title = $originalLesson->title . __('lesson_copy_suffix');
+        $newLesson->title = $originalLesson->title.__('lesson_copy_suffix');
         $newLesson->is_published = false;
         $newLesson->views_count = 0;
         $newLesson->created_at = now();
@@ -566,7 +642,7 @@ class LessonController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('lesson_duplicated'),
-            'data' => $newLesson->load('teacher')
+            'data' => $newLesson->load('teacher'),
         ]);
     }
 
@@ -582,21 +658,21 @@ class LessonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $lessons
+            'data' => $lessons,
         ]);
     }
 
     /**
-     * Obtener estadísticas de una lección (para docentes)
+     * Obtener estadÃ­sticas de una lecciÃ³n (para docentes)
      */
     public function getStats($id)
     {
         $lesson = Lesson::findOrFail($id);
 
-        if ((string) $lesson->teacher_id !== (string) Auth::id() && !Auth::user()->isAdmin()) {
+        if ((string) $lesson->teacher_id !== (string) Auth::id() && ! Auth::user()->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => __('lesson_no_permission_view_stats')
+                'message' => __('lesson_no_permission_view_stats'),
             ], 403);
         }
 
@@ -608,22 +684,24 @@ class LessonController extends Controller
                 ->count(),
             'average_progress' => LessonProgress::where('lesson_id', $id)->avg('progress') ?? 0,
             'average_time_spent' => LessonProgress::where('lesson_id', $id)->avg('time_spent') ?? 0,
-            'completion_rate' => $this->calculateCompletionRate($id)
+            'completion_rate' => $this->calculateCompletionRate($id),
         ];
 
         return response()->json([
             'success' => true,
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 
     /**
-     * Calcular tasa de finalización
+     * Calcular tasa de finalizaciÃ³n
      */
     private function calculateCompletionRate($lessonId)
     {
         $total = LessonProgress::where('lesson_id', $lessonId)->count();
-        if ($total === 0) return 0;
+        if ($total === 0) {
+            return 0;
+        }
 
         $completed = LessonProgress::where('lesson_id', $lessonId)
             ->where('status', LessonProgress::STATUS_COMPLETED)
@@ -635,11 +713,12 @@ class LessonController extends Controller
     private function sanitizeHtml(string $content): string
     {
         $allowed = '<p><br><strong><b><em><i><u><h1><h2><h3><h4><ul><ol><li><a><img><blockquote><pre><code><table><thead><tbody><tr><th><td><div><span><sup><sub><hr>';
+
         return strip_tags($content, $allowed);
     }
 
     /**
-     * Lecciones recomendadas según rendimiento del estudiante
+     * Lecciones recomendadas segÃºn rendimiento del estudiante
      */
     public function recommended(Request $request)
     {
@@ -678,6 +757,7 @@ class LessonController extends Controller
 
         $lessons->transform(function ($lesson) use ($myProgress) {
             $lesson->user_progress = $myProgress->get($lesson->id);
+
             return $lesson;
         });
 
@@ -687,8 +767,8 @@ class LessonController extends Controller
             'data' => [
                 'difficulty' => $difficulty,
                 'average_score' => round($averageScore ?? 0, 2),
-                'lessons' => $lessons
-            ]
+                'lessons' => $lessons,
+            ],
         ]);
     }
 }

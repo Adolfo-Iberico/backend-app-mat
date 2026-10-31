@@ -35,7 +35,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('evaluations') || !Schema::hasTable('questions')) {
+        if (! Schema::hasTable('evaluations') || ! Schema::hasTable('questions')) {
             return;
         }
 
@@ -60,7 +60,7 @@ return new class extends Migration
             $table->json('cheat_log')->nullable()->after('answers');
         });
 
-        if (!Schema::hasTable('exams')) {
+        if (! Schema::hasTable('exams')) {
             return; // Entorno ya consolidado.
         }
 
@@ -167,7 +167,7 @@ return new class extends Migration
         // Reversión estructural (sin datos: restaurar desde el respaldo previo).
         // Los enums se dejan ampliados: es una operación segura e idempotente.
 
-        if (!Schema::hasTable('exams')) {
+        if (! Schema::hasTable('exams')) {
             Schema::create('exams', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('title');
@@ -190,7 +190,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('exam_questions')) {
+        if (! Schema::hasTable('exam_questions')) {
             Schema::create('exam_questions', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->uuid('exam_id');
@@ -207,7 +207,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('exam_attempts')) {
+        if (! Schema::hasTable('exam_attempts')) {
             Schema::create('exam_attempts', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->uuid('exam_id');
@@ -227,7 +227,7 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasColumn('submitted_works', 'evaluation_id') && !Schema::hasColumn('submitted_works', 'exam_id')) {
+        if (Schema::hasColumn('submitted_works', 'evaluation_id') && ! Schema::hasColumn('submitted_works', 'exam_id')) {
             Schema::table('submitted_works', function (Blueprint $table) {
                 $table->uuid('exam_id')->nullable()->after('evaluation_id');
                 $table->index('exam_id');
@@ -267,9 +267,9 @@ return new class extends Migration
             return;
         }
 
-        $list = "'" . implode("','", $values) . "'";
+        $list = "'".implode("','", $values)."'";
         $sql = "ALTER TABLE `{$table}` MODIFY `{$column}` ENUM({$list}) NOT NULL"
-            . ($hasDefault ? " DEFAULT '{$default}'" : '');
+            .($hasDefault ? " DEFAULT '{$default}'" : '');
 
         $connection->statement($sql);
     }

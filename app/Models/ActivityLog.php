@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Registro de una actividad del usuario y de su entidad asociada, si existe. */
 class ActivityLog extends Model
@@ -11,7 +11,9 @@ class ActivityLog extends Model
     use HasUuids;
 
     protected $table = 'activity_log';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [

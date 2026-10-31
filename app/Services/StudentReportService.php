@@ -24,21 +24,21 @@ class StudentReportService
         foreach ($studentData['lessons'] as $lesson) {
             $statusColor = $lesson->status === 'completed' ? '#16a34a' : ($lesson->status === 'in_progress' ? '#d97706' : '#6b7280');
             $lessonRows .= '<tr>';
-            $lessonRows .= '<td>' . htmlspecialchars($lesson->title) . '</td>';
-            $lessonRows .= '<td>' . htmlspecialchars($lesson->unit ?? 'N/A') . '</td>';
-            $lessonRows .= '<td><span style="color:' . $statusColor . ';font-weight:bold;">' . ucfirst($lesson->status) . '</span></td>';
-            $lessonRows .= '<td>' . ($lesson->progress_percentage ?? 0) . '%</td>';
-            $lessonRows .= '<td>' . ($lesson->updated_at ? $lesson->updated_at->format('d/m/Y') : 'N/A') . '</td>';
+            $lessonRows .= '<td>'.htmlspecialchars($lesson->title).'</td>';
+            $lessonRows .= '<td>'.htmlspecialchars($lesson->unit ?? 'N/A').'</td>';
+            $lessonRows .= '<td><span style="color:'.$statusColor.';font-weight:bold;">'.ucfirst($lesson->status).'</span></td>';
+            $lessonRows .= '<td>'.($lesson->progress_percentage ?? 0).'%</td>';
+            $lessonRows .= '<td>'.($lesson->updated_at ? $lesson->updated_at->format('d/m/Y') : 'N/A').'</td>';
             $lessonRows .= '</tr>';
         }
 
         $evalRows = '';
         foreach ($studentData['evaluations'] as $eval) {
             $evalRows .= '<tr>';
-            $evalRows .= '<td>' . htmlspecialchars($eval->title) . '</td>';
-            $evalRows .= '<td>' . number_format((float) $eval->score, 1) . '</td>';
-            $evalRows .= '<td>' . $eval->correct_answers . '/' . $eval->total_questions . '</td>';
-            $evalRows .= '<td>' . ($eval->created_at ? $eval->created_at->format('d/m/Y H:i') : 'N/A') . '</td>';
+            $evalRows .= '<td>'.htmlspecialchars($eval->title).'</td>';
+            $evalRows .= '<td>'.number_format((float) $eval->score, 1).'</td>';
+            $evalRows .= '<td>'.$eval->correct_answers.'/'.$eval->total_questions.'</td>';
+            $evalRows .= '<td>'.($eval->created_at ? $eval->created_at->format('d/m/Y H:i') : 'N/A').'</td>';
             $evalRows .= '</tr>';
         }
 
@@ -66,27 +66,27 @@ class StudentReportService
         <body>
             <div class="header">
                 <h1>Aulamate - Reporte del Estudiante</h1>
-                <p>Generado: ' . now()->format('d/m/Y H:i') . '</p>
+                <p>Generado: '.now()->format('d/m/Y H:i').'</p>
             </div>
             <div class="student-info">
-                <h2>' . htmlspecialchars($student->full_name ?? 'N/A') . '</h2>
-                <p>Email: ' . htmlspecialchars($student->email ?? 'N/A') . '</p>
+                <h2>'.htmlspecialchars($student->full_name ?? 'N/A').'</h2>
+                <p>Email: '.htmlspecialchars($student->email ?? 'N/A').'</p>
             </div>
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">' . $stats["lessons_completed"] . '</div><div class="label">Lecciones Completadas</div></div>
-                <div class="stat-box"><div class="value">' . $stats["lessons_in_progress"] . '</div><div class="label">En Progreso</div></div>
-                <div class="stat-box"><div class="value">' . number_format((float) $stats["average_score"], 1) . '</div><div class="label">Promedio</div></div>
-                <div class="stat-box"><div class="value">' . $stats["total_evaluations"] . '</div><div class="label">Evaluaciones</div></div>
+                <div class="stat-box"><div class="value">'.$stats['lessons_completed'].'</div><div class="label">Lecciones Completadas</div></div>
+                <div class="stat-box"><div class="value">'.$stats['lessons_in_progress'].'</div><div class="label">En Progreso</div></div>
+                <div class="stat-box"><div class="value">'.number_format((float) $stats['average_score'], 1).'</div><div class="label">Promedio</div></div>
+                <div class="stat-box"><div class="value">'.$stats['total_evaluations'].'</div><div class="label">Evaluaciones</div></div>
             </div>
             <div class="section-title">Progreso en Lecciones</div>
             <table>
                 <thead><tr><th>Lección</th><th>Unidad</th><th>Estado</th><th>Progreso</th><th>Última Actualización</th></tr></thead>
-                <tbody>' . $lessonRows . '</tbody>
+                <tbody>'.$lessonRows.'</tbody>
             </table>
             <div class="section-title">Historial de Evaluaciones</div>
             <table>
                 <thead><tr><th>Evaluación</th><th>Puntaje</th><th>Correctas/Total</th><th>Fecha</th></tr></thead>
-                <tbody>' . $evalRows . '</tbody>
+                <tbody>'.$evalRows.'</tbody>
             </table>
         </body></html>';
     }
@@ -96,7 +96,7 @@ class StudentReportService
     {
         $studentData = (new StudentProgressPDFExport($studentId))->getData();
 
-        $options = new Options();
+        $options = new Options;
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($this->html($studentData));
@@ -105,11 +105,11 @@ class StudentReportService
 
         // Dompdf nativo no tiene download(); se devuelve el PDF como respuesta
         // de descarga con las cabeceras correctas.
-        $nombre = $filename ?? ('reporte-estudiante-' . $studentId . '.pdf');
+        $nombre = $filename ?? ('reporte-estudiante-'.$studentId.'.pdf');
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $nombre . '"',
+            'Content-Disposition' => 'attachment; filename="'.$nombre.'"',
         ]);
     }
 
@@ -120,7 +120,7 @@ class StudentReportService
 
         return Excel::download(
             new StudentProgressExport($studentData),
-            $filename ?? ('reporte-estudiante-' . $studentId . '.xlsx')
+            $filename ?? ('reporte-estudiante-'.$studentId.'.xlsx')
         );
     }
 
@@ -131,7 +131,7 @@ class StudentReportService
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . ($filename ?? ('reporte-estudiante-' . $studentId . '.csv')) . '"',
+            'Content-Disposition' => 'attachment; filename="'.($filename ?? ('reporte-estudiante-'.$studentId.'.csv')).'"',
         ];
 
         $callback = function () use ($data, $studentId) {
@@ -167,8 +167,9 @@ class StudentReportService
     {
         $value = (string) $value;
         if (str_starts_with($value, ['=', '+', '-', '@'])) {
-            return "'" . $value;
+            return "'".$value;
         }
+
         return $value;
     }
 }

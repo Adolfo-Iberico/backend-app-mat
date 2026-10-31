@@ -17,7 +17,7 @@ class AnnouncementSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::where('role', 'admin')->first();
+        $admin = User::forRole('admin')->first();
 
         $announcements = [
             [

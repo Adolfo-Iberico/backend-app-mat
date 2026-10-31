@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Período académico al que se asignan los salones. */
 class AcademicPeriod extends Model
@@ -11,6 +11,7 @@ class AcademicPeriod extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -19,12 +20,12 @@ class AcademicPeriod extends Model
         'start_date',
         'end_date',
         'is_active',
-        'description'
+        'description',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 }

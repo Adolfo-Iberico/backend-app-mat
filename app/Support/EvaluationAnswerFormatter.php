@@ -11,7 +11,7 @@ class EvaluationAnswerFormatter
         $answer = trim((string) $question->correct_answer);
         $options = self::options($question);
 
-        if (!$options) {
+        if (! $options) {
             return $answer;
         }
 
@@ -35,7 +35,7 @@ class EvaluationAnswerFormatter
     public static function submittedAnswer(Question $question, string $answer): string
     {
         $options = self::options($question);
-        if (!$options) {
+        if (! $options) {
             return $answer;
         }
 
@@ -86,7 +86,7 @@ class EvaluationAnswerFormatter
             $options = $decoded;
         }
 
-        if (!is_array($options)) {
+        if (! is_array($options)) {
             return [];
         }
 

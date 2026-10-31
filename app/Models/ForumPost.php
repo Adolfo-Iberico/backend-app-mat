@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Publicación escrita por un usuario dentro de un hilo del foro. */
 class ForumPost extends Model
 {
     use HasUuids;
 
+    protected $table = 'posts';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [

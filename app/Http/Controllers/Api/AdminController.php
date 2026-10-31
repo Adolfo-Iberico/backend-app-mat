@@ -3,18 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Lesson;
-use App\Models\Evaluation;
 use App\Models\AcademicPeriod;
+use App\Models\Evaluation;
 use App\Models\InstitutionConfig;
-use App\Models\StudentProfile;
-use App\Models\TeacherProfile;
+use App\Models\Lesson;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -23,7 +21,7 @@ use Illuminate\Support\Str;
 class AdminController extends Controller
 {
     // ========== GESTIÓN DE USUARIOS ==========
-    
+
     /** Devuelve usuarios paginados, opcionalmente filtrados por rol o búsqueda. */
     public function getUsers(Request $request)
     {
@@ -31,15 +29,15 @@ class AdminController extends Controller
 
         if ($request->has('role')) {
             if (in_array($request->role, [Role::ADMIN, Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
-                $query->where('role', $request->role);
+                $query->whereHas('role', fn ($roleQuery) => $roleQuery->where('name', $request->role));
             }
         }
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('full_name', 'LIKE', '%' . $search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $search . '%');
+                $q->where('full_name', 'LIKE', '%'.$search.'%')
+                    ->orWhere('email', 'LIKE', '%'.$search.'%');
             });
         }
 
@@ -66,7 +64,7 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:teacher,student,director,coordinador',
-            'grade' => 'nullable|string'
+            'grade' => 'nullable|string',
         ]);
 
         $user = User::create([
@@ -77,25 +75,23 @@ class AdminController extends Controller
             'role' => $validated['role'],
             'grade' => $validated['grade'] ?? null,
             'is_active' => true,
-            'provider' => 'email'
+            'provider' => 'email',
         ]);
 
         if ($validated['role'] === Role::STUDENT) {
-            StudentProfile::create([
-                'id' => Str::uuid(),
+            UserProfile::create([
                 'user_id' => $user->id,
-                'academic_level' => 'basic'
+                'academic_level' => 'basic',
             ]);
         } elseif (in_array($validated['role'], [Role::TEACHER, Role::COORDINATOR, Role::DIRECTOR], true)) {
-            TeacherProfile::create([
-                'id' => Str::uuid(),
-                'user_id' => $user->id
+            UserProfile::create([
+                'user_id' => $user->id,
             ]);
         }
 
         return response()->json([
             'message' => __('user_created'),
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
@@ -106,10 +102,10 @@ class AdminController extends Controller
 
         $validated = $request->validate([
             'full_name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'email' => 'sometimes|email|unique:users,email,'.$id,
             'role' => 'sometimes|in:teacher,student,director,coordinador',
             'grade' => 'nullable|string',
-            'is_active' => 'sometimes|boolean'
+            'is_active' => 'sometimes|boolean',
         ]);
 
         if (isset($validated['role'])) {
@@ -121,7 +117,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => __('user_updated'),
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -129,33 +125,33 @@ class AdminController extends Controller
     public function deleteUser($id)
     {
         $user = User::findOrFail($id);
-        
+
         if ($user->isAdmin()) {
             return response()->json([
-                'message' => __('cannot_delete_admin_user')
+                'message' => __('cannot_delete_admin_user'),
             ], 403);
         }
 
         if ($user->id === Auth::id()) {
             return response()->json([
-                'message' => __('cannot_delete_own_account')
+                'message' => __('cannot_delete_own_account'),
             ], 403);
         }
 
-        $activeAdminCount = User::where('role', Role::ADMIN)
+        $activeAdminCount = User::forRole(Role::ADMIN)
             ->where('is_active', true)
             ->count();
 
         if ($activeAdminCount <= 1) {
             return response()->json([
-                'message' => __('cannot_delete_last_active_admin')
+                'message' => __('cannot_delete_last_active_admin'),
             ], 403);
         }
 
         $user->delete();
 
         return response()->json([
-            'message' => __('user_deleted')
+            'message' => __('user_deleted'),
         ]);
     }
 
@@ -166,7 +162,7 @@ class AdminController extends Controller
         $user->update(['is_active' => true]);
 
         return response()->json([
-            'message' => __('user_activated')
+            'message' => __('user_activated'),
         ]);
     }
 
@@ -174,28 +170,28 @@ class AdminController extends Controller
     public function deactivateUser($id)
     {
         $user = User::findOrFail($id);
-        
+
         if ($user->isAdmin()) {
             if ($user->id === Auth::id()) {
                 return response()->json([
-                    'message' => __('cannot_deactivate_own_account')
+                    'message' => __('cannot_deactivate_own_account'),
                 ], 403);
             }
 
-            $activeAdminCount = User::where('role', Role::ADMIN)
+            $activeAdminCount = User::forRole(Role::ADMIN)
                 ->where('is_active', true)
                 ->count();
 
             if ($activeAdminCount <= 1) {
                 return response()->json([
-                    'message' => __('cannot_deactivate_last_active_admin')
+                    'message' => __('cannot_deactivate_last_active_admin'),
                 ], 403);
             }
         }
 
         if ($user->id === Auth::id()) {
             return response()->json([
-                'message' => __('cannot_deactivate_own_account')
+                'message' => __('cannot_deactivate_own_account'),
             ], 403);
         }
 
@@ -207,18 +203,18 @@ class AdminController extends Controller
         }
 
         return response()->json([
-            'message' => __('user_deactivated')
+            'message' => __('user_deactivated'),
         ]);
     }
 
     // ========== CONFIGURACIÓN DEL SISTEMA ==========
-    
+
     /** Devuelve la configuración institucional guardada o los valores de marca predeterminados. */
     public function getConfig()
     {
         $config = InstitutionConfig::first();
 
-        if (!$config) {
+        if (! $config) {
             return response()->json([
                 'institution_name' => 'Aulamate',
                 'primary_color' => '#004AC6',
@@ -254,7 +250,7 @@ class AdminController extends Controller
     {
         $config = InstitutionConfig::first() ?? InstitutionConfig::create([
             'id' => Str::uuid(),
-            'institution_name' => 'Aulamate'
+            'institution_name' => 'Aulamate',
         ]);
 
         $validated = $request->validate([
@@ -267,23 +263,24 @@ class AdminController extends Controller
             'logo' => 'nullable|string|max:2048',
             'email_notifications' => 'nullable|array',
             'backup_frequency' => 'nullable|string',
-            'allow_tab_switches' => 'sometimes|boolean'
+            'allow_tab_switches' => 'sometimes|boolean',
         ]);
 
         $config->update($validated);
 
         return response()->json([
             'message' => __('config_updated'),
-            'config' => $config
+            'config' => $config,
         ]);
     }
 
     // ========== PERÍODOS ACADÉMICOS ==========
-    
+
     /** Devuelve los períodos académicos ordenados por fecha de inicio descendente. */
     public function getPeriods()
     {
         $periods = AcademicPeriod::orderBy('start_date', 'desc')->get();
+
         return response()->json($periods);
     }
 
@@ -294,7 +291,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         // Desactivar otros períodos si este es activo
@@ -308,12 +305,12 @@ class AdminController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'description' => $validated['description'] ?? null,
-            'is_active' => $request->is_active ?? false
+            'is_active' => $request->is_active ?? false,
         ]);
 
         return response()->json([
             'message' => __('period_created'),
-            'period' => $period
+            'period' => $period,
         ], 201);
     }
 
@@ -327,7 +324,7 @@ class AdminController extends Controller
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after:start_date',
             'is_active' => 'sometimes|boolean',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         // Desactivar otros períodos si este se activa
@@ -341,7 +338,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => __('period_updated'),
-            'period' => $period
+            'period' => $period,
         ]);
     }
 
@@ -352,23 +349,23 @@ class AdminController extends Controller
         $period->delete();
 
         return response()->json([
-            'message' => __('period_deleted')
+            'message' => __('period_deleted'),
         ]);
     }
 
     // ========== DASHBOARD ADMIN ==========
-    
+
     /** Devuelve estadísticas del panel administrativo y los diez usuarios más recientes. */
     public function dashboard()
     {
         $stats = [
             'total_users' => User::count(),
-            'total_students' => User::where('role', Role::STUDENT)->count(),
-            'total_teachers' => User::where('role', Role::TEACHER)->count(),
+            'total_students' => User::forRole(Role::STUDENT)->count(),
+            'total_teachers' => User::forRole(Role::TEACHER)->count(),
             'total_lessons' => Lesson::count(),
             'published_lessons' => Lesson::where('is_published', true)->count(),
             'total_evaluations' => Evaluation::count(),
-            'active_period' => AcademicPeriod::where('is_active', true)->first()
+            'active_period' => AcademicPeriod::where('is_active', true)->first(),
         ];
 
         $recentUsers = User::query()
@@ -378,7 +375,7 @@ class AdminController extends Controller
 
         return response()->json([
             'stats' => $stats,
-            'recent_users' => $recentUsers
+            'recent_users' => $recentUsers,
         ]);
     }
 
@@ -388,7 +385,7 @@ class AdminController extends Controller
     public function importUsers(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240'
+            'file' => 'required|file|mimes:csv,txt|max:10240',
         ]);
 
         $file = $request->file('file');
@@ -406,7 +403,7 @@ class AdminController extends Controller
 
         if ($nameIdx === false || $emailIdx === false || $roleIdx === false) {
             return response()->json([
-                'message' => __('csv_invalid_columns')
+                'message' => __('csv_invalid_columns'),
             ], 422);
         }
 
@@ -418,19 +415,22 @@ class AdminController extends Controller
             $roleName = $row[$roleIdx] ?? null;
             $password = $passwordIdx !== false ? ($row[$passwordIdx] ?? null) : null;
 
-            if (!$fullName || !$email || !$roleName) {
+            if (! $fullName || ! $email || ! $roleName) {
                 $errors[] = __('import_row_incomplete_data', ['row' => $rowNum]);
+
                 continue;
             }
 
             if (User::where('email', $email)->exists()) {
                 $errors[] = __('import_row_email_exists', ['row' => $rowNum, 'email' => $email]);
+
                 continue;
             }
 
             $role = strtolower($roleName);
-            if (!in_array($role, [Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
+            if (! in_array($role, [Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
                 $errors[] = __('import_row_invalid_role', ['row' => $rowNum, 'role' => $roleName]);
+
                 continue;
             }
 
@@ -441,7 +441,7 @@ class AdminController extends Controller
                 'password' => Hash::make($password ?: Str::random(12)),
                 'role' => $role,
                 'is_active' => true,
-                'provider' => 'email'
+                'provider' => 'email',
             ]);
             $imported++;
         }
@@ -451,7 +451,7 @@ class AdminController extends Controller
         return response()->json([
             'message' => __('users_imported_count', ['count' => $imported]),
             'imported' => $imported,
-            'errors' => $errors
+            'errors' => $errors,
         ]);
     }
 
@@ -462,7 +462,7 @@ class AdminController extends Controller
 
         if ($request->has('role')) {
             if (in_array($request->role, [Role::ADMIN, Role::TEACHER, Role::STUDENT, Role::DIRECTOR, Role::COORDINATOR], true)) {
-                $query->where('role', $request->role);
+                $query->whereHas('role', fn ($roleQuery) => $roleQuery->where('name', $request->role));
             }
         }
 
@@ -471,7 +471,7 @@ class AdminController extends Controller
         $filename = __('export_filename', ['date' => now()->format('Y-m-d_His')]);
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\""
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
         $callback = function () use ($users) {
@@ -482,10 +482,10 @@ class AdminController extends Controller
                     $user->id,
                     $this->sanitizeCsvValue($user->full_name),
                     $this->sanitizeCsvValue($user->email),
-                    $this->sanitizeCsvValue($user->role->name ?? ''),
+                    $this->sanitizeCsvValue($user->roleName() ?? ''),
                     $user->is_active ? __('csv_yes') : __('csv_no'),
-                    $this->sanitizeCsvValue($user->institution ?? ''),
-                    $user->created_at->format('Y-m-d')
+                    $this->sanitizeCsvValue($user->institution),
+                    $user->created_at->format('Y-m-d'),
                 ]);
             }
             fclose($handle);
@@ -501,14 +501,14 @@ class AdminController extends Controller
     {
         $dbConfig = config('database.connections.mysql');
 
-        if (!$dbConfig) {
+        if (! $dbConfig) {
             return response()->json(['message' => __('mysql_config_not_found')], 500);
         }
 
-        $filename = 'backup_' . now()->format('Y-m-d_His') . '.sql';
+        $filename = 'backup_'.now()->format('Y-m-d_His').'.sql';
         $backupPath = storage_path('app/backups');
 
-        if (!file_exists($backupPath)) {
+        if (! file_exists($backupPath)) {
             mkdir($backupPath, 0750, true);
         }
 
@@ -525,11 +525,11 @@ class AdminController extends Controller
             escapeshellarg($port),
             escapeshellarg($username),
             escapeshellarg($database),
-            escapeshellarg($backupPath . '/' . $filename)
+            escapeshellarg($backupPath.'/'.$filename)
         );
 
         $oldPwd = getenv('MYSQL_PWD');
-        putenv('MYSQL_PWD=' . $password);
+        putenv('MYSQL_PWD='.$password);
 
         $output = [];
         $returnCode = 0;
@@ -538,13 +538,14 @@ class AdminController extends Controller
         if ($oldPwd === false) {
             putenv('MYSQL_PWD');
         } else {
-            putenv('MYSQL_PWD=' . $oldPwd);
+            putenv('MYSQL_PWD='.$oldPwd);
         }
 
         if ($returnCode !== 0) {
-            report('Backup failed: ' . implode("\n", $output));
+            report('Backup failed: '.implode("\n", $output));
+
             return response()->json([
-                'message' => __('backup_create_error')
+                'message' => __('backup_create_error'),
             ], 500);
         }
 
@@ -556,8 +557,8 @@ class AdminController extends Controller
         return response()->json([
             'message' => __('backup_created'),
             'filename' => $filename,
-            'size' => filesize($backupPath . '/' . $filename),
-            'created_at' => now()
+            'size' => filesize($backupPath.'/'.$filename),
+            'created_at' => now(),
         ]);
     }
 
@@ -566,18 +567,18 @@ class AdminController extends Controller
     {
         $backupPath = storage_path('app/backups');
 
-        if (!file_exists($backupPath)) {
+        if (! file_exists($backupPath)) {
             return response()->json([
                 'backup' => null,
-                'message' => __('no_backups')
+                'message' => __('no_backups'),
             ]);
         }
 
-        $files = glob($backupPath . '/backup_*.sql');
+        $files = glob($backupPath.'/backup_*.sql');
         if (empty($files)) {
             return response()->json([
                 'backup' => null,
-                'message' => __('no_backups')
+                'message' => __('no_backups'),
             ]);
         }
 
@@ -592,8 +593,8 @@ class AdminController extends Controller
             'backup' => [
                 'filename' => $filename,
                 'size' => filesize($latest),
-                'created_at' => date('Y-m-d H:i:s', filemtime($latest))
-            ]
+                'created_at' => date('Y-m-d H:i:s', filemtime($latest)),
+            ],
         ]);
     }
 
@@ -602,12 +603,12 @@ class AdminController extends Controller
     {
         $safeFilename = basename($filename);
 
-        if (!preg_match('/^backup_[\w\-]+\.sql$/', $safeFilename)) {
+        if (! preg_match('/^backup_[\w\-]+\.sql$/', $safeFilename)) {
             return response()->json(['message' => __('invalid_filename')], 400);
         }
 
         $backupDir = storage_path('app/backups');
-        $backupPath = $backupDir . DIRECTORY_SEPARATOR . $safeFilename;
+        $backupPath = $backupDir.DIRECTORY_SEPARATOR.$safeFilename;
 
         $realPath = realpath($backupPath);
 
@@ -615,12 +616,12 @@ class AdminController extends Controller
             return response()->json(['message' => __('backup_not_found')], 404);
         }
 
-        if (!file_exists($realPath)) {
+        if (! file_exists($realPath)) {
             return response()->json(['message' => __('backup_not_found')], 404);
         }
 
         return response()->download($realPath, $safeFilename, [
-            'Content-Type' => 'application/sql'
+            'Content-Type' => 'application/sql',
         ]);
     }
 
@@ -629,10 +630,11 @@ class AdminController extends Controller
         $dangerousPrefixes = ['=', '+', '-', '@', "\t", "\r"];
         foreach ($dangerousPrefixes as $prefix) {
             if (str_starts_with($value, $prefix)) {
-                $value = "'" . $value;
+                $value = "'".$value;
                 break;
             }
         }
+
         return $value;
     }
 
@@ -640,7 +642,7 @@ class AdminController extends Controller
     {
         $binaryPath = config('database.connections.mysql.dump.dump_binary_path', '');
         $binary = trim((string) $binaryPath) !== ''
-            ? rtrim($binaryPath, '\\/') . DIRECTORY_SEPARATOR . 'mysqldump'
+            ? rtrim($binaryPath, '\\/').DIRECTORY_SEPARATOR.'mysqldump'
             : 'mysqldump';
 
         if (DIRECTORY_SEPARATOR === '\\') {

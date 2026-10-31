@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GuestStudentLookupTest extends TestCase
@@ -15,12 +17,12 @@ class GuestStudentLookupTest extends TestCase
     {
         $studentRole = 'student';
         $student = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'role' => $studentRole,
             'dni' => '70000003',
             'full_name' => 'Ana Garcia Lopez',
             'email' => 'ana.test@mathflow.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => Hash::make('password123'),
         ]);
 
         $token = Crypt::encryptString(json_encode([

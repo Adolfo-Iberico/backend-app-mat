@@ -59,7 +59,7 @@ return [
     'csv_no' => 'Mana',
     'csv_header_student' => 'Yachakuq',
     'csv_header_evaluation' => 'Suti',
-    'csv_header_type' => 'Ña' . "'" . 'i',
+    'csv_header_type' => 'Ña'."'".'i',
     'csv_header_score' => 'Yupay',
     'csv_header_date' => 'Punchay',
     'csv_header_letter' => 'Killka',

@@ -31,13 +31,13 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasColumn('teacher_profiles', 'students_count')) {
+        if (! Schema::hasColumn('teacher_profiles', 'students_count')) {
             Schema::table('teacher_profiles', function (Blueprint $table) {
                 $table->unsignedInteger('students_count')->default(0);
             });
         }
 
-        if (!Schema::hasColumn('student_profiles', 'xp')) {
+        if (! Schema::hasColumn('student_profiles', 'xp')) {
             Schema::table('student_profiles', function (Blueprint $table) {
                 $table->unsignedBigInteger('xp')->default(0)->after('badges');
             });

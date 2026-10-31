@@ -15,7 +15,7 @@ class PasswordResetController extends Controller
     public function sendResetLink(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email|exists:users,email',
         ]);
 
         $status = Password::sendResetLink(
@@ -24,12 +24,12 @@ class PasswordResetController extends Controller
 
         if ($status === Password::RESET_LINK_SENT) {
             return response()->json([
-                'message' => __('password_reset_link_sent')
+                'message' => __('password_reset_link_sent'),
             ]);
         }
 
         return response()->json([
-            'message' => __('password_reset_link_error')
+            'message' => __('password_reset_link_error'),
         ], 400);
     }
 
@@ -39,7 +39,7 @@ class PasswordResetController extends Controller
         $request->validate([
             'email' => 'required|email',
             'token' => 'required|string',
-            'password' => 'required|string|min:8|confirmed'
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $status = Password::reset(
@@ -53,12 +53,12 @@ class PasswordResetController extends Controller
 
         if ($status === Password::PASSWORD_RESET) {
             return response()->json([
-                'message' => __('password_reset_success')
+                'message' => __('password_reset_success'),
             ]);
         }
 
         return response()->json([
-            'message' => __('password_token_invalid_or_expired')
+            'message' => __('password_token_invalid_or_expired'),
         ], 400);
     }
 }

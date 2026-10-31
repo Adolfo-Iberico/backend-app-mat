@@ -3,18 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Role;
+use App\Models\Achievement;
 use App\Models\Evaluation;
+use App\Models\EvaluationResult;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
-use App\Models\EvaluationResult;
-use App\Models\Achievement;
+use App\Models\Role;
+use App\Models\StudentProfile;
+use App\Models\User;
+use App\Services\ActivityService;
+use App\Services\GamificationService;
+use App\Services\StudentReportService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use App\Services\GamificationService;
+use Illuminate\Support\Str;
 
 /**
  * Proporciona paneles para estudiantes y docentes, progreso de lecciones, insignias y estadísticas.
@@ -29,7 +33,7 @@ class ProgressController extends Controller
         $user = Auth::user();
         $studentProfile = $user->studentProfile;
 
-        if (!$studentProfile) {
+        if (! $studentProfile) {
             $studentProfile = (object) [
                 'average_score' => 0,
                 'current_streak' => 0,
@@ -71,7 +75,7 @@ class ProgressController extends Controller
             'average_score' => $studentProfile->average_score ?? 0,
             'current_streak' => $studentProfile->current_streak ?? 0,
             'total_time_spent' => $studentProfile->total_time_spent ?? 0,
-            'badges' => $studentProfile->badges ?? []
+            'badges' => $studentProfile->badges ?? [],
         ];
 
         // Próximas evaluaciones — publicadas, con fecha límite futura, que el estudiante no haya completado
@@ -82,7 +86,7 @@ class ProgressController extends Controller
         $upcomingEvaluations = Evaluation::where('is_published', true)
             ->where(function ($query) {
                 $query->where('due_date', '>=', now())
-                      ->orWhereNull('due_date');
+                    ->orWhereNull('due_date');
             })
             ->whereNotIn('id', $completedEvaluationIds)
             ->with('teacher')
@@ -97,7 +101,7 @@ class ProgressController extends Controller
             'in_progress_lessons' => $inProgressLessons,
             'completed_lessons' => $completedLessons,
             'recent_evaluations' => $recentEvaluations,
-            'upcoming_evaluations' => $upcomingEvaluations
+            'upcoming_evaluations' => $upcomingEvaluations,
         ]);
     }
 
@@ -110,10 +114,10 @@ class ProgressController extends Controller
 
         // Obtener todas las evaluaciones del docente
         $evaluationIds = Evaluation::where('teacher_id', $user->id)->pluck('id');
-        
+
         // Estadísticas del docente
         $stats = [
-            'total_students' => User::where('role', Role::STUDENT)->count(),
+            'total_students' => User::forRole(Role::STUDENT)->count(),
             'total_lessons' => Lesson::where('teacher_id', $user->id)->count(),
             'total_evaluations' => Evaluation::where('teacher_id', $user->id)->count(),
             'published_lessons' => Lesson::where('teacher_id', $user->id)
@@ -128,11 +132,11 @@ class ProgressController extends Controller
                 ->avg('score') ?? 0,
             'pending_reviews' => EvaluationResult::whereIn('evaluation_id', $evaluationIds)
                 ->where('status', 'pending')
-                ->count()
+                ->count(),
         ];
 
         // Últimos estudiantes activos
-        $recentStudents = User::where('role', Role::STUDENT)
+        $recentStudents = User::forRole(Role::STUDENT)
             ->whereNotNull('last_login')
             ->orderBy('last_login', 'desc')
             ->limit(10)
@@ -149,7 +153,7 @@ class ProgressController extends Controller
             'user' => $user->load('teacherProfile'),
             'stats' => $stats,
             'recent_students' => $recentStudents,
-            'recent_evaluations' => $recentEvaluations
+            'recent_evaluations' => $recentEvaluations,
         ]);
     }
 
@@ -162,7 +166,7 @@ class ProgressController extends Controller
         $user = Auth::user();
         $studentProfile = $user->studentProfile;
 
-        if (!$studentProfile) {
+        if (! $studentProfile) {
             $studentProfile = (object) [
                 'average_score' => 0,
                 'current_streak' => 0,
@@ -193,7 +197,7 @@ class ProgressController extends Controller
 
         return response()->json([
             'user' => $user,
-            'stats' => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -203,12 +207,12 @@ class ProgressController extends Controller
     public function getLessonProgress($lessonId)
     {
         $lesson = Lesson::findOrFail($lessonId);
-        
+
         $progress = LessonProgress::where('user_id', Auth::id())
             ->where('lesson_id', $lessonId)
             ->first();
 
-        if (!$progress) {
+        if (! $progress) {
             // Crear progreso inicial
             $progress = LessonProgress::create([
                 'id' => Str::uuid(),
@@ -217,13 +221,13 @@ class ProgressController extends Controller
                 'progress' => 0,
                 'status' => LessonProgress::STATUS_NOT_STARTED,
                 'time_spent' => 0,
-                'last_position' => 0
+                'last_position' => 0,
             ]);
         }
 
         return response()->json([
             'lesson' => $lesson,
-            'progress' => $progress
+            'progress' => $progress,
         ]);
     }
 
@@ -233,14 +237,14 @@ class ProgressController extends Controller
     public function updateLessonProgress(Request $request, $lessonId)
     {
         // Solo estudiantes avanzan en lecciones
-        if (!Auth::user()->isStudent()) {
+        if (! Auth::user()->isStudent()) {
             return response()->json(['message' => 'Solo los estudiantes pueden actualizar el progreso'], 403);
         }
 
         $validated = $request->validate([
             'progress' => 'required|integer|min:0|max:100',
             'time_spent' => 'nullable|integer|min:0',
-            'last_position' => 'nullable|integer|min:0'
+            'last_position' => 'nullable|integer|min:0',
         ]);
 
         $lesson = Lesson::findOrFail($lessonId);
@@ -251,7 +255,7 @@ class ProgressController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$progress) {
+            if (! $progress) {
                 $progress = LessonProgress::create([
                     'id' => Str::uuid(),
                     'user_id' => Auth::id(),
@@ -259,12 +263,12 @@ class ProgressController extends Controller
                     'progress' => 0,
                     'status' => LessonProgress::STATUS_NOT_STARTED,
                     'time_spent' => 0,
-                    'last_position' => 0
+                    'last_position' => 0,
                 ]);
             }
 
             $updateData = [
-                'progress' => $validated['progress']
+                'progress' => $validated['progress'],
             ];
 
             if (isset($validated['time_spent'])) {
@@ -292,7 +296,7 @@ class ProgressController extends Controller
         });
 
         if ($progress->status === LessonProgress::STATUS_COMPLETED) {
-            \App\Services\ActivityService::log('lesson_completed', $lesson);
+            ActivityService::log('lesson_completed', $lesson);
         }
 
         // Verificar y otorgar insignias
@@ -313,7 +317,7 @@ class ProgressController extends Controller
             'message' => __('progress_updated'),
             'progress' => $progress,
             'badges' => $badges,
-            'gamification' => $gamification
+            'gamification' => $gamification,
         ]);
     }
 
@@ -323,7 +327,7 @@ class ProgressController extends Controller
     public function getMyStats()
     {
         $user = Auth::user();
-        
+
         // Progreso general
         $totalLessons = Lesson::published()->count();
         $completedLessons = LessonProgress::where('user_id', $user->id)
@@ -334,7 +338,7 @@ class ProgressController extends Controller
         $totalTime = LessonProgress::where('user_id', $user->id)
             ->sum('time_spent');
 
-        // Evaluaciones 
+        // Evaluaciones
         $totalEvaluations = Evaluation::published()->count();
         $completedEvaluations = EvaluationResult::where('user_id', $user->id)
             ->where('status', 'completed')
@@ -364,10 +368,10 @@ class ProgressController extends Controller
                 'total_time_spent' => $totalTime,
                 'total_evaluations' => $totalEvaluations,
                 'completed_evaluations' => $completedEvaluations,
-                'average_score' => round($averageScore, 2)
+                'average_score' => round($averageScore, 2),
             ],
             'progress_distribution' => $progressDistribution,
-            'recent_activity' => $recentActivity
+            'recent_activity' => $recentActivity,
         ]);
     }
 
@@ -410,11 +414,11 @@ class ProgressController extends Controller
         $studentProfile = $user->studentProfile;
 
         // Solo estudiantes tienen insignias
-        if (!$studentProfile) {
+        if (! $studentProfile) {
             return response()->json([
                 'badges' => [],
                 'unlocked_count' => 0,
-                'total_badges' => 0
+                'total_badges' => 0,
             ]);
         }
 
@@ -426,38 +430,38 @@ class ProgressController extends Controller
                 'id' => 'first_lesson',
                 'name' => __('badge_first_lesson_name'),
                 'description' => __('badge_first_lesson_desc'),
-                'icon' => '🎓'
+                'icon' => '🎓',
             ],
             [
                 'id' => 'lesson_master',
                 'name' => __('badge_lesson_master_name'),
                 'description' => __('badge_lesson_master_desc'),
-                'icon' => '📚'
+                'icon' => '📚',
             ],
             [
                 'id' => 'perfect_score',
                 'name' => __('badge_perfect_score_name'),
                 'description' => __('badge_perfect_score_desc'),
-                'icon' => '⭐'
+                'icon' => '⭐',
             ],
             [
                 'id' => 'streak_7',
                 'name' => __('badge_streak_7_name'),
                 'description' => __('badge_streak_7_desc'),
-                'icon' => '🔥'
+                'icon' => '🔥',
             ],
             [
                 'id' => 'streak_30',
                 'name' => __('badge_streak_30_name'),
                 'description' => __('badge_streak_30_desc'),
-                'icon' => '💎'
+                'icon' => '💎',
             ],
             [
                 'id' => 'math_genius',
                 'name' => __('badge_math_genius_name'),
                 'description' => __('badge_math_genius_desc'),
-                'icon' => '🧠'
-            ]
+                'icon' => '🧠',
+            ],
         ];
 
         // Marcar insignias obtenidas
@@ -468,7 +472,7 @@ class ProgressController extends Controller
         return response()->json([
             'badges' => $availableBadges,
             'unlocked_count' => count($badges),
-            'total_badges' => count($availableBadges)
+            'total_badges' => count($availableBadges),
         ]);
     }
 
@@ -507,9 +511,9 @@ class ProgressController extends Controller
                 'level_label' => __($level),
                 'average_score' => $averageScore,
                 'next_level' => $nextLevel,
-                'next_level_label' => $nextLevel ? __($nextLevel . '_level') : null,
-                'points_to_next_level' => max(0, $pointsToNextLevel)
-            ]
+                'next_level_label' => $nextLevel ? __($nextLevel.'_level') : null,
+                'points_to_next_level' => max(0, $pointsToNextLevel),
+            ],
         ]);
     }
 
@@ -518,7 +522,7 @@ class ProgressController extends Controller
     /** Descarga el reporte de progreso del estudiante autenticado en PDF. */
     public function exportMyReportPdf()
     {
-        $service = app(\App\Services\StudentReportService::class);
+        $service = app(StudentReportService::class);
 
         return $service->pdf(Auth::id(), 'mi-reporte.pdf');
     }
@@ -526,7 +530,7 @@ class ProgressController extends Controller
     /** Descarga el reporte de progreso del estudiante autenticado en Excel. */
     public function exportMyReportExcel()
     {
-        $service = app(\App\Services\StudentReportService::class);
+        $service = app(StudentReportService::class);
 
         return $service->excel(Auth::id(), 'mi-reporte.xlsx');
     }
@@ -538,7 +542,7 @@ class ProgressController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->isStudent()) {
+        if (! $user->isStudent()) {
             return response()->json(['message' => __('student_profile_forbidden')], 403);
         }
 
@@ -553,8 +557,8 @@ class ProgressController extends Controller
 
         if (array_key_exists('academic_level', $validated)) {
             $profile = $user->studentProfile;
-            if (!$profile) {
-                $profile = \App\Models\StudentProfile::create([
+            if (! $profile) {
+                $profile = StudentProfile::create([
                     'user_id' => $user->id,
                     'academic_level' => $validated['academic_level'],
                 ]);
@@ -582,7 +586,7 @@ class ProgressController extends Controller
             // Streak logic: track consecutive days of activity
             $today = now()->startOfDay();
             $lastActivity = $studentProfile->last_activity_date
-                ? \Carbon\Carbon::parse($studentProfile->last_activity_date)->startOfDay()
+                ? Carbon::parse($studentProfile->last_activity_date)->startOfDay()
                 : null;
 
             if ($lastActivity) {
@@ -616,7 +620,7 @@ class ProgressController extends Controller
         $studentProfile = $user->studentProfile;
 
         // Solo estudiantes tienen perfil y pueden ganar insignias/rachas
-        if (!$studentProfile) {
+        if (! $studentProfile) {
             return [];
         }
 
@@ -707,7 +711,7 @@ class ProgressController extends Controller
         ];
 
         NotificationController::createNotification(
-            $userId, 
+            $userId,
             __('notification_new_badge_unlocked_title'),
             $badgeNames[$badgeId] ?? __('notification_new_badge_unlocked_body'),
             'success'
@@ -732,9 +736,9 @@ class ProgressController extends Controller
         foreach ($recentLessons as $lesson) {
             $activity[] = [
                 'type' => 'lesson_completed',
-                'title' => __('activity_lesson_completed') . $lesson->lesson->title,
+                'title' => __('activity_lesson_completed').$lesson->lesson->title,
                 'date' => $lesson->completed_at,
-                'icon' => '📖'
+                'icon' => '📖',
             ];
         }
 
@@ -749,14 +753,14 @@ class ProgressController extends Controller
         foreach ($recentEvaluations as $evaluation) {
             $activity[] = [
                 'type' => 'evaluation_completed',
-                'title' => __('activity_evaluation_completed') . $evaluation->evaluation->title . ' (Puntuación: ' . $evaluation->score . ')',
+                'title' => __('activity_evaluation_completed').$evaluation->evaluation->title.' (Puntuación: '.$evaluation->score.')',
                 'date' => $evaluation->completed_at,
-                'icon' => '📝'
+                'icon' => '📝',
             ];
         }
 
         // Ordenar por fecha
-        usort($activity, function($a, $b) {
+        usort($activity, function ($a, $b) {
             return strtotime($b['date']) - strtotime($a['date']);
         });
 

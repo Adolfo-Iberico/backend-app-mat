@@ -29,8 +29,8 @@ class StudentManagerController extends Controller
             ->orderBy('grade')->orderBy('section')
             ->get();
 
-        $activos = User::where('role', Role::STUDENT)->where('is_active', true)->count();
-        $inactivos = User::where('role', Role::STUDENT)->where('is_active', false)->count();
+        $activos = User::forRole(Role::STUDENT)->where('is_active', true)->count();
+        $inactivos = User::forRole(Role::STUDENT)->where('is_active', false)->count();
 
         return response()->json([
             'success' => true,
@@ -48,7 +48,7 @@ class StudentManagerController extends Controller
     /** Listado de alumnos con filtros por grado, sección, búsqueda y estado. */
     public function index(Request $request)
     {
-        $query = User::where('role', Role::STUDENT)
+        $query = User::forRole(Role::STUDENT)
             ->leftJoin('salones', 'salones.id', '=', 'users.salon_id')
             ->select('users.*', 'salones.grade as salon_grade', 'salones.section as salon_section');
 
@@ -65,7 +65,7 @@ class StudentManagerController extends Controller
             $query->where('users.is_active', true);
         }
         if ($request->filled('search')) {
-            $buscar = '%' . $request->search . '%';
+            $buscar = '%'.$request->search.'%';
             $query->where(function ($q) use ($buscar) {
                 $q->where('users.full_name', 'like', $buscar)
                     ->orWhere('users.email', 'like', $buscar)
@@ -132,6 +132,7 @@ class StudentManagerController extends Controller
 
             if ($nombre === '' || $gradoRaw === '' || $seccionRaw === '') {
                 $errores[] = "Fila {$num}: faltan nombre, grado o sección.";
+
                 continue;
             }
 
@@ -139,18 +140,21 @@ class StudentManagerController extends Controller
             $seccion = $this->normalizaSeccion($seccionRaw);
             if ($grado === null) {
                 $errores[] = "Fila {$num}: grado no reconocido '{$gradoRaw}' (usa 1ro a 5to o 4to/5to).";
+
                 continue;
             }
             if ($seccion === null) {
                 $errores[] = "Fila {$num}: sección no reconocida '{$seccionRaw}' (usa una letra: A, B, C...).";
+
                 continue;
             }
 
             if ($correo === '' && $dni !== '') {
-                $correo = 'alumno' . preg_replace('/\D/', '', $dni) . '@mathflow.com';
+                $correo = 'alumno'.preg_replace('/\D/', '', $dni).'@mathflow.com';
             }
-            if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            if (! filter_var($correo, FILTER_VALIDATE_EMAIL)) {
                 $errores[] = "Fila {$num}: correo inválido o DNI ausente para generarlo.";
+
                 continue;
             }
 
@@ -160,6 +164,7 @@ class StudentManagerController extends Controller
             if ($existente) {
                 if ($existente->roleName() !== Role::STUDENT) {
                     $errores[] = "Fila {$num}: el correo {$correo} pertenece a una cuenta de otro rol.";
+
                     continue;
                 }
                 $existente->update([
@@ -169,6 +174,7 @@ class StudentManagerController extends Controller
                     'is_active' => true,
                 ]);
                 $actualizados++;
+
                 continue;
             }
 
@@ -191,7 +197,7 @@ class StudentManagerController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Importación completada: {$importados} nuevos, {$actualizados} reasignados, " . count($errores) . ' errores.',
+            'message' => "Importación completada: {$importados} nuevos, {$actualizados} reasignados, ".count($errores).' errores.',
             'importados' => $importados,
             'actualizados' => $actualizados,
             'errores' => $errores,
@@ -214,14 +220,21 @@ class StudentManagerController extends Controller
     /** Exporta en CSV los alumnos del filtro actual. */
     public function export(Request $request): StreamedResponse
     {
-        $query = User::where('role', Role::STUDENT)
+        $query = User::forRole(Role::STUDENT)
             ->leftJoin('salones', 'salones.id', '=', 'users.salon_id')
             ->select('users.*', 'salones.grade as salon_grade', 'salones.section as salon_section');
 
-        if ($request->filled('grade')) $query->where('salones.grade', $request->grade);
-        if ($request->filled('section')) $query->where('salones.section', strtoupper(trim($request->section)));
-        if ($request->input('state') === 'inactive') $query->where('users.is_active', false);
-        elseif ($request->input('state') !== 'all') $query->where('users.is_active', true);
+        if ($request->filled('grade')) {
+            $query->where('salones.grade', $request->grade);
+        }
+        if ($request->filled('section')) {
+            $query->where('salones.section', strtoupper(trim($request->section)));
+        }
+        if ($request->input('state') === 'inactive') {
+            $query->where('users.is_active', false);
+        } elseif ($request->input('state') !== 'all') {
+            $query->where('users.is_active', true);
+        }
 
         $students = $query->orderBy('salones.grade')->orderBy('salones.section')
             ->orderBy('users.full_name')->get();
@@ -241,13 +254,13 @@ class StudentManagerController extends Controller
                 ], ';');
             }
             fclose($out);
-        }, 'alumnos_' . now()->format('Ymd_His') . '.csv', ['Content-Type' => 'text/csv;charset=UTF-8']);
+        }, 'alumnos_'.now()->format('Ymd_His').'.csv', ['Content-Type' => 'text/csv;charset=UTF-8']);
     }
 
     /** Mueve un alumno de salón (grado + sección) o activa/desactiva su cuenta. */
     public function update(Request $request, $id)
     {
-        $student = User::where('role', Role::STUDENT)->findOrFail($id);
+        $student = User::forRole(Role::STUDENT)->findOrFail($id);
 
         $validated = $request->validate([
             'grade' => 'sometimes|required_with:section|string',
@@ -290,6 +303,7 @@ class StudentManagerController extends Controller
                     }
                     $rows[] = $cells;
                 }
+
                 // Descarta filas totalmente vacías
                 return array_values(array_filter($rows, fn ($r) => trim(implode('', array_map('strval', $r))) !== ''));
             } catch (\Throwable) {
@@ -298,16 +312,21 @@ class StudentManagerController extends Controller
         }
 
         $contenido = file_get_contents($ruta);
-        if ($contenido === false) return null;
+        if ($contenido === false) {
+            return null;
+        }
         $contenido = preg_replace('/^\xEF\xBB\xBF/', '', $contenido); // BOM
         $lineas = preg_split('/\r\n|\r|\n/', trim($contenido));
-        if (!$lineas) return null;
+        if (! $lineas) {
+            return null;
+        }
 
         $delim = (substr_count($lineas[0], ';') > substr_count($lineas[0], ',')) ? ';' : ',';
         $rows = [];
         foreach ($lineas as $linea) {
             $rows[] = str_getcsv($linea, $delim);
         }
+
         return $rows;
     }
 
@@ -321,13 +340,17 @@ class StudentManagerController extends Controller
             'grade' => 'grado', 'grado escolar' => 'grado',
             'section' => 'seccion', 'salon' => 'seccion', 'salón' => 'seccion', 'aula' => 'seccion', 'sección' => 'seccion',
         ];
+
         return $mapa[$k] ?? $k;
     }
 
     /** '4to', '4', '5to Secundaria' -> '4to' | '5to'. Null si no cabe 1-5. */
     private function normalizaGrado(string $raw): ?string
     {
-        if (!preg_match('/^([1-5])/', trim($raw), $m)) return null;
+        if (! preg_match('/^([1-5])/', trim($raw), $m)) {
+            return null;
+        }
+
         return self::GRADOS[$m[1]] ?? null;
     }
 
@@ -336,8 +359,10 @@ class StudentManagerController extends Controller
     {
         if (preg_match('/([A-Za-z])\s*$/', trim($raw), $m) || preg_match('/([A-Za-z])/', trim($raw), $m)) {
             $letra = strtoupper($m[1]);
+
             return ctype_alpha($letra) ? $letra : null;
         }
+
         return null;
     }
 

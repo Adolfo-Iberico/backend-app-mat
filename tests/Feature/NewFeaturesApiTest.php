@@ -2,24 +2,26 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\StudentProfile;
-use App\Models\Achievement;
 use App\Models\AcademicEvent;
 use App\Models\PushSubscription;
+use App\Models\StudentProfile;
+use App\Models\User;
 use App\Services\GamificationService;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class NewFeaturesApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $student;
+
     private User $teacher;
+
     private User $admin;
 
     protected function setUp(): void
@@ -61,7 +63,6 @@ class NewFeaturesApiTest extends TestCase
         ]);
 
         StudentProfile::create([
-            'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'basic',
             'current_streak' => 0,
@@ -245,7 +246,8 @@ class NewFeaturesApiTest extends TestCase
         $endpoint = 'https://fcm.googleapis.com/fcm/send/unsub-endpoint';
         PushSubscription::create([
             'user_id' => $this->student->id,
-            'endpoint' => $endpoint,
+            'token' => $endpoint,
+            'platform' => 'web',
             'p256dh' => 'abc',
             'auth' => 'def',
             'is_active' => true,
@@ -254,9 +256,9 @@ class NewFeaturesApiTest extends TestCase
         $this->postJson("{$this->baseUrl}/push/unsubscribe", ['endpoint' => $endpoint])
             ->assertOk();
 
-        $this->assertDatabaseMissing('push_subscriptions', [
+        $this->assertDatabaseMissing('device_tokens', [
             'user_id' => $this->student->id,
-            'endpoint' => $endpoint,
+            'token' => $endpoint,
         ]);
     }
 

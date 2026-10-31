@@ -2,27 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Perfil profesional de un usuario docente y sus recursos asignados. */
 class TeacherProfile extends Model
 {
     use HasUuids;
 
+    protected $table = 'user_profiles';
+
+    protected $primaryKey = 'user_id';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'id',
         'user_id',
         'department',
         'specialization',
-        'years_experience'
+        'years_experience',
     ];
 
     protected $casts = [
-        'years_experience' => 'integer'
+        'years_experience' => 'integer',
     ];
 
     // ========== RELACIONES ==========
@@ -42,5 +46,5 @@ class TeacherProfile extends Model
     public function evaluations()
     {
         return $this->hasMany(Evaluation::class, 'teacher_id', 'user_id');
-    } 
+    }
 }

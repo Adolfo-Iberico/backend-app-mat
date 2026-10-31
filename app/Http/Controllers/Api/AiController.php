@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\GroqException;
 use App\Http\Controllers\Controller;
 use App\Services\ActivityService;
-use App\Exceptions\GroqException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -85,7 +86,7 @@ EOT;
 
         if ($token && $token->exists) {
             $now = now();
-            if (!$token->daily_reset_at || $token->daily_reset_at->diffInHours($now) >= 24) {
+            if (! $token->daily_reset_at || $token->daily_reset_at->diffInHours($now) >= 24) {
                 $token->update(['daily_requests' => 0, 'daily_reset_at' => $now]);
             }
 
@@ -103,7 +104,7 @@ EOT;
             ->map(fn ($item) => ['role' => $item['role'], 'content' => $item['content']])
             ->all();
         $lastMessage = end($conversation);
-        if (!$lastMessage || $lastMessage['role'] !== 'user' || $lastMessage['content'] !== $validated['message']) {
+        if (! $lastMessage || $lastMessage['role'] !== 'user' || $lastMessage['content'] !== $validated['message']) {
             $conversation[] = ['role' => 'user', 'content' => $validated['message']];
         }
 
@@ -135,16 +136,17 @@ EOT;
             }
         } catch (ConnectionException $exception) {
             report($exception);
+
             return response()->json([
                 'error' => 'No se pudo conectar con el servicio de IA. Parece un problema de conexión de red. Revisa internet e inténtalo de nuevo.',
                 'code' => 'network',
             ], 502);
         }
 
-        if (!$groqResponse->successful()) {
+        if (! $groqResponse->successful()) {
             $status = $groqResponse->status();
             $providerMessage = $groqResponse->json('error.message');
-            \Illuminate\Support\Facades\Log::error('groq_chat_request_failed', [
+            Log::error('groq_chat_request_failed', [
                 'status' => $status,
                 'provider_message' => is_string($providerMessage) ? mb_substr($providerMessage, 0, 300) : null,
             ]);
@@ -166,10 +168,11 @@ EOT;
         }
 
         $content = $groqResponse->json('choices.0.message.content');
-        if (!is_string($content) || trim($content) === '') {
-            \Illuminate\Support\Facades\Log::error('groq_chat_empty_response', [
+        if (! is_string($content) || trim($content) === '') {
+            Log::error('groq_chat_empty_response', [
                 'model' => config('services.groq.model'),
             ]);
+
             return response()->json([
                 'error' => 'Groq devolvió una respuesta vacía. Inténtalo de nuevo.',
                 'code' => 'empty',
@@ -180,9 +183,9 @@ EOT;
 
         return response()->stream(function () use ($content) {
             foreach (mb_str_split($content, 48, 'UTF-8') as $chunk) {
-                echo 'data: ' . json_encode([
+                echo 'data: '.json_encode([
                     'choices' => [['delta' => ['content' => $chunk]]],
-                ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n\n";
+                ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)."\n\n";
                 if (ob_get_level() > 0) {
                     ob_flush();
                 }
@@ -224,7 +227,7 @@ EOT;
 
         if ($token && $token->exists) {
             $now = now();
-            if (!$token->daily_reset_at || $token->daily_reset_at->diffInHours($now) >= 24) {
+            if (! $token->daily_reset_at || $token->daily_reset_at->diffInHours($now) >= 24) {
                 $token->update(['daily_requests' => 0, 'daily_reset_at' => $now]);
             }
 
@@ -259,13 +262,13 @@ Reglas:
 - El contenido debe estar en español, ser pedagógico, apropiado al nivel escolar y ajustarse al tema solicitado.
 EOT;
 
-        $userPrompt = 'Título indicado por el docente: ' . $request->input('title');
+        $userPrompt = 'Título indicado por el docente: '.$request->input('title');
         if ($request->filled('unit')) {
-            $userPrompt .= "\nCurso (unit) indicado: " . $request->input('unit');
+            $userPrompt .= "\nCurso (unit) indicado: ".$request->input('unit');
         }
         if ($request->filled('difficulty')) {
             $difficultyLabels = ['basic' => 'básico', 'intermediate' => 'intermedio', 'advanced' => 'avanzado'];
-            $userPrompt .= "\nNivel de dificultad: " . $difficultyLabels[$request->input('difficulty')];
+            $userPrompt .= "\nNivel de dificultad: ".$difficultyLabels[$request->input('difficulty')];
         }
 
         try {
@@ -335,7 +338,7 @@ EOT;
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_HTTPHEADER => [
                         'Content-Type: application/json',
-                        'Authorization: Bearer ' . $apiKey,
+                        'Authorization: Bearer '.$apiKey,
                     ],
                     CURLOPT_POSTFIELDS => json_encode($payload),
                     CURLOPT_TIMEOUT => 90,
@@ -360,6 +363,7 @@ EOT;
                     );
                     if ($isNetworkError && $try === 0) {
                         usleep(1500000); // 1.5 s antes del reintento
+
                         continue;
                     }
                     break;
@@ -387,8 +391,8 @@ EOT;
                         ),
                         default => new GroqException(
                             is_string($providerMessage)
-                                ? 'El servicio de IA no pudo procesar la solicitud: ' . mb_substr($providerMessage, 0, 200)
-                                : 'El servicio de IA devolvió HTTP ' . $httpCode . '. Inténtalo de nuevo.',
+                                ? 'El servicio de IA no pudo procesar la solicitud: '.mb_substr($providerMessage, 0, 200)
+                                : 'El servicio de IA devolvió HTTP '.$httpCode.'. Inténtalo de nuevo.',
                             'provider',
                             502
                         ),

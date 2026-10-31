@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Estado y avance de un usuario en una lección. */
 class LessonProgress extends Model
@@ -11,6 +11,7 @@ class LessonProgress extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -21,19 +22,21 @@ class LessonProgress extends Model
         'status',
         'completed_at',
         'time_spent',
-        'last_position'
+        'last_position',
     ];
 
     protected $casts = [
         'progress' => 'integer',
         'time_spent' => 'integer',
         'last_position' => 'integer',
-        'completed_at' => 'datetime'
+        'completed_at' => 'datetime',
     ];
 
     // ========== CONSTANTES ==========
     const STATUS_NOT_STARTED = 'not_started';
+
     const STATUS_IN_PROGRESS = 'in_progress';
+
     const STATUS_COMPLETED = 'completed';
 
     // ========== RELACIONES ==========

@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
             'academic_level' => 'required_if:role,student|in:basic,intermediate,advanced',
             'grade' => 'nullable|string|max:50',
             'department' => 'required_if:role,teacher|string|max:255',
-            'specialization' => 'required_if:role,teacher|string|max:255'
+            'specialization' => 'required_if:role,teacher|string|max:255',
         ];
     }
 

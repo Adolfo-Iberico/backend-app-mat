@@ -12,7 +12,7 @@ class SetRequestLocale
     public function handle(Request $request, Closure $next): Response
     {
         $locale = strtolower(substr((string) $request->header('Accept-Language'), 0, 2));
-        if (!in_array($locale, ['en', 'es', 'qu'], true)) {
+        if (! in_array($locale, ['en', 'es', 'qu'], true)) {
             $locale = config('app.locale');
         }
 

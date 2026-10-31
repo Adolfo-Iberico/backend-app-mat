@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Role;
 use App\Models\StudentProfile;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Google\Client as GoogleClient;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Http\Request;
-use Google\Client as GoogleClient;
 
 /**
  * Autentica usuarios mediante OAuth de Google o la verificación móvil de ID tokens.
@@ -39,21 +39,21 @@ class GoogleAuthController extends Controller
 
             if ($user) {
                 $updates = [];
-                if (!$user->google_id) {
+                if (! $user->google_id) {
                     $updates = [
                         'google_id' => $googleUser->id,
                         'google_token' => $googleUser->token,
-                        'provider' => 'google'
+                        'provider' => 'google',
                     ];
                 }
-                if (!$user->profile_image && $googleUser->avatar) {
+                if (! $user->profile_image && $googleUser->avatar) {
                     $updates['profile_image'] = $googleUser->avatar;
                 }
                 if ($updates) {
                     $user->update($updates);
                 }
 
-                if (!$user->is_active) {
+                if (! $user->is_active) {
                     return $this->redirectToFrontendLogin(['error' => 'inactive']);
                 }
 
@@ -70,13 +70,12 @@ class GoogleAuthController extends Controller
                     'role' => Role::STUDENT,
                     'is_active' => true,
                     'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(24))
+                    'password' => Hash::make(Str::random(24)),
                 ]);
 
                 StudentProfile::create([
-                    'id' => Str::uuid(),
                     'user_id' => $user->id,
-                    'academic_level' => 'basic'
+                    'academic_level' => 'basic',
                 ]);
             }
 
@@ -84,7 +83,7 @@ class GoogleAuthController extends Controller
 
             // Use a short-lived auth code instead of the raw token in URL
             $code = Str::random(32);
-            Cache::put('google_auth_code:' . $code, $token, now()->addMinutes(5));
+            Cache::put('google_auth_code:'.$code, $token, now()->addMinutes(5));
             Log::info('google_login_succeeded', [
                 'user_id' => $user->id,
                 'method' => 'oauth_callback',
@@ -94,6 +93,7 @@ class GoogleAuthController extends Controller
             return $this->redirectToFrontendLogin(['auth_code' => $code]);
         } catch (\Exception $e) {
             report($e);
+
             return $this->redirectToFrontendLogin(['error' => 'auth_failed']);
         }
     }
@@ -102,7 +102,7 @@ class GoogleAuthController extends Controller
     {
         $frontendUrl = rtrim((string) config('services.google.frontend_url'), '/');
 
-        return redirect($frontendUrl . '/login?' . http_build_query($query));
+        return redirect($frontendUrl.'/login?'.http_build_query($query));
     }
 
     /**
@@ -111,13 +111,13 @@ class GoogleAuthController extends Controller
     public function loginWithGoogleToken(Request $request)
     {
         $request->validate([
-            'access_token' => 'required|string'
+            'access_token' => 'required|string',
         ]);
 
         try {
             $client = new GoogleClient(['client_id' => config('services.google.client_id')]);
             $payload = $client->verifyIdToken($request->access_token);
-            if (!$payload) {
+            if (! $payload) {
                 return response()->json(['message' => __('google_invalid_token')], 401);
             }
 
@@ -132,19 +132,19 @@ class GoogleAuthController extends Controller
 
             if ($user) {
                 $updates = [];
-                if (!$user->google_id) {
+                if (! $user->google_id) {
                     $updates = [
                         'google_id' => $googleId,
-                        'provider' => 'google'
+                        'provider' => 'google',
                     ];
                 }
-                if (!$user->profile_image && $avatar) {
+                if (! $user->profile_image && $avatar) {
                     $updates['profile_image'] = $avatar;
                 }
                 if ($updates) {
                     $user->update($updates);
                 }
-                if (!$user->is_active) {
+                if (! $user->is_active) {
                     return response()->json(['message' => __('google_user_inactive_contact_admin')], 403);
                 }
                 $user->update(['last_login' => now()]);
@@ -159,13 +159,12 @@ class GoogleAuthController extends Controller
                     'role' => Role::STUDENT,
                     'is_active' => true,
                     'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(24))
+                    'password' => Hash::make(Str::random(24)),
                 ]);
 
                 StudentProfile::create([
-                    'id' => Str::uuid(),
                     'user_id' => $user->id,
-                    'academic_level' => 'basic'
+                    'academic_level' => 'basic',
                 ]);
             }
 
@@ -182,12 +181,13 @@ class GoogleAuthController extends Controller
                 'message' => __('google_auth_success'),
                 'user' => $user,
                 'access_token' => $token,
-                'token_type' => 'Bearer'
+                'token_type' => 'Bearer',
             ]);
         } catch (\Exception $e) {
             report($e);
+
             return response()->json([
-                'message' => __('google_auth_error')
+                'message' => __('google_auth_error'),
             ], 500);
         }
     }
@@ -217,16 +217,16 @@ class GoogleAuthController extends Controller
     {
         $request->validate(['code' => 'required|string']);
 
-        $cacheKey = 'google_auth_code:' . $request->code;
+        $cacheKey = 'google_auth_code:'.$request->code;
         $token = Cache::pull($cacheKey);
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['message' => __('code_invalid_or_expired')], 401);
         }
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer'
+            'token_type' => 'Bearer',
         ]);
     }
 }

@@ -1,12 +1,14 @@
 -- =====================================================================
 --  MathFlow / KawsayMath  ·  schema.sql  ·  v2 (optimizado)
---  27 tablas + 2 vistas   (la v1 tenia 46 tablas)
+--  30 tablas + 2 vistas   (la v1 tenia 46 tablas)
 --  Motor: MariaDB 10.4+ / MySQL 8  ·  InnoDB  ·  utf8mb4_unicode_ci
 --
 --  USO
 --   1) Instalacion nueva:      importar este archivo y listo.
 --   2) Actualizar desde v1:    importar este archivo y luego ejecutar
 --                              migrate_data.sql (copia los datos).
+--  NO ejecutar php artisan migrate sobre esta BD: el baseline SQL v2 no
+--  coincide con el historial Laravel actual; ver backend-app-mat/DEPLOYMENT.md.
 --  Cambia el nombre de la BD si lo necesitas.
 -- =====================================================================
 
@@ -75,6 +77,13 @@ CREATE TABLE `user_profiles` (
   `last_activity_date` DATE NULL,
   `department`         VARCHAR(255) NULL,
   `specialization`     VARCHAR(255) NULL,
+  `full_name`          VARCHAR(255) NULL,
+  `phone`              VARCHAR(255) NULL,
+  `address`            VARCHAR(255) NULL,
+  `bio`                TEXT NULL,
+  `avatar`             VARCHAR(255) NULL,
+  `grade`              VARCHAR(255) NULL,
+  `salon`              VARCHAR(255) NULL,
   `years_experience`   INT NOT NULL DEFAULT 0,
   `created_at`         TIMESTAMP NULL,
   `updated_at`         TIMESTAMP NULL,
@@ -224,6 +233,22 @@ CREATE TABLE `lessons` (
   CONSTRAINT `fk_lessons_course`  FOREIGN KEY (`course_id`)  REFERENCES `courses` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+CREATE TABLE `lesson_segments` (
+  `id`               CHAR(36) NOT NULL,
+  `lesson_id`        CHAR(36) NOT NULL,
+  `title`            VARCHAR(255) NOT NULL,
+  `type`             ENUM('text','video','pdf','quiz','link') NOT NULL,
+  `content`          TEXT NULL,
+  `url`              VARCHAR(255) NULL,
+  `order`            INT NOT NULL DEFAULT 0,
+  `duration_seconds` INT NULL,
+  `created_at`       TIMESTAMP NULL,
+  `updated_at`       TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_lesson_segments_lesson_order` (`lesson_id`,`order`),
+  CONSTRAINT `fk_lesson_segments_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE `lesson_progress` (
   `id`            CHAR(36) NOT NULL,
   `user_id`       CHAR(36) NOT NULL,
@@ -349,6 +374,33 @@ CREATE TABLE `student_answers` (
   CONSTRAINT `fk_answers_question` FOREIGN KEY (`question_id`)          REFERENCES `questions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE `submitted_works` (
+  `id`              CHAR(36) NOT NULL,
+  `student_id`      CHAR(36) NOT NULL,
+  `lesson_id`       CHAR(36) NULL,
+  `evaluation_id`   CHAR(36) NULL,
+  `work_type`       VARCHAR(255) NOT NULL,
+  `title`           VARCHAR(255) NOT NULL,
+  `description`     TEXT NULL,
+  `status`          VARCHAR(255) NOT NULL DEFAULT 'pending',
+  `score`           INT NULL,
+  `max_score`       INT NOT NULL DEFAULT 20,
+  `teacher_feedback` TEXT NULL,
+  `attachments`     LONGTEXT NULL,
+  `submitted_at`    TIMESTAMP NULL,
+  `graded_at`       TIMESTAMP NULL,
+  `created_at`      TIMESTAMP NULL,
+  `updated_at`      TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  KEY `submitted_works_evaluation_id_index` (`evaluation_id`),
+  KEY `submitted_works_lesson_id_index` (`lesson_id`),
+  KEY `submitted_works_student_id_status_index` (`student_id`,`status`),
+  KEY `submitted_works_student_type_index` (`student_id`,`work_type`),
+  CONSTRAINT `submitted_works_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `submitted_works_lesson_id_foreign` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`),
+  CONSTRAINT `submitted_works_evaluation_id_foreign` FOREIGN KEY (`evaluation_id`) REFERENCES `evaluations` (`id`)
+) ENGINE=InnoDB;
+
 -- =====================================================================
 --  5. GAMIFICACION
 -- =====================================================================
@@ -387,9 +439,10 @@ CREATE TABLE `user_achievements` (
 
 CREATE TABLE `threads` (
   `id`              CHAR(36) NOT NULL,
-  `type`            ENUM('direct','forum') NOT NULL,
+  `type`            ENUM('direct','forum') NOT NULL DEFAULT 'forum',
   `title`           VARCHAR(255) NULL,                 -- solo foros
   `created_by`      CHAR(36) NOT NULL,                 -- docente que abre el hilo
+  `author_id`       CHAR(36) NULL,
   `student_id`      CHAR(36) NULL,                     -- solo type='direct'
   `lesson_id`       CHAR(36) NULL,
   `evaluation_id`   CHAR(36) NULL,
@@ -399,11 +452,13 @@ CREATE TABLE `threads` (
   `updated_at`      TIMESTAMP NULL,
   PRIMARY KEY (`id`),
   KEY `idx_threads_type_creator` (`type`,`created_by`),
+  KEY `idx_threads_author` (`author_id`),
   KEY `idx_threads_student` (`student_id`),
   KEY `idx_threads_lesson` (`lesson_id`),
   KEY `idx_threads_eval` (`evaluation_id`),
   KEY `idx_threads_last_msg` (`last_message_at`),
   CONSTRAINT `fk_threads_creator` FOREIGN KEY (`created_by`)    REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_threads_author`  FOREIGN KEY (`author_id`)     REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_threads_student` FOREIGN KEY (`student_id`)    REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_threads_lesson`  FOREIGN KEY (`lesson_id`)     REFERENCES `lessons` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_threads_eval`    FOREIGN KEY (`evaluation_id`) REFERENCES `evaluations` (`id`) ON DELETE SET NULL
@@ -425,9 +480,22 @@ CREATE TABLE `posts` (
   CONSTRAINT `fk_posts_user`   FOREIGN KEY (`user_id`)   REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- notifications = notifications + announcements.
--- Un anuncio se publica generando UNA FILA POR DESTINATARIO (category='announcement'),
--- asi cada usuario conserva su propio is_read.
+CREATE TABLE `announcements` (
+  `id`         CHAR(36) NOT NULL,
+  `title`      VARCHAR(255) NOT NULL,
+  `body`       TEXT NOT NULL,
+  `type`       VARCHAR(255) NOT NULL DEFAULT 'info',
+  `is_active`  TINYINT(1) NOT NULL DEFAULT 1,
+  `created_by` CHAR(36) NOT NULL,
+  `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`),
+  KEY `announcements_created_by_foreign` (`created_by`),
+  CONSTRAINT `fk_announcements_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Un anuncio publicado genera una notificacion por destinatario para conservar
+-- el estado de lectura individual; la entidad canonica vive en announcements.
 CREATE TABLE `notifications` (
   `id`         CHAR(36) NOT NULL,
   `user_id`    CHAR(36) NOT NULL,
@@ -570,7 +638,8 @@ CREATE TABLE `migrations` (
 --  VISTAS (reemplazan tablas/columnas que solo duplicaban datos)
 -- =====================================================================
 
--- Reemplaza la tabla submitted_works
+-- Resumen derivado de evaluaciones y progreso completado.
+-- submitted_works conserva entregas manuales y adjuntos.
 CREATE OR REPLACE VIEW `v_submitted_works` AS
 SELECT r.id, r.user_id AS student_id, e.lesson_id, e.id AS evaluation_id,
        e.type AS work_type, e.title,

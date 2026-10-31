@@ -2,22 +2,23 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use App\Models\User;
-use App\Models\InstitutionConfig;
 use App\Models\AcademicPeriod;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class AdminApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $admin;
+
     private User $teacher;
+
     private User $student;
 
     protected function setUp(): void
@@ -29,7 +30,7 @@ class AdminApiTest extends TestCase
         $studentRole = 'student';
 
         $this->admin = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Admin Test',
             'email' => 'admin@test.com',
             'password' => 'password123',
@@ -39,7 +40,7 @@ class AdminApiTest extends TestCase
         ]);
 
         $this->teacher = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Teacher Test',
             'email' => 'teacher@test.com',
             'password' => 'password123',
@@ -49,7 +50,7 @@ class AdminApiTest extends TestCase
         ]);
 
         $this->student = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Student Test',
             'email' => 'student@test.com',
             'password' => 'password123',
@@ -135,7 +136,7 @@ class AdminApiTest extends TestCase
 
         $adminRole = 'admin';
         User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Second Admin',
             'email' => 'secondadmin@test.com',
             'password' => 'password123',
@@ -146,7 +147,7 @@ class AdminApiTest extends TestCase
 
         $studentRole = 'student';
         $userToDelete = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Delete Me',
             'email' => 'deleteme@test.com',
             'password' => 'password123',
@@ -255,7 +256,7 @@ class AdminApiTest extends TestCase
         Sanctum::actingAs($this->admin, ['web']);
 
         AcademicPeriod::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'name' => '2026-II',
             'start_date' => '2026-07-01',
             'end_date' => '2026-12-15',

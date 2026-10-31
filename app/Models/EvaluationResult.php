@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Resultado de un estudiante en una evaluación, con sus respuestas registradas. */
 class EvaluationResult extends Model
@@ -11,6 +11,7 @@ class EvaluationResult extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -29,7 +30,7 @@ class EvaluationResult extends Model
         'tab_switch_count',
         'total_points',
         'answers',
-        'cheat_log'
+        'cheat_log',
     ];
 
     protected $casts = [
@@ -44,13 +45,16 @@ class EvaluationResult extends Model
         'answers' => 'array',
         'cheat_log' => 'array',
         'started_at' => 'datetime',
-        'completed_at' => 'datetime'
+        'completed_at' => 'datetime',
     ];
 
     // ========== CONSTANTES ==========
     const STATUS_PENDING = 'pending';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_FAILED = 'failed';
+
     const STATUS_CHEATING_DETECTED = 'cheating_detected';
 
     // ========== RELACIONES ==========

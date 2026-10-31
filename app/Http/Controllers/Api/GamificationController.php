@@ -41,11 +41,11 @@ class GamificationController extends Controller
         $user = Auth::user();
         $student = User::findOrFail($studentId);
 
-        if (!$student->isStudent()) {
+        if (! $student->isStudent()) {
             return response()->json(['message' => __('gamification_student_not_found')], 404);
         }
 
-        if ($user->isTeacher() && !$user->isCoordinator() && !$user->isDirector()) {
+        if ($user->isTeacher() && ! $user->isCoordinator() && ! $user->isDirector()) {
             return response()->json(['message' => __('gamification_student_forbidden')], 403);
         }
 

@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\StudentReportService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * Permite consultar públicamente el progreso estudiantil tras validar un CAPTCHA.
@@ -18,6 +19,7 @@ use Illuminate\Support\Str;
 class GuestStudentController extends Controller
 {
     private const CAPTCHA_TTL_SECONDS = 300;
+
     private const CAPTCHA_MAX_ATTEMPTS = 5;
 
     /** Valida el CAPTCHA y devuelve el resumen académico del estudiante encontrado. */
@@ -34,10 +36,10 @@ class GuestStudentController extends Controller
         }
 
         $student = User::where('dni', $validated['dni'])
-            ->where('role', Role::STUDENT)
+            ->whereHas('role', fn ($query) => $query->where('name', Role::STUDENT))
             ->first();
 
-        if (!$student) {
+        if (! $student) {
             return response()->json([
                 'success' => false,
                 'message' => 'Estudiante no encontrado con ese DNI.',
@@ -118,7 +120,7 @@ class GuestStudentController extends Controller
     private function verifyCaptcha(array $validated): ?JsonResponse
     {
         $decoded = $this->decodeCaptchaToken($validated['captcha_token']);
-        if (!$decoded) {
+        if (! $decoded) {
             return response()->json([
                 'success' => false,
                 'message' => 'Captcha inválido o expirado. Intente nuevamente.',
@@ -133,8 +135,8 @@ class GuestStudentController extends Controller
         }
 
         if (strtoupper($validated['captcha_answer']) !== strtoupper($decoded['code'])) {
-            $ipKey = 'captcha_attempts:' . request()->ip();
-            $dniKey = 'captcha_attempts_dni:' . $validated['dni'];
+            $ipKey = 'captcha_attempts:'.request()->ip();
+            $dniKey = 'captcha_attempts_dni:'.$validated['dni'];
             $attempts = (int) Cache::get($ipKey, 0) + 1;
             Cache::put($ipKey, $attempts, now()->addMinutes(10));
             $dniAttempts = (int) Cache::get($dniKey, 0) + 1;
@@ -142,19 +144,21 @@ class GuestStudentController extends Controller
             if ($attempts >= self::CAPTCHA_MAX_ATTEMPTS || $dniAttempts >= self::CAPTCHA_MAX_ATTEMPTS) {
                 Cache::forget($ipKey);
                 Cache::forget($dniKey);
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Demasiados intentos. Solicite un nuevo captcha.',
                 ], 429);
             }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Captcha inválido. Intente nuevamente.',
             ], 422);
         }
 
-        Cache::forget('captcha_attempts:' . request()->ip());
-        Cache::forget('captcha_attempts_dni:' . $validated['dni']);
+        Cache::forget('captcha_attempts:'.request()->ip());
+        Cache::forget('captcha_attempts_dni:'.$validated['dni']);
 
         return null;
     }
@@ -177,23 +181,23 @@ class GuestStudentController extends Controller
         }
 
         $student = User::where('dni', $validated['dni'])
-            ->where('role', Role::STUDENT)
+            ->whereHas('role', fn ($query) => $query->where('name', Role::STUDENT))
             ->first();
 
-        if (!$student) {
+        if (! $student) {
             return response()->json([
                 'success' => false,
                 'message' => 'Estudiante no encontrado con ese DNI.',
             ], 404);
         }
 
-        $service = app(\App\Services\StudentReportService::class);
-        $filename = 'reporte-estudiante-' . $validated['dni'];
+        $service = app(StudentReportService::class);
+        $filename = 'reporte-estudiante-'.$validated['dni'];
 
         return match ($validated['format']) {
-            'pdf' => $service->pdf($student->id, $filename . '.pdf'),
-            'excel' => $service->excel($student->id, $filename . '.xlsx'),
-            'csv' => $service->csv($student->id, $filename . '.csv'),
+            'pdf' => $service->pdf($student->id, $filename.'.pdf'),
+            'excel' => $service->excel($student->id, $filename.'.xlsx'),
+            'csv' => $service->csv($student->id, $filename.'.csv'),
         };
     }
 
@@ -216,15 +220,15 @@ class GuestStudentController extends Controller
         }
 
         $days = $dates
-            ->map(fn ($d) => \Carbon\Carbon::parse($d)->toDateString())
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
             ->unique()
             ->sortDesc()
             ->values();
 
         $streak = 1;
-        $previous = \Carbon\Carbon::parse($days[0]);
+        $previous = Carbon::parse($days[0]);
         for ($i = 1; $i < $days->count(); $i++) {
-            $current = \Carbon\Carbon::parse($days[$i]);
+            $current = Carbon::parse($days[$i]);
             if ($previous->copy()->subDay()->eq($current)) {
                 $streak++;
                 $previous = $current;
@@ -262,7 +266,7 @@ class GuestStudentController extends Controller
 
     private function decodeCaptchaToken(?string $token): ?array
     {
-        if (!$token) {
+        if (! $token) {
             return null;
         }
         try {
@@ -270,9 +274,10 @@ class GuestStudentController extends Controller
         } catch (\Throwable $e) {
             return null;
         }
-        if (!is_array($payload) || empty($payload['code']) || empty($payload['expires_at'])) {
+        if (! is_array($payload) || empty($payload['code']) || empty($payload['expires_at'])) {
             return null;
         }
+
         return $payload;
     }
 
@@ -320,6 +325,6 @@ class GuestStudentController extends Controller
         $png = ob_get_clean();
         imagedestroy($img);
 
-        return 'data:image/png;base64,' . base64_encode($png);
+        return 'data:image/png;base64,'.base64_encode($png);
     }
 }

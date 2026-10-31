@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -20,7 +21,7 @@ class StudentProgressExport implements FromCollection, WithHeadings, WithMapping
     }
 
     /** Combina evaluaciones y lecciones en filas uniformes para exportar. */
-    public function collection(): \Illuminate\Support\Collection
+    public function collection(): Collection
     {
         $rows = collect();
 
@@ -61,8 +62,8 @@ class StudentProgressExport implements FromCollection, WithHeadings, WithMapping
         return [
             $row['type'] === 'evaluacion' ? 'Evaluación' : 'Lección',
             $row['title'],
-            $row['type'] === 'evaluacion' ? $row['score'] : $row['score'] . '%',
-            $row['type'] === 'evaluacion' ? $row['correct'] . '/' . $row['total'] : $row['correct'],
+            $row['type'] === 'evaluacion' ? $row['score'] : $row['score'].'%',
+            $row['type'] === 'evaluacion' ? $row['correct'].'/'.$row['total'] : $row['correct'],
             $row['total'],
             $row['date'],
         ];

@@ -46,7 +46,7 @@ class NotificationController extends Controller
             ->count();
 
         return response()->json([
-            'unread_count' => $count
+            'unread_count' => $count,
         ]);
     }
 
@@ -62,7 +62,7 @@ class NotificationController extends Controller
         $notification->update(['is_read' => true]);
 
         return response()->json([
-            'message' => __('notification_marked_as_read')
+            'message' => __('notification_marked_as_read'),
         ]);
     }
 
@@ -76,7 +76,7 @@ class NotificationController extends Controller
             ->update(['is_read' => true]);
 
         return response()->json([
-            'message' => __('notification_all_marked_as_read')
+            'message' => __('notification_all_marked_as_read'),
         ]);
     }
 
@@ -92,7 +92,7 @@ class NotificationController extends Controller
         $notification->delete();
 
         return response()->json([
-            'message' => __('notification_deleted')
+            'message' => __('notification_deleted'),
         ]);
     }
 
@@ -106,7 +106,7 @@ class NotificationController extends Controller
             ->delete();
 
         return response()->json([
-            'message' => __('notification_read_deleted')
+            'message' => __('notification_read_deleted'),
         ]);
     }
 
@@ -122,7 +122,7 @@ class NotificationController extends Controller
             'message' => $message,
             'type' => $type,
             'link' => $link,
-            'is_read' => false
+            'is_read' => false,
         ]);
     }
 
@@ -139,7 +139,7 @@ class NotificationController extends Controller
             'message' => $message,
             'type' => $type,
             'link' => $link,
-            'is_read' => false
+            'is_read' => false,
         ]);
 
         // Enviar push (fire and forget)
@@ -185,7 +185,7 @@ class NotificationController extends Controller
                 'link' => $link,
                 'is_read' => false,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
 

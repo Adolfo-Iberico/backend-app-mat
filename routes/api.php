@@ -1,30 +1,30 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\GoogleAuthController;
-use App\Http\Controllers\Api\PasswordResetController;
-use App\Http\Controllers\Api\LessonController;
-use App\Http\Controllers\Api\EvaluationController;
-use App\Http\Controllers\Api\ProgressController;
-use App\Http\Controllers\Api\ReportController;
-use App\Http\Controllers\Api\AdminController;
-use App\Http\Controllers\Api\StudentManagerController;
-use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\DeviceController;
-use App\Http\Controllers\Api\AiController;
-use App\Http\Controllers\Api\GuestStudentController;
-use App\Http\Controllers\Api\ExamController;
-use App\Http\Controllers\Api\SubmittedWorkController;
-use App\Http\Controllers\Api\RankingController;
-use App\Http\Controllers\Api\GamificationController;
 use App\Http\Controllers\Api\AcademicEventController;
-use App\Http\Controllers\Api\SystemTranslationController;
-use App\Http\Controllers\Api\PushSubscriptionController;
-use App\Http\Controllers\Api\MessageController;
-use App\Http\Controllers\Api\ForumController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AiController;
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\EvaluationController;
+use App\Http\Controllers\Api\ExamController;
+use App\Http\Controllers\Api\ForumController;
+use App\Http\Controllers\Api\GamificationController;
+use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\GuestStudentController;
 use App\Http\Controllers\Api\InstitutionController;
+use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\ProgressController;
+use App\Http\Controllers\Api\PushSubscriptionController;
+use App\Http\Controllers\Api\RankingController;
+use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\StudentManagerController;
+use App\Http\Controllers\Api\SubmittedWorkController;
+use App\Http\Controllers\Api\SystemTranslationController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,13 +41,13 @@ Route::prefix('v1')->group(function () {
     // Incluye acceso y recuperación de cuenta; las rutas sensibles declaran su propio throttle.
 
     Route::prefix('auth')->group(function () {
-        
+
         // Autenticación tradicional (email + password)
         Route::post('/register', [AuthController::class, 'register'])
             ->middleware('throttle:5,1');
         Route::post('/login', [AuthController::class, 'login'])
             ->middleware('throttle:10,1');
-        
+
         // Google OAuth
         Route::get('/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])
             ->middleware('throttle:30,1');
@@ -57,7 +57,7 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:10,1');
         Route::post('/google/login', [GoogleAuthController::class, 'loginWithGoogleToken'])
             ->middleware('throttle:10,1');
-        
+
         // Recuperación de contraseña
         Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
             ->middleware('throttle:5,1');
@@ -83,7 +83,7 @@ Route::prefix('v1')->group(function () {
         // ============================================================
         // PERFIL DE USUARIO: operaciones de cuenta disponibles a cualquier usuario autenticado.
         // ============================================================
-        
+
         Route::prefix('user')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile'])
                 ->middleware('cache.api');
@@ -104,22 +104,22 @@ Route::prefix('v1')->group(function () {
                 ->middleware('cache.api');
             Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
         });
-        
+
         // ============================================================
         // DISPOSITIVOS: administración de tokens push del usuario autenticado.
         // ============================================================
-        
+
         Route::prefix('devices')->group(function () {
             Route::post('/register', [DeviceController::class, 'register']);
             Route::post('/unregister', [DeviceController::class, 'unregister']);
             Route::get('/', [DeviceController::class, 'list'])
                 ->middleware('cache.api');
         });
-        
+
         // ============================================================
         // NOTIFICACIONES: consulta y gestión de avisos del usuario autenticado.
         // ============================================================
-        
+
         Route::prefix('notifications')->group(function () {
             Route::get('/', [NotificationController::class, 'index'])
                 ->middleware('cache.api');
@@ -130,11 +130,11 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/read', [NotificationController::class, 'markAsRead']);
             Route::delete('/{id}', [NotificationController::class, 'destroy']);
         });
-        
+
         // ============================================================
         // DASHBOARDS: acceso por rol según cada ruta; incluye vistas completas y ligeras para móvil.
         // ============================================================
-        
+
         Route::prefix('dashboard')->group(function () {
             // Dashboard completo (web)
             Route::get('/student', [ProgressController::class, 'studentDashboard'])
@@ -150,11 +150,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/institution', [InstitutionController::class, 'dashboard'])
                 ->middleware(['role:coordinador', 'cache.api']);
         });
-        
+
         // ============================================================
         // PROGRESO: estadísticas personales disponibles bajo la autenticación general del grupo.
         // ============================================================
-        
+
         Route::prefix('progress')->group(function () {
             Route::get('/my-record', [ProgressController::class, 'myLearningRecord'])
                 ->middleware('role:student');
@@ -170,11 +170,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/my-report/excel', [ProgressController::class, 'exportMyReportExcel'])
                 ->middleware(['role:student', 'throttle:5,1']);
         });
-        
+
         // ============================================================
         // LECCIONES: lectura autenticada; escritura y gestión reservadas al rol docente.
         // ============================================================
-        
+
         Route::prefix('lessons')->group(function () {
             Route::get('/', [LessonController::class, 'index'])
                 ->middleware(['cache.api', 'throttle:30,1']);
@@ -194,7 +194,7 @@ Route::prefix('v1')->group(function () {
                 ->middleware('cache.api');
             Route::post('/{id}/progress', [ProgressController::class, 'updateLessonProgress'])
                 ->middleware(['role:student']);
-            
+
             Route::middleware(['role:teacher'])->group(function () {
                 Route::post('/', [LessonController::class, 'store']);
                 Route::post('/resources/upload', [LessonController::class, 'uploadResource'])
@@ -205,16 +205,17 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/unpublish', [LessonController::class, 'unpublish']);
                 Route::post('/{id}/duplicate', [LessonController::class, 'duplicate']);
                 Route::post('/{id}/resources', [LessonController::class, 'addResource']);
+                Route::post('/{id}/resources/import', [LessonController::class, 'importResourcesFromStorage']);
                 Route::delete('/{id}/resources/{resourceId}', [LessonController::class, 'removeResource']);
                 Route::get('/{id}/stats', [LessonController::class, 'getStats'])
                     ->middleware('cache.api');
             });
         });
-        
+
         // ============================================================
         // EVALUACIONES: lectura autenticada; envío para estudiantes y gestión para docentes.
         // ============================================================
-        
+
         Route::prefix('evaluations')->group(function () {
             Route::get('/', [EvaluationController::class, 'index'])
                 ->middleware(['cache.api', 'throttle:30,1']);
@@ -236,14 +237,14 @@ Route::prefix('v1')->group(function () {
                 ->middleware(['role:student', 'throttle:5,1']);
             Route::get('/{evaluationId}/results', [EvaluationController::class, 'getResults'])
                 ->middleware('cache.api');
-            
+
             Route::middleware(['role:teacher'])->group(function () {
                 Route::get('/{evaluationId}/result/{userId}', [EvaluationController::class, 'getStudentResult'])
                     ->middleware('cache.api');
                 Route::get('/{id}/stats', [EvaluationController::class, 'getStats'])
                     ->middleware('cache.api');
             });
-            
+
             Route::middleware(['role:teacher'])->group(function () {
                 Route::post('/', [EvaluationController::class, 'store']);
                 Route::put('/{id}', [EvaluationController::class, 'update']);
@@ -251,13 +252,13 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/publish', [EvaluationController::class, 'publish']);
                 Route::post('/{id}/unpublish', [EvaluationController::class, 'unpublish']);
                 Route::post('/{id}/duplicate', [EvaluationController::class, 'duplicate']);
-                
+
                 Route::post('/{evaluationId}/questions', [EvaluationController::class, 'addQuestion']);
                 Route::put('/questions/{questionId}', [EvaluationController::class, 'updateQuestion']);
                 Route::delete('/questions/{questionId}', [EvaluationController::class, 'deleteQuestion']);
             });
         });
-        
+
         // ============================================================
         // EXÁMENES: pruebas independientes; acciones de creación/gestión requieren docente o admin.
         // ============================================================
@@ -363,7 +364,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/export/grades/csv', [ReportController::class, 'exportGradesCSV'])
                 ->middleware('throttle:5,1');
         });
-        
+
         // ============================================================
         // ANUNCIOS: anuncios globales activos publicados por el admin.
         // ============================================================
@@ -376,9 +377,9 @@ Route::prefix('v1')->group(function () {
         // ============================================================
         // ADMINISTRACIÓN: todas las rutas /admin requieren rol admin, además de la autenticación general.
         // ============================================================
-        
+
         Route::prefix('admin')->middleware(['role:admin'])->group(function () {
-            
+
             Route::prefix('users')->group(function () {
                 Route::get('/', [AdminController::class, 'getUsers'])
                     ->middleware('cache.api');
@@ -393,13 +394,13 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/activate', [AdminController::class, 'activateUser']);
                 Route::post('/{id}/deactivate', [AdminController::class, 'deactivateUser']);
             });
-            
+
             Route::prefix('config')->group(function () {
                 Route::get('/', [AdminController::class, 'getConfig'])
                     ->middleware('cache.api');
                 Route::put('/', [AdminController::class, 'updateConfig']);
             });
-            
+
             Route::prefix('periods')->group(function () {
                 Route::get('/', [AdminController::class, 'getPeriods'])
                     ->middleware('cache.api');
@@ -407,7 +408,7 @@ Route::prefix('v1')->group(function () {
                 Route::put('/{id}', [AdminController::class, 'updatePeriod']);
                 Route::delete('/{id}', [AdminController::class, 'deletePeriod']);
             });
-            
+
             Route::prefix('backup')->group(function () {
                 Route::post('/', [AdminController::class, 'createBackup'])
                     ->middleware(['throttle:3,60']);
@@ -437,102 +438,102 @@ Route::prefix('v1')->group(function () {
             Route::post('/achievements/sync', [GamificationController::class, 'sync']);
         });
 
-    // ============================================================
-    // GAMIFICACIÓN: prefijo con rol student; cada endpoint gestiona logros del estudiante.
-    // ============================================================
+        // ============================================================
+        // GAMIFICACIÓN: prefijo con rol student; cada endpoint gestiona logros del estudiante.
+        // ============================================================
 
-    Route::prefix('gamification')->group(function () {
-        // Resumen propio del estudiante
-        Route::get('/summary', [GamificationController::class, 'summary'])
-            ->middleware(['role:student', 'cache.api']);
-        Route::post('/check', [GamificationController::class, 'check'])
-            ->middleware(['role:student', 'throttle:20,1']);
-        // Vista docente de la gamificación de un alumno
-        Route::get('/student/{studentId}', [GamificationController::class, 'studentSummary'])
-            ->middleware(['role:coordinador', 'cache.api']);
-    });
-
-    // ============================================================
-    // CALENDARIO: prefijo limitado a docentes/admin para gestionar eventos académicos.
-    // ============================================================
-
-    Route::prefix('calendar')->middleware(['role:teacher'])->group(function () {
-        Route::get('/', [AcademicEventController::class, 'index'])
-            ->middleware('cache.api');
-        Route::post('/', [AcademicEventController::class, 'store']);
-        Route::put('/{id}', [AcademicEventController::class, 'update']);
-        Route::delete('/{id}', [AcademicEventController::class, 'destroy']);
-    });
-
-    // ============================================================
-    // PUSH WEB: consulta de configuración y gestión de suscripciones; throttle por operación.
-    // ============================================================
-
-    Route::prefix('push')->group(function () {
-        Route::get('/config', [PushSubscriptionController::class, 'config'])
-            ->middleware('cache.api');
-        Route::post('/subscribe', [PushSubscriptionController::class, 'store'])
-            ->middleware(['throttle:10,1']);
-        Route::post('/unsubscribe', [PushSubscriptionController::class, 'destroy']);
-        Route::post('/test', [PushSubscriptionController::class, 'test'])
-            ->middleware('throttle:5,1');
-    });
-
-    // ============================================================
-    // MENSAJERÍA: operaciones de conversación con límite de 30 solicitudes por minuto.
-    // ============================================================
-
-    Route::prefix('conversations')->middleware(['auth:sanctum', 'auth.active', 'rate.limit', 'throttle:30,1'])->group(function () {
-        Route::get('/', [MessageController::class, 'index']);
-        Route::post('/', [MessageController::class, 'store']);
-        Route::get('/{id}', [MessageController::class, 'show']);
-        Route::post('/{id}/reply', [MessageController::class, 'reply']);
-    });
-
-    // ============================================================
-    // FORO: hilos y publicaciones con límite de 30 solicitudes por minuto.
-    // ============================================================
-
-    Route::prefix('forum')->middleware(['throttle:30,1'])->group(function () {
-        Route::get('/', [ForumController::class, 'index']);
-        // Crear hilos: cualquier usuario autenticado; los estudiantes deben
-        // asociar la pregunta a una lección (validado en el controlador).
-        Route::post('/', [ForumController::class, 'store']);
-        Route::get('/{id}', [ForumController::class, 'show']);
-        Route::post('/{id}/post', [ForumController::class, 'post']);
-        // Moderación: editar y eliminar comentarios (autor o dueño del hilo)
-        Route::put('/posts/{postId}', [ForumController::class, 'updatePost']);
-        Route::delete('/posts/{postId}', [ForumController::class, 'deletePost']);
-        // Cerrar hilo: solo el docente dueño
-        Route::post('/{id}/close', [ForumController::class, 'close'])
-            ->middleware('role:teacher');
-    });
-
-    // ============================================================
-    // GESTOR DE ALUMNOS: vista institucional por grado/sección y carga
-    // masiva (CSV/Excel). Acceso: docente, coordinador, director y admin.
-    // ============================================================
-    Route::prefix('students-manager')
-        ->middleware(['role:teacher', 'throttle:60,1'])
-        ->group(function () {
-            Route::get('/summary', [StudentManagerController::class, 'summary']);
-            Route::get('/', [StudentManagerController::class, 'index']);
-            Route::get('/template', [StudentManagerController::class, 'template']);
-            Route::get('/export', [StudentManagerController::class, 'export']);
-            Route::post('/import', [StudentManagerController::class, 'import'])->middleware('throttle:10,1');
-            Route::patch('/{id}', [StudentManagerController::class, 'update']);
+        Route::prefix('gamification')->group(function () {
+            // Resumen propio del estudiante
+            Route::get('/summary', [GamificationController::class, 'summary'])
+                ->middleware(['role:student', 'cache.api']);
+            Route::post('/check', [GamificationController::class, 'check'])
+                ->middleware(['role:student', 'throttle:20,1']);
+            // Vista docente de la gamificación de un alumno
+            Route::get('/student/{studentId}', [GamificationController::class, 'studentSummary'])
+                ->middleware(['role:coordinador', 'cache.api']);
         });
 
-    // ============================================================
-    // INSTITUCIÓN: panel para director y coordinador.
-    // ============================================================
+        // ============================================================
+        // CALENDARIO: prefijo limitado a docentes/admin para gestionar eventos académicos.
+        // ============================================================
 
-    Route::prefix('institution')->middleware(['role:coordinador'])->group(function () {
-        Route::get('/overview', [InstitutionController::class, 'overview'])
-            ->middleware('cache.api');
-        Route::get('/teachers', [InstitutionController::class, 'teachers'])
-            ->middleware('cache.api');
-    });
+        Route::prefix('calendar')->middleware(['role:teacher'])->group(function () {
+            Route::get('/', [AcademicEventController::class, 'index'])
+                ->middleware('cache.api');
+            Route::post('/', [AcademicEventController::class, 'store']);
+            Route::put('/{id}', [AcademicEventController::class, 'update']);
+            Route::delete('/{id}', [AcademicEventController::class, 'destroy']);
+        });
+
+        // ============================================================
+        // PUSH WEB: consulta de configuración y gestión de suscripciones; throttle por operación.
+        // ============================================================
+
+        Route::prefix('push')->group(function () {
+            Route::get('/config', [PushSubscriptionController::class, 'config'])
+                ->middleware('cache.api');
+            Route::post('/subscribe', [PushSubscriptionController::class, 'store'])
+                ->middleware(['throttle:10,1']);
+            Route::post('/unsubscribe', [PushSubscriptionController::class, 'destroy']);
+            Route::post('/test', [PushSubscriptionController::class, 'test'])
+                ->middleware('throttle:5,1');
+        });
+
+        // ============================================================
+        // MENSAJERÍA: operaciones de conversación con límite de 30 solicitudes por minuto.
+        // ============================================================
+
+        Route::prefix('conversations')->middleware(['auth:sanctum', 'auth.active', 'rate.limit', 'throttle:30,1'])->group(function () {
+            Route::get('/', [MessageController::class, 'index']);
+            Route::post('/', [MessageController::class, 'store']);
+            Route::get('/{id}', [MessageController::class, 'show']);
+            Route::post('/{id}/reply', [MessageController::class, 'reply']);
+        });
+
+        // ============================================================
+        // FORO: hilos y publicaciones con límite de 30 solicitudes por minuto.
+        // ============================================================
+
+        Route::prefix('forum')->middleware(['throttle:30,1'])->group(function () {
+            Route::get('/', [ForumController::class, 'index']);
+            // Crear hilos: cualquier usuario autenticado; los estudiantes deben
+            // asociar la pregunta a una lección (validado en el controlador).
+            Route::post('/', [ForumController::class, 'store']);
+            Route::get('/{id}', [ForumController::class, 'show']);
+            Route::post('/{id}/post', [ForumController::class, 'post']);
+            // Moderación: editar y eliminar comentarios (autor o dueño del hilo)
+            Route::put('/posts/{postId}', [ForumController::class, 'updatePost']);
+            Route::delete('/posts/{postId}', [ForumController::class, 'deletePost']);
+            // Cerrar hilo: solo el docente dueño
+            Route::post('/{id}/close', [ForumController::class, 'close'])
+                ->middleware('role:teacher');
+        });
+
+        // ============================================================
+        // GESTOR DE ALUMNOS: vista institucional por grado/sección y carga
+        // masiva (CSV/Excel). Acceso: docente, coordinador, director y admin.
+        // ============================================================
+        Route::prefix('students-manager')
+            ->middleware(['role:teacher', 'throttle:60,1'])
+            ->group(function () {
+                Route::get('/summary', [StudentManagerController::class, 'summary']);
+                Route::get('/', [StudentManagerController::class, 'index']);
+                Route::get('/template', [StudentManagerController::class, 'template']);
+                Route::get('/export', [StudentManagerController::class, 'export']);
+                Route::post('/import', [StudentManagerController::class, 'import'])->middleware('throttle:10,1');
+                Route::patch('/{id}', [StudentManagerController::class, 'update']);
+            });
+
+        // ============================================================
+        // INSTITUCIÓN: panel para director y coordinador.
+        // ============================================================
+
+        Route::prefix('institution')->middleware(['role:coordinador'])->group(function () {
+            Route::get('/overview', [InstitutionController::class, 'overview'])
+                ->middleware('cache.api');
+            Route::get('/teachers', [InstitutionController::class, 'teachers'])
+                ->middleware('cache.api');
+        });
     });
 
     // ============================================================
@@ -561,7 +562,7 @@ Route::prefix('v1')->group(function () {
             'status' => 'healthy',
             'message' => 'Aulamate API is running',
             'version' => 'v1',
-            'timestamp' => now()
+            'timestamp' => now(),
         ]);
     });
 });

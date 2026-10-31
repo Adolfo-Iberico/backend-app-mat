@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\EvaluationResult;
 use App\Models\SubmittedWork;
-use App\Models\Evaluation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -81,7 +81,7 @@ class RankingController extends Controller
         $ranked = $merged->sortByDesc('avg_score')->values();
 
         // Precargar usuarios en una sola query (evita N+1 de User::find por estudiante)
-        $userNames = \App\Models\User::whereIn('id', $ranked->pluck('user_id'))
+        $userNames = User::whereIn('id', $ranked->pluck('user_id'))
             ->get(['id', 'full_name'])
             ->keyBy('id');
 
@@ -163,7 +163,7 @@ class RankingController extends Controller
         $ranked = $merged->sortByDesc('avg_score')->values();
 
         // Precargar usuarios en una sola query (evita N+1 de User::find por estudiante)
-        $userNames = \App\Models\User::whereIn('id', $ranked->pluck('user_id'))
+        $userNames = User::whereIn('id', $ranked->pluck('user_id'))
             ->get(['id', 'full_name'])
             ->keyBy('id');
 
@@ -262,7 +262,7 @@ class RankingController extends Controller
 
     private function getPeriodFilter(?string $period): ?array
     {
-        if (!$period || $period === 'all_time') {
+        if (! $period || $period === 'all_time') {
             return null;
         }
 

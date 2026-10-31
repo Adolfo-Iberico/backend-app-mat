@@ -2,28 +2,32 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\Lesson;
+use App\Models\Achievement;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
+use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Models\StudentProfile;
 use App\Models\TeacherProfile;
-use App\Models\Achievement;
+use App\Models\User;
 use App\Models\UserAchievement;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class ProgressApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $student;
+
     private User $teacher;
+
     private User $admin;
+
     private Lesson $lesson;
 
     protected function setUp(): void
@@ -45,7 +49,6 @@ class ProgressApiTest extends TestCase
         ]);
 
         TeacherProfile::create([
-            'id' => Str::uuid(),
             'user_id' => $this->teacher->id,
             'department' => 'Mathematics',
             'specialization' => 'Algebra',
@@ -63,7 +66,6 @@ class ProgressApiTest extends TestCase
         ]);
 
         StudentProfile::create([
-            'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'intermediate',
             'current_streak' => 5,

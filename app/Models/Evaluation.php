@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /** Evaluación creada por un docente, opcionalmente ligada a una lección. */
@@ -12,6 +12,7 @@ class Evaluation extends Model
     use HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -31,7 +32,7 @@ class Evaluation extends Model
         'max_attempts',
         'published_at',
         'total_questions',
-        'total_points'
+        'total_points',
     ];
 
     protected $casts = [
@@ -43,17 +44,22 @@ class Evaluation extends Model
         'max_attempts' => 'integer',
         'published_at' => 'datetime',
         'total_questions' => 'integer',
-        'total_points' => 'integer'
+        'total_points' => 'integer',
     ];
 
     // ========== CONSTANTES ==========
     const TYPE_EXAM = 'exam';
+
     const TYPE_QUIZ = 'quiz';
+
     const TYPE_HOMEWORK = 'homework';
+
     const TYPE_PRACTICE = 'practice';
 
     const DIFFICULTY_BASIC = 'basic';
+
     const DIFFICULTY_INTERMEDIATE = 'intermediate';
+
     const DIFFICULTY_ADVANCED = 'advanced';
 
     // ========== RELACIONES ==========

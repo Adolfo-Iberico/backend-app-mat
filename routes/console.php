@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schedule;
 use App\Models\DeviceToken;
+use Illuminate\Support\Facades\Schedule;
 
 // Tareas programadas de mantenimiento de tokens y respaldos; Laravel Scheduler las ejecuta a diario.
 // El pruning de Sanctum conserva el umbral de expiración configurado en el comando.

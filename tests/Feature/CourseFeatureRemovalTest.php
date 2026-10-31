@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CourseFeatureRemovalTest extends TestCase
@@ -21,19 +22,21 @@ class CourseFeatureRemovalTest extends TestCase
         }
     }
 
-    public function test_database_migration_can_be_reversed_and_reapplied(): void
+    public function test_database_migration_preserves_v2_academic_tables_when_reversed_and_reapplied(): void
     {
         $migration = require database_path('migrations/2026_10_25_200200_remove_courses_and_roles.php');
 
         $migration->down();
-        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasTable('roles'));
-        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasTable('courses'));
-        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasColumn('users', 'role_id'));
+        $this->assertTrue(Schema::hasTable('roles'));
+        $this->assertTrue(Schema::hasTable('courses'));
+        $this->assertTrue(Schema::hasTable('attendance'));
+        $this->assertTrue(Schema::hasColumn('users', 'role_id'));
 
         $migration->up();
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('roles'));
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('courses'));
-        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasColumn('users', 'role'));
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('users', 'role_id'));
+        $this->assertTrue(Schema::hasTable('roles'));
+        $this->assertTrue(Schema::hasTable('courses'));
+        $this->assertTrue(Schema::hasTable('attendance'));
+        $this->assertTrue(Schema::hasColumn('users', 'role_id'));
+        $this->assertFalse(Schema::hasColumn('users', 'role'));
     }
 }

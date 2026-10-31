@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 class Cors
 {
     private const ALLOWED_METHODS = 'GET, POST, PUT, DELETE, PATCH, OPTIONS';
+
     private const ALLOWED_HEADERS = 'Content-Type, Authorization, X-Requested-With, Accept, X-Platform';
 
     /** Responde a solicitudes previas y aplica encabezados CORS a orígenes permitidos. */

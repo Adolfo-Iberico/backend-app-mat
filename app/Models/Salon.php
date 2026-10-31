@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Salón académico con período, coordinador y estudiantes asignados. */
 class Salon extends Model
@@ -11,7 +11,9 @@ class Salon extends Model
     use HasUuids;
 
     protected $table = 'salones';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [

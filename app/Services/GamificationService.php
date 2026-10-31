@@ -3,20 +3,23 @@
 namespace App\Services;
 
 use App\Models\Achievement;
+use App\Models\ActivityLog;
 use App\Models\EvaluationResult;
 use App\Models\LessonProgress;
-use App\Models\StudentProfile;
 use App\Models\User;
 use App\Models\UserAchievement;
-use Illuminate\Support\Facades\Auth;
 
 /** Gestiona las recompensas de experiencia, los logros y el resumen de gamificación. */
 class GamificationService
 {
     public const XP_LESSON_COMPLETED = 25;
+
     public const XP_EVALUATION_COMPLETED = 40;
+
     public const XP_PERFECT_SCORE = 20;
+
     public const XP_STREAK_BONUS = 10;
+
     public const XP_DAILY_LOGIN = 5;
 
     /** Devuelve las definiciones canónicas de logros y sus criterios. */
@@ -114,7 +117,7 @@ class GamificationService
     public function awardXp(User $user, int $amount, string $reason = ''): array
     {
         $profile = $user->studentProfile;
-        if (!$profile) {
+        if (! $profile) {
             return ['leveled_up' => false, 'new_level' => null, 'total_xp' => 0, 'xp' => 0];
         }
 
@@ -128,7 +131,7 @@ class GamificationService
         }
 
         if ($reason) {
-            \App\Models\ActivityLog::create([
+            ActivityLog::create([
                 'user_id' => $user->id,
                 'activity_type' => 'xp_earned',
                 'metadata' => ['amount' => $amount, 'reason' => $reason],
@@ -151,7 +154,7 @@ class GamificationService
     public function checkAchievements(User $user): array
     {
         $profile = $user->studentProfile;
-        if (!$profile) {
+        if (! $profile) {
             return [];
         }
 
@@ -188,13 +191,13 @@ class GamificationService
             if (isset($criteria['level']) && $profile->level >= $criteria['level']) {
                 $met = true;
             }
-            if (!empty($criteria['perfect_score']) && $perfectScore) {
+            if (! empty($criteria['perfect_score']) && $perfectScore) {
                 $met = true;
             }
             if (isset($criteria['average']) && ($average ?? 0) >= $criteria['average']) {
                 $met = true;
             }
-            if (!empty($criteria['first_login'])) {
+            if (! empty($criteria['first_login'])) {
                 $met = true;
             }
 
@@ -205,7 +208,7 @@ class GamificationService
                     'unlocked_at' => now(),
                 ]);
                 $newly[] = $achievement;
-                $this->awardXp($user, $achievement->xp_reward, 'achievement:' . $achievement->slug);
+                $this->awardXp($user, $achievement->xp_reward, 'achievement:'.$achievement->slug);
             }
         }
 
@@ -216,14 +219,15 @@ class GamificationService
     public function gamificationSummary(User $user, string $locale = 'es'): array
     {
         $profile = $user->studentProfile;
-        if (!$profile) {
+        if (! $profile) {
             return ['available' => false];
         }
 
         $achievements = Achievement::with(['users' => function ($q) use ($user) {
             $q->where('users.id', $user->id);
-        }])->get()->map(function ($a) use ($locale, $user) {
+        }])->get()->map(function ($a) use ($locale) {
             $unlocked = $a->users->isNotEmpty();
+
             return [
                 'slug' => $a->slug,
                 'name' => $a->name($locale),

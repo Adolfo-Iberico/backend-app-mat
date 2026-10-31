@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Evaluation;
+use App\Models\User;
 
 /** Autoriza acciones sobre evaluaciones según rol, propiedad y publicación. */
 class EvaluationPolicy

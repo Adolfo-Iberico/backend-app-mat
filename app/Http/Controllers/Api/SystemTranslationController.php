@@ -29,7 +29,7 @@ class SystemTranslationController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('key', 'like', "%{$search}%")
-                  ->orWhere('value', 'like', "%{$search}%");
+                    ->orWhere('value', 'like', "%{$search}%");
             });
         }
 
@@ -114,7 +114,7 @@ class SystemTranslationController extends Controller
     {
         $deleted = SystemTranslation::where('id', $id)->delete();
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => __('translation_not_found')], 404);
         }
 
@@ -130,7 +130,7 @@ class SystemTranslationController extends Controller
     {
         $locale = $request->input('locale', 'es');
 
-        return Cache::remember('translations.overrides.' . $locale, 3600, function () use ($locale) {
+        return Cache::remember('translations.overrides.'.$locale, 3600, function () use ($locale) {
             $rows = SystemTranslation::where('group', 'frontend')
                 ->where('locale', $locale)
                 ->get(['key', 'value']);
@@ -155,7 +155,7 @@ class SystemTranslationController extends Controller
             if ($i === count($parts) - 1) {
                 $current[$part] = $value;
             } else {
-                if (!isset($current[$part]) || !is_array($current[$part])) {
+                if (! isset($current[$part]) || ! is_array($current[$part])) {
                     $current[$part] = [];
                 }
                 $current = &$current[$part];
@@ -167,7 +167,7 @@ class SystemTranslationController extends Controller
     private function flushCache(): void
     {
         foreach (SystemTranslation::LOCALES as $locale) {
-            Cache::forget('translations.overrides.' . $locale);
+            Cache::forget('translations.overrides.'.$locale);
         }
     }
 }

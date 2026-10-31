@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\Exam;
 use App\Models\EvaluationResult;
+use App\Models\Exam;
 use App\Models\Question;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class SecurityFixesTest extends TestCase
 {
@@ -20,10 +20,11 @@ class SecurityFixesTest extends TestCase
     private function createUser(string $roleName, array $overrides = []): User
     {
         $role = $roleName;
+
         return User::create(array_merge([
             'id' => Str::uuid(),
-            'email' => $roleName . '_' . Str::random(6) . '@example.com',
-            'full_name' => ucfirst($roleName) . ' User',
+            'email' => $roleName.'_'.Str::random(6).'@example.com',
+            'full_name' => ucfirst($roleName).' User',
             'password' => 'password123',
             'role' => $role,
             'is_active' => true,

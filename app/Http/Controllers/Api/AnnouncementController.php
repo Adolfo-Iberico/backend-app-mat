@@ -109,10 +109,12 @@ class AnnouncementController extends Controller
                 'id' => Str::uuid(),
                 'user_id' => $user->id,
                 'title' => $announcement->title,
-                'message' => \Illuminate\Support\Str::limit($announcement->body, 180),
+                'message' => Str::limit($announcement->body, 180),
                 'type' => $announcement->type,
+                'category' => 'announcement',
                 'is_read' => false,
-                'link' => '/announcements/' . $announcement->id,
+                'link' => '/announcements/'.$announcement->id,
+                'created_by' => $announcement->created_by,
             ]);
         }
     }

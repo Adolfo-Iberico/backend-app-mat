@@ -25,15 +25,15 @@ class AcademicEventController extends Controller
 
         $query = AcademicEvent::forUser(Auth::id());
 
-        if (!empty($validated['start']) && !empty($validated['end'])) {
+        if (! empty($validated['start']) && ! empty($validated['end'])) {
             $query->inRange($validated['start'], $validated['end']);
-        } elseif (!empty($validated['start'])) {
+        } elseif (! empty($validated['start'])) {
             $query->where('start_date', '>=', $validated['start']);
-        } elseif (!empty($validated['end'])) {
+        } elseif (! empty($validated['end'])) {
             $query->where('start_date', '<=', $validated['end']);
         }
 
-        if (!empty($validated['type'])) {
+        if (! empty($validated['type'])) {
             $query->where('type', $validated['type']);
         }
 
@@ -91,7 +91,7 @@ class AcademicEventController extends Controller
             ->where('user_id', Auth::id())
             ->first();
 
-        if (!$event) {
+        if (! $event) {
             return response()->json(['message' => __('event_not_found')], 404);
         }
 
@@ -125,7 +125,7 @@ class AcademicEventController extends Controller
             ->where('user_id', Auth::id())
             ->delete();
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => __('event_not_found')], 404);
         }
 

@@ -26,7 +26,8 @@ class WebPushService
         try {
             $webPush = $this->client();
         } catch (\RuntimeException $e) {
-            Log::warning('Web push client no configurado: ' . $e->getMessage());
+            Log::warning('Web push client no configurado: '.$e->getMessage());
+
             return 0;
         }
 
@@ -35,7 +36,7 @@ class WebPushService
             try {
                 $webPush->queueNotification(
                     Subscription::create([
-                        'endpoint' => $subscription->endpoint,
+                        'endpoint' => $subscription->token,
                         'publicKey' => $subscription->p256dh,
                         'authToken' => $subscription->auth,
                         'contentEncoding' => 'aes128gcm',
@@ -51,14 +52,14 @@ class WebPushService
                         'TTL' => 86400,
                         'urgency' => 'normal',
                         'VAPID' => [
-                            'subject' => 'mailto:' . (config('services.webpush.subject_email') ?? 'admin@aulamate.com'),
+                            'subject' => 'mailto:'.(config('services.webpush.subject_email') ?? 'admin@aulamate.com'),
                             'publicKey' => $this->publicKey(),
                             'privateKey' => $this->privateKey(),
                         ],
                     ]
                 );
             } catch (\Exception $e) {
-                Log::warning('Web push queue failed: ' . $subscription->id, ['error' => $e->getMessage()]);
+                Log::warning('Web push queue failed: '.$subscription->id, ['error' => $e->getMessage()]);
             }
         }
 
@@ -66,7 +67,8 @@ class WebPushService
             if ($report->isSuccess()) {
                 $sent++;
             } elseif ($report->isSubscriptionExpired()) {
-                PushSubscription::where('endpoint', $report->getEndpoint())
+                PushSubscription::where('platform', 'web')
+                    ->where('token', $report->getEndpoint())
                     ->update(['is_active' => false]);
             }
         }
@@ -81,7 +83,7 @@ class WebPushService
     {
         $auth = [
             'VAPID' => [
-                'subject' => 'mailto:' . (config('services.webpush.subject_email') ?? 'admin@aulamate.com'),
+                'subject' => 'mailto:'.(config('services.webpush.subject_email') ?? 'admin@aulamate.com'),
                 'publicKey' => $this->publicKey(),
                 'privateKey' => $this->privateKey(),
             ],
@@ -105,6 +107,6 @@ class WebPushService
     /** Indica si están configuradas ambas claves VAPID. */
     public function isConfigured(): bool
     {
-        return !empty($this->publicKey()) && !empty($this->privateKey());
+        return ! empty($this->publicKey()) && ! empty($this->privateKey());
     }
 }

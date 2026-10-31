@@ -2,25 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Lesson;
-use App\Models\Evaluation;
-use App\Models\EvaluationResult;
-use App\Models\LessonProgress;
-use App\Models\ActivityLog;
-use App\Models\SubmittedWork;
 use App\Exports\GradesExport;
 use App\Exports\GradesPDFExport;
-use App\Exports\StudentProgressPDFExport;
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Evaluation;
+use App\Models\EvaluationResult;
+use App\Models\Lesson;
+use App\Models\LessonProgress;
+use App\Models\SubmittedWork;
+use App\Models\User;
+use App\Services\StudentReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
 /**
  * Genera informes y exportaciones de rendimiento, evaluaciones, estudiantes y participación.
@@ -35,7 +34,7 @@ class ReportController extends Controller
         $request->validate([
             'period' => 'nullable|in:week,month,quarter,year,current,last_month,last_quarter,all_time',
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after:start_date'
+            'end_date' => 'nullable|date|after:start_date',
         ]);
 
         $query = EvaluationResult::query();
@@ -66,7 +65,7 @@ class ReportController extends Controller
             'total_students' => (int) ($aggregate->distinct_users ?? 0),
             'passing_rate' => $total > 0 ? round(((int) ($aggregate->passing ?? 0) / $total) * 100, 2) : 0,
             'top_performers' => $this->getTopPerformers(clone $query),
-            'difficulty_areas' => $this->getDifficultyAreas(clone $query)
+            'difficulty_areas' => $this->getDifficultyAreas(clone $query),
         ];
 
         return response()->json(['data' => $stats]);
@@ -80,7 +79,7 @@ class ReportController extends Controller
         $request->validate([
             'evaluation_id' => 'nullable|exists:evaluations,id',
             'student_id' => 'nullable|exists:users,id',
-            'period' => 'nullable|in:week,month,quarter,year,current,last_month,last_quarter,all_time'
+            'period' => 'nullable|in:week,month,quarter,year,current,last_month,last_quarter,all_time',
         ]);
 
         $query = $this->buildGradesQuery($request);
@@ -94,7 +93,7 @@ class ReportController extends Controller
             'average' => $summaryQuery->avg('score'),
             'max' => $summaryQuery->max('score'),
             'min' => $summaryQuery->min('score'),
-            'total' => $summaryQuery->count()
+            'total' => $summaryQuery->count(),
         ];
 
         return response()->json([
@@ -103,7 +102,7 @@ class ReportController extends Controller
                 'current_page' => $results->currentPage(),
                 'total' => $results->total(),
             ],
-            'summary' => $summary
+            'summary' => $summary,
         ]);
     }
 
@@ -120,9 +119,9 @@ class ReportController extends Controller
                 ->whereIn('evaluation_id', $evaluationIds)
                 ->exists();
 
-            if (!$hasResults) {
+            if (! $hasResults) {
                 return response()->json([
-                    'message' => __('report_no_access_student_data')
+                    'message' => __('report_no_access_student_data'),
                 ], 403);
             }
         }
@@ -145,7 +144,7 @@ class ReportController extends Controller
             'best_score' => $evaluationResults->max('score') ?? 0,
             'worst_score' => $evaluationResults->min('score') ?? 0,
             'current_streak' => $user->studentProfile->current_streak ?? 0,
-            'badges' => $user->studentProfile->badges ?? []
+            'badges' => $user->studentProfile->badges ?? [],
         ];
 
         $strengths = $this->analyzeStrengths($evaluationResults);
@@ -155,7 +154,7 @@ class ReportController extends Controller
             'stats' => $stats,
             'lesson_progress' => $lessonProgress,
             'evaluation_results' => $evaluationResults,
-            'strengths' => $strengths
+            'strengths' => $strengths,
         ]);
     }
 
@@ -172,16 +171,16 @@ class ReportController extends Controller
             'average' => $rows->avg('score'),
             'max' => $rows->max('score'),
             'min' => $rows->min('score'),
-            'total' => $rows->count()
+            'total' => $rows->count(),
         ];
 
         $pdf = Pdf::loadView('reports.report-pdf', [
             'rows' => $rows,
             'summary' => $summary,
-            'period' => $request->period ?? 'current'
+            'period' => $request->period ?? 'current',
         ]);
 
-        return $pdf->download('reporte-rendimiento-' . ($request->period ?? 'current') . '.pdf');
+        return $pdf->download('reporte-rendimiento-'.($request->period ?? 'current').'.pdf');
     }
 
     /**
@@ -193,7 +192,7 @@ class ReportController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'reporte-rendimiento-' . ($request->period ?? 'current') . '.xlsx';
+        $filename = 'reporte-rendimiento-'.($request->period ?? 'current').'.xlsx';
 
         return Excel::download(new GradesExport($rows), $filename);
     }
@@ -216,7 +215,7 @@ class ReportController extends Controller
 
         $html = $this->buildPerformanceHTML($data, $summary);
 
-        $options = new Options();
+        $options = new Options;
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -253,7 +252,7 @@ class ReportController extends Controller
     {
         User::findOrFail($studentId);
 
-        return app(\App\Services\StudentReportService::class)->pdf($studentId);
+        return app(StudentReportService::class)->pdf($studentId);
     }
 
     /**
@@ -263,7 +262,7 @@ class ReportController extends Controller
     {
         User::findOrFail($studentId);
 
-        return app(\App\Services\StudentReportService::class)->excel($studentId);
+        return app(StudentReportService::class)->excel($studentId);
     }
 
     /**
@@ -284,7 +283,7 @@ class ReportController extends Controller
 
         $html = $this->buildGradesHTML($data, $summary);
 
-        $options = new Options();
+        $options = new Options;
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -321,7 +320,7 @@ class ReportController extends Controller
     {
         User::findOrFail($studentId);
 
-        return app(\App\Services\StudentReportService::class)->csv($studentId);
+        return app(StudentReportService::class)->csv($studentId);
     }
 
     /**
@@ -340,7 +339,7 @@ class ReportController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="calificaciones-' . now()->format('Y-m-d_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="calificaciones-'.now()->format('Y-m-d_His').'.csv"',
         ];
 
         $callback = function () use ($data) {
@@ -375,10 +374,11 @@ class ReportController extends Controller
         $dangerousPrefixes = ['=', '+', '-', '@', "\t", "\r"];
         foreach ($dangerousPrefixes as $prefix) {
             if (str_starts_with($value, $prefix)) {
-                $value = "'" . $value;
+                $value = "'".$value;
                 break;
             }
         }
+
         return $value;
     }
 
@@ -408,7 +408,7 @@ class ReportController extends Controller
             $evalQuery->whereIn('evaluation_id', $teacherEvalIds);
             $workQuery->where(function ($q) use ($teacherLessonIds) {
                 $q->whereIn('lesson_id', $teacherLessonIds)
-                  ->orWhereIn('evaluation_id', $this->teacherScopedEvaluationIds());
+                    ->orWhereIn('evaluation_id', $this->teacherScopedEvaluationIds());
             });
         }
 
@@ -424,7 +424,7 @@ class ReportController extends Controller
 
         if ($request->filled('teacher_id')) {
             $teacherEvaluationIds = Evaluation::where('teacher_id', $request->teacher_id)->pluck('id');
-            $teacherLessonIds = \App\Models\Lesson::where('teacher_id', $request->teacher_id)->pluck('id');
+            $teacherLessonIds = Lesson::where('teacher_id', $request->teacher_id)->pluck('id');
             $evalQuery->whereIn('evaluation_id', $teacherEvaluationIds);
             $workQuery->whereIn('lesson_id', $teacherLessonIds);
         }
@@ -477,7 +477,7 @@ class ReportController extends Controller
      */
     public function studentDetailReport(Request $request, $studentId)
     {
-        $student = \App\Models\User::findOrFail($studentId);
+        $student = User::findOrFail($studentId);
 
         $teacherEvalIds = $this->teacherScopedEvaluationIds();
         $teacherLessonIds = $this->teacherScopedLessonIds();
@@ -494,9 +494,9 @@ class ReportController extends Controller
 
             $works = SubmittedWork::where('student_id', $studentId)
                 ->where('status', 'graded')
-                ->where(function ($q) use ($area, $teacherLessonIds, $teacherEvalIds) {
+                ->where(function ($q) use ($area) {
                     $q->whereHas('lesson', fn ($lq) => $lq->where('unit', $area))
-                      ->orWhereHas('evaluation.lesson', fn ($lq) => $lq->where('unit', $area));
+                        ->orWhereHas('evaluation.lesson', fn ($lq) => $lq->where('unit', $area));
                 })
                 ->when($teacherLessonIds, fn ($q) => $q->whereIn('lesson_id', $teacherLessonIds))
                 ->get();
@@ -567,7 +567,7 @@ class ReportController extends Controller
         // Agregaciones agrupadas en SQL (evita N+1: antes 5 queries/estudiante)
         $studentIds = $students->all();
 
-        $users = \App\Models\User::whereIn('id', $studentIds)
+        $users = User::whereIn('id', $studentIds)
             ->get(['id', 'full_name'])
             ->keyBy('id');
 
@@ -589,7 +589,7 @@ class ReportController extends Controller
             ->get()
             ->keyBy('student_id');
 
-        $studentData = collect($studentIds)->map(function ($studentId) use ($unit, $users, $evalRows, $workRows) {
+        $studentData = collect($studentIds)->map(function ($studentId) use ($users, $evalRows, $workRows) {
             $eval = $evalRows->get($studentId);
             $work = $workRows->get($studentId);
 
@@ -631,19 +631,19 @@ class ReportController extends Controller
         $typeRows = '';
         foreach ($summary['by_type'] as $type) {
             $typeRows .= '<tr>';
-            $typeRows .= '<td>' . htmlspecialchars($type['type'] ?? 'N/A') . '</td>';
-            $typeRows .= '<td>' . $type['count'] . '</td>';
-            $typeRows .= '<td>' . number_format($type['average'], 2) . '</td>';
+            $typeRows .= '<td>'.htmlspecialchars($type['type'] ?? 'N/A').'</td>';
+            $typeRows .= '<td>'.$type['count'].'</td>';
+            $typeRows .= '<td>'.number_format($type['average'], 2).'</td>';
             $typeRows .= '</tr>';
         }
 
         $topRows = '';
         foreach ($summary['top_students'] as $i => $student) {
             $topRows .= '<tr>';
-            $topRows .= '<td>' . ($i + 1) . '</td>';
-            $topRows .= '<td>' . htmlspecialchars($student['student_name'] ?? 'N/A') . '</td>';
-            $topRows .= '<td>' . $student['count'] . '</td>';
-            $topRows .= '<td>' . number_format($student['average'], 2) . '</td>';
+            $topRows .= '<td>'.($i + 1).'</td>';
+            $topRows .= '<td>'.htmlspecialchars($student['student_name'] ?? 'N/A').'</td>';
+            $topRows .= '<td>'.$student['count'].'</td>';
+            $topRows .= '<td>'.number_format($student['average'], 2).'</td>';
             $topRows .= '</tr>';
         }
 
@@ -652,14 +652,14 @@ class ReportController extends Controller
         $detailRows = '';
         foreach ($data as $row) {
             $detailRows .= '<tr>';
-            $detailRows .= '<td>' . htmlspecialchars($row->student_name) . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->evaluation_title) . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->lesson_title ?? 'N/A') . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->area ?? 'N/A') . '</td>';
-            $detailRows .= '<td>' . number_format($row->score, 1) . '</td>';
-            $detailRows .= '<td><strong>' . \App\Exports\GradesPDFExport::gradeLetter($row->score) . '</strong></td>';
-            $detailRows .= '<td>' . $row->correct_answers . '/' . $row->total_questions . '</td>';
-            $detailRows .= '<td>' . $row->completed_at . '</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->student_name).'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->evaluation_title).'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->lesson_title ?? 'N/A').'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->area ?? 'N/A').'</td>';
+            $detailRows .= '<td>'.number_format($row->score, 1).'</td>';
+            $detailRows .= '<td><strong>'.GradesPDFExport::gradeLetter($row->score).'</strong></td>';
+            $detailRows .= '<td>'.$row->correct_answers.'/'.$row->total_questions.'</td>';
+            $detailRows .= '<td>'.$row->completed_at.'</td>';
             $detailRows .= '</tr>';
         }
 
@@ -689,32 +689,32 @@ class ReportController extends Controller
         <body>
             <div class="header">
                 <h1>Aulamate - Reporte de Rendimiento</h1>
-                <p>Generado: ' . now()->format('d/m/Y H:i') . '</p>
+                <p>Generado: '.now()->format('d/m/Y H:i').'</p>
             </div>
             <div class="summary">
                 <h2>Resumen General</h2>
                 <div class="stats-grid">
-                    <div class="stat-box"><div class="value">' . $summary["total_results"] . '</div><div class="label">Total Resultados</div></div>
-                    <div class="stat-box"><div class="value">' . number_format($summary["average_score"], 1) . '</div><div class="label">Promedio General</div></div>
-                    <div class="stat-box"><div class="value">' . number_format($summary["max_score"], 1) . '</div><div class="label">Puntaje Máximo</div></div>
-                    <div class="stat-box"><div class="value">' . number_format($summary["min_score"], 1) . '</div><div class="label">Puntaje Mínimo</div></div>
+                    <div class="stat-box"><div class="value">'.$summary['total_results'].'</div><div class="label">Total Resultados</div></div>
+                    <div class="stat-box"><div class="value">'.number_format($summary['average_score'], 1).'</div><div class="label">Promedio General</div></div>
+                    <div class="stat-box"><div class="value">'.number_format($summary['max_score'], 1).'</div><div class="label">Puntaje Máximo</div></div>
+                    <div class="stat-box"><div class="value">'.number_format($summary['min_score'], 1).'</div><div class="label">Puntaje Mínimo</div></div>
                 </div>
             </div>
             <div class="section-title">Promedio por Tipo de Evaluación</div>
-            <div class="chart"><img src="' . $chartImage . '" alt="Promedio por tipo de evaluación" /></div>
+            <div class="chart"><img src="'.$chartImage.'" alt="Promedio por tipo de evaluación" /></div>
             <table>
                 <thead><tr><th>Tipo</th><th>Cantidad</th><th>Promedio</th></tr></thead>
-                <tbody>' . $typeRows . '</tbody>
+                <tbody>'.$typeRows.'</tbody>
             </table>
             <div class="section-title">Mejores Estudiantes</div>
             <table>
                 <thead><tr><th>#</th><th>Estudiante</th><th>Evaluaciones</th><th>Promedio</th></tr></thead>
-                <tbody>' . $topRows . '</tbody>
+                <tbody>'.$topRows.'</tbody>
             </table>
             <div class="section-title">Resultados Detallados</div>
             <table>
                 <thead><tr><th>Estudiante</th><th>Evaluación</th><th>Lección</th><th>Área</th><th>Puntaje</th><th>Calificación</th><th>Correctas/Total</th><th>Fecha</th></tr></thead>
-                <tbody>' . $detailRows . '</tbody>
+                <tbody>'.$detailRows.'</tbody>
             </table>
         </body></html>';
     }
@@ -773,7 +773,7 @@ class ReportController extends Controller
         $png = ob_get_clean();
         imagedestroy($img);
 
-        return 'data:image/png;base64,' . base64_encode($png);
+        return 'data:image/png;base64,'.base64_encode($png);
     }
 
     private function buildGradesHTML($data, $summary)
@@ -781,14 +781,14 @@ class ReportController extends Controller
         $detailRows = '';
         foreach ($data as $row) {
             $detailRows .= '<tr>';
-            $detailRows .= '<td>' . htmlspecialchars($row->student_name) . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->student_email ?? '') . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->evaluation_title) . '</td>';
-            $detailRows .= '<td>' . htmlspecialchars($row->area ?? 'N/A') . '</td>';
-            $detailRows .= '<td>' . number_format($row->score, 1) . '</td>';
-            $detailRows .= '<td><strong>' . \App\Exports\GradesPDFExport::gradeLetter($row->score) . '</strong></td>';
-            $detailRows .= '<td>' . $row->correct_answers . '/' . $row->total_questions . '</td>';
-            $detailRows .= '<td>' . $row->completed_at . '</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->student_name).'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->student_email ?? '').'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->evaluation_title).'</td>';
+            $detailRows .= '<td>'.htmlspecialchars($row->area ?? 'N/A').'</td>';
+            $detailRows .= '<td>'.number_format($row->score, 1).'</td>';
+            $detailRows .= '<td><strong>'.GradesPDFExport::gradeLetter($row->score).'</strong></td>';
+            $detailRows .= '<td>'.$row->correct_answers.'/'.$row->total_questions.'</td>';
+            $detailRows .= '<td>'.$row->completed_at.'</td>';
             $detailRows .= '</tr>';
         }
 
@@ -814,18 +814,18 @@ class ReportController extends Controller
         <body>
             <div class="header">
                 <h1>Aulamate - Calificaciones</h1>
-                <p>Generado: ' . now()->format('d/m/Y H:i') . '</p>
+                <p>Generado: '.now()->format('d/m/Y H:i').'</p>
             </div>
             <div class="stats-grid">
-                <div class="stat-box"><div class="value">' . $summary["total_results"] . '</div><div class="label">Total Registros</div></div>
-                <div class="stat-box"><div class="value">' . number_format($summary["average_score"], 1) . '</div><div class="label">Promedio</div></div>
-                <div class="stat-box"><div class="value">' . number_format($summary["max_score"], 1) . '</div><div class="label">Máximo</div></div>
-                <div class="stat-box"><div class="value">' . number_format($summary["min_score"], 1) . '</div><div class="label">Mínimo</div></div>
+                <div class="stat-box"><div class="value">'.$summary['total_results'].'</div><div class="label">Total Registros</div></div>
+                <div class="stat-box"><div class="value">'.number_format($summary['average_score'], 1).'</div><div class="label">Promedio</div></div>
+                <div class="stat-box"><div class="value">'.number_format($summary['max_score'], 1).'</div><div class="label">Máximo</div></div>
+                <div class="stat-box"><div class="value">'.number_format($summary['min_score'], 1).'</div><div class="label">Mínimo</div></div>
             </div>
             <div class="section-title">Detalle de Calificaciones</div>
             <table>
                 <thead><tr><th>Estudiante</th><th>Email</th><th>Evaluación</th><th>Área</th><th>Puntaje</th><th>Calificación</th><th>Correctas/Total</th><th>Fecha</th></tr></thead>
-                <tbody>' . $detailRows . '</tbody>
+                <tbody>'.$detailRows.'</tbody>
             </table>
         </body></html>';
     }
@@ -870,7 +870,7 @@ class ReportController extends Controller
                 'activities_per_day' => $activitiesPerDay,
                 'most_active_students' => $mostActiveStudents,
                 'activity_trend' => $activityTrend,
-            ]
+            ],
         ]);
     }
 
@@ -880,18 +880,20 @@ class ReportController extends Controller
      */
     private function teacherScopedEvaluationIds(): array
     {
-        if (!Auth::user()->isScopedTeacher()) {
+        if (! Auth::user()->isScopedTeacher()) {
             return [];
         }
+
         return Evaluation::where('teacher_id', Auth::id())->pluck('id')->all();
     }
 
     private function teacherScopedLessonIds(): array
     {
-        if (!Auth::user()->isScopedTeacher()) {
+        if (! Auth::user()->isScopedTeacher()) {
             return [];
         }
-        return \App\Models\Lesson::where('teacher_id', Auth::id())->pluck('id')->all();
+
+        return Lesson::where('teacher_id', Auth::id())->pluck('id')->all();
     }
 
     private function buildGradesQuery(Request $request)
@@ -957,7 +959,7 @@ class ReportController extends Controller
             return [
                 'strengths' => [],
                 'weaknesses' => [],
-                'recommendations' => [__('report_complete_more_evaluations')]
+                'recommendations' => [__('report_complete_more_evaluations')],
             ];
         }
 
@@ -969,7 +971,7 @@ class ReportController extends Controller
             $analysis[$type] = [
                 'average' => $avgScore,
                 'count' => $results->count(),
-                'status' => $avgScore >= 15 ? 'strength' : ($avgScore >= 12 ? 'neutral' : 'weakness')
+                'status' => $avgScore >= 15 ? 'strength' : ($avgScore >= 12 ? 'neutral' : 'weakness'),
             ];
         }
 
@@ -985,10 +987,10 @@ class ReportController extends Controller
             }
         }
 
-        if (!empty($weaknesses)) {
+        if (! empty($weaknesses)) {
             $recommendations[] = __('report_strengthen_weak_areas', ['areas' => implode(', ', $weaknesses)]);
         }
-        if (!empty($strengths)) {
+        if (! empty($strengths)) {
             $recommendations[] = __('report_maintain_strengths', ['areas' => implode(', ', $strengths)]);
         }
         if (empty($recommendations)) {
@@ -998,7 +1000,7 @@ class ReportController extends Controller
         return [
             'strengths' => $strengths,
             'weaknesses' => $weaknesses,
-            'recommendations' => $recommendations
+            'recommendations' => $recommendations,
         ];
     }
 }

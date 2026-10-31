@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\EvaluationAnswerFormatter;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Support\EvaluationAnswerFormatter;
 
 /** Pregunta de una evaluación con las respuestas enviadas por estudiantes. */
 class Question extends Model
@@ -13,6 +13,7 @@ class Question extends Model
     use HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -24,13 +25,13 @@ class Question extends Model
         'correct_answer',
         'explanation',
         'points',
-        'order'
+        'order',
     ];
 
     protected $casts = [
         'options' => 'array',
         'points' => 'integer',
-        'order' => 'integer'
+        'order' => 'integer',
     ];
 
     protected $appends = ['correct_answer_display'];
@@ -42,10 +43,15 @@ class Question extends Model
 
     // ========== CONSTANTES ==========
     const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
+
     const TYPE_FILL_BLANK = 'fill_blank';
+
     const TYPE_DRAG_DROP = 'drag_drop';
+
     const TYPE_FORMULA = 'formula';
+
     const TYPE_TRUE_FALSE = 'true_false';
+
     const TYPE_OPEN_ENDED = 'open_ended';
 
     // ========== RELACIONES ==========
@@ -60,4 +66,4 @@ class Question extends Model
     {
         return $this->hasMany(StudentAnswer::class);
     }
-} 
+}

@@ -2,26 +2,31 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\Lesson;
 use App\Models\Evaluation;
 use App\Models\EvaluationResult;
+use App\Models\Lesson;
 use App\Models\StudentProfile;
 use App\Models\TeacherProfile;
-use Laravel\Sanctum\Sanctum;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class ReportApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $teacher;
+
     private User $student;
+
     private User $admin;
+
     private Lesson $lesson;
+
     private Evaluation $evaluation;
 
     protected function setUp(): void
@@ -43,7 +48,6 @@ class ReportApiTest extends TestCase
         ]);
 
         TeacherProfile::create([
-            'id' => Str::uuid(),
             'user_id' => $this->teacher->id,
             'department' => 'Mathematics',
             'specialization' => 'Calculus',
@@ -61,7 +65,6 @@ class ReportApiTest extends TestCase
         ]);
 
         StudentProfile::create([
-            'id' => Str::uuid(),
             'user_id' => $this->student->id,
             'academic_level' => 'intermediate',
             'current_streak' => 10,

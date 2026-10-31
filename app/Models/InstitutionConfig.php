@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 /** Configuración institucional almacenada para su uso en la aplicación. */
@@ -12,6 +12,7 @@ class InstitutionConfig extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -26,13 +27,13 @@ class InstitutionConfig extends Model
         'email_notifications',
         'backup_frequency',
         'last_backup',
-        'allow_tab_switches'
+        'allow_tab_switches',
     ];
 
     protected $casts = [
         'email_notifications' => 'array',
         'last_backup' => 'datetime',
-        'allow_tab_switches' => 'boolean'
+        'allow_tab_switches' => 'boolean',
     ];
 
     protected static function booted(): void

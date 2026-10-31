@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Token de un dispositivo registrado para recibir notificaciones FCM. */
 class DeviceToken extends Model
@@ -11,6 +11,7 @@ class DeviceToken extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -26,6 +27,8 @@ class DeviceToken extends Model
 
     protected $hidden = [
         'token',
+        'p256dh',
+        'auth',
     ];
 
     protected $casts = [
@@ -34,7 +37,9 @@ class DeviceToken extends Model
     ];
 
     const PLATFORM_ANDROID = 'android';
+
     const PLATFORM_IOS = 'ios';
+
     const PLATFORM_WEB = 'web';
 
     /** Usuario propietario del dispositivo. */

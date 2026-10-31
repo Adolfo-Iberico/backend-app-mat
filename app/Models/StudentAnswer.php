@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Support\EvaluationAnswerFormatter;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 /** Respuesta de un usuario a una pregunta dentro de un resultado de evaluación. */
 class StudentAnswer extends Model
@@ -12,6 +12,7 @@ class StudentAnswer extends Model
     use HasUuids;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -21,12 +22,12 @@ class StudentAnswer extends Model
         'question_id',
         'answer',
         'is_correct',
-        'points_earned'
+        'points_earned',
     ];
 
     protected $casts = [
         'is_correct' => 'boolean',
-        'points_earned' => 'float'
+        'points_earned' => 'float',
     ];
 
     protected $appends = ['answer_display'];

@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Models\StudentProfile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -31,6 +30,7 @@ class CreateAdminUser extends Command
 
         if (User::where('email', $email)->exists()) {
             $this->error("El email {$email} ya está registrado.");
+
             return 1;
         }
 
@@ -42,10 +42,10 @@ class CreateAdminUser extends Command
             'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
-            'provider' => 'email'
+            'provider' => 'email',
         ]);
 
-        $this->info("Administrador creado exitosamente:");
+        $this->info('Administrador creado exitosamente:');
         $this->line("  Email:    {$email}");
         $this->line("  Nombre:   {$name}");
         $this->line("  ID:       {$user->id}");

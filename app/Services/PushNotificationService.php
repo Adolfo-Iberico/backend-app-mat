@@ -6,11 +6,13 @@ use App\Models\DeviceToken;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /** Envía notificaciones push FCM a dispositivos y crea notificaciones internas. */
 class PushNotificationService
 {
     private string $fcmUrl;
+
     private string $fcmKey;
 
     /** Carga las credenciales y el endpoint FCM desde la configuración. */
@@ -46,8 +48,8 @@ class PushNotificationService
                 if (str_contains($e->getMessage(), 'NotRegistered') || str_contains($e->getMessage(), 'InvalidRegistration')) {
                     $device->update(['is_active' => false]);
                 }
-                Log::warning('Push notification failed for device: ' . $device->id, [
-                    'error' => $e->getMessage()
+                Log::warning('Push notification failed for device: '.$device->id, [
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -95,9 +97,9 @@ class PushNotificationService
             ])
             ->post($this->fcmUrl, $payload);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $error = $response->json('error.message', 'Unknown FCM error');
-            throw new \RuntimeException('FCM error: ' . $error);
+            throw new \RuntimeException('FCM error: '.$error);
         }
     }
 
@@ -122,7 +124,7 @@ class PushNotificationService
     {
         // Crear notificación in-app
         Notification::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'user_id' => $userId,
             'title' => $title,
             'message' => $body,

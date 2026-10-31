@@ -64,7 +64,7 @@ class GradesExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $area,
             $score,
             GradesPDFExport::gradeLetter($score),
-            $correct . '/' . $total,
+            $correct.'/'.$total,
             is_string($date) ? $date : $date->format('d/m/Y H:i'),
         ];
 

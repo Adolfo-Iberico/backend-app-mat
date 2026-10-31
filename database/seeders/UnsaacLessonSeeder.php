@@ -31,12 +31,12 @@ class UnsaacLessonSeeder extends Seeder
         $updated = 0;
 
         foreach ($catalog as $item) {
-            $pdfPath = public_path('materiales/lecciones/' . $item['pdf']);
+            $pdfPath = public_path('materiales/lecciones/'.$item['pdf']);
             if (! is_file($pdfPath)) {
                 throw new RuntimeException("No se encontró el PDF de la lección {$item['title']}: {$pdfPath}");
             }
 
-            $key = $item['subject'] . '|' . $item['grade'];
+            $key = $item['subject'].'|'.$item['grade'];
             $order = ($orders[$key] ?? 0) + 1;
             $orders[$key] = $order;
 
@@ -167,9 +167,9 @@ class UnsaacLessonSeeder extends Seeder
         $grade = e($item['grade']);
 
         return "<h2>{$title}</h2>"
-            . "<p>Esta lección de {$subject} está dirigida a estudiantes de {$grade}.</p>"
-            . '<p>Estudia la guía PDF adjunta, revisa el video de apoyo y practica el tema en Khan Academy.</p>'
-            . '<p>Al terminar, responde la evaluación de práctica para comprobar lo aprendido. Puedes repetirla hasta tres veces.</p>';
+            ."<p>Esta lección de {$subject} está dirigida a estudiantes de {$grade}.</p>"
+            .'<p>Estudia la guía PDF adjunta, revisa el video de apoyo y practica el tema en Khan Academy.</p>'
+            .'<p>Al terminar, responde la evaluación de práctica para comprobar lo aprendido. Puedes repetirla hasta tres veces.</p>';
     }
 
     private function resources(array $item): array
@@ -177,8 +177,8 @@ class UnsaacLessonSeeder extends Seeder
         $resources = [
             $this->resource(
                 'pdf',
-                '/materiales/lecciones/' . rawurlencode($item['pdf']),
-                'Guía PDF: ' . $item['title']
+                '/materiales/lecciones/'.rawurlencode($item['pdf']),
+                'Guía PDF: '.$item['title']
             ),
         ];
 
@@ -186,14 +186,14 @@ class UnsaacLessonSeeder extends Seeder
             $resources[] = $this->resource(
                 'video',
                 $item['video_url'],
-                $item['video_title'] ?: 'Video: ' . $item['title']
+                $item['video_title'] ?: 'Video: '.$item['title']
             );
         } else {
-            $query = http_build_query(['search_query' => $item['title'] . ' ' . $item['subject'] . ' matemáticas']);
+            $query = http_build_query(['search_query' => $item['title'].' '.$item['subject'].' matemáticas']);
             $resources[] = $this->resource(
                 'link',
-                'https://www.youtube.com/results?' . $query,
-                'Buscar videos sobre ' . $item['title'] . ' en YouTube'
+                'https://www.youtube.com/results?'.$query,
+                'Buscar videos sobre '.$item['title'].' en YouTube'
             );
         }
 

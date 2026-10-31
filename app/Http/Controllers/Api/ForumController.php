@@ -28,27 +28,27 @@ class ForumController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $role = $user->role?->name;
+        $role = $user->roleName();
 
         $query = ForumThread::with(['teacher:id,full_name', 'author:id,full_name', 'lesson:id,title'])
             ->withCount('posts');
 
         // IDs de administradores: sus hilos funcionan como avisos globales.
-        $adminIds = User::where('role', Role::ADMIN)->pluck('id');
+        $adminIds = User::forRole(Role::ADMIN)->pluck('id');
 
         if ($role === 'admin') {
             // El administrador ve todo el foro.
         } elseif (in_array($role, ['teacher', 'coordinador', 'director'])) {
             $query->where(function ($q) use ($user, $adminIds) {
-                $q->where('teacher_id', $user->id)
-                    ->orWhereIn('teacher_id', $adminIds);
+                $q->where('created_by', $user->id)
+                    ->orWhereIn('created_by', $adminIds);
             });
         } else {
             $teacherIds = Evaluation::whereIn('id', EvaluationResult::where('user_id', $user->id)->pluck('evaluation_id'))
                 ->pluck('teacher_id');
             $query->where(function ($q) use ($teacherIds, $adminIds, $user) {
-                $q->whereIn('teacher_id', $teacherIds)
-                    ->orWhereIn('teacher_id', $adminIds)
+                $q->whereIn('created_by', $teacherIds)
+                    ->orWhereIn('created_by', $adminIds)
                     ->orWhere('author_id', $user->id);
             });
         }
@@ -70,7 +70,10 @@ class ForumController extends Controller
 
         $this->assertCanView($user, $thread);
 
-        $posts = $thread->posts()->with('user:id,full_name,role')->orderBy('created_at')->get();
+        $posts = $thread->posts()
+            ->with(['user:id,full_name,role_id', 'user.role:id,name'])
+            ->orderBy('created_at')
+            ->get();
 
         return response()->json([
             'data' => $thread,
@@ -87,7 +90,7 @@ class ForumController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $role = $user->role?->name;
+        $role = $user->roleName();
         $isStaff = in_array($role, ['teacher', 'coordinador', 'director', 'admin']);
 
         $validated = $request->validate([
@@ -114,10 +117,14 @@ class ForumController extends Controller
         }
 
         $thread = ForumThread::create([
-            'teacher_id' => $teacherId,
+            'created_by' => $teacherId,
             'author_id' => $user->id,
             'lesson_id' => $lessonId,
             'title' => $validated['title'],
+        ]);
+        ForumPost::create([
+            'thread_id' => $thread->id,
+            'user_id' => $user->id,
             'body' => $validated['body'],
         ]);
 
@@ -149,7 +156,7 @@ class ForumController extends Controller
 
         return response()->json([
             'message' => 'Comentario publicado',
-            'data' => $post->load('user:id,full_name,role'),
+            'data' => $post->load(['user:id,full_name,role_id', 'user.role:id,name']),
         ], 201);
     }
 
@@ -176,7 +183,7 @@ class ForumController extends Controller
 
         return response()->json([
             'message' => __('forum_post_updated'),
-            'data' => $post->fresh()->load('user:id,full_name,role'),
+            'data' => $post->fresh()->load(['user:id,full_name,role_id', 'user.role:id,name']),
         ]);
     }
 
@@ -220,7 +227,7 @@ class ForumController extends Controller
     /** Indica si el usuario actual es el docente dueño del hilo. */
     private function isThreadOwner($user, $thread): bool
     {
-        if (! in_array($user->role?->name, ['teacher', 'coordinador', 'director'])) {
+        if (! in_array($user->roleName(), ['teacher', 'coordinador', 'director'], true)) {
             return false;
         }
 
@@ -229,7 +236,7 @@ class ForumController extends Controller
 
     private function assertCanView($user, $thread)
     {
-        $role = $user->role?->name;
+        $role = $user->roleName();
 
         // El administrador puede ver cualquier hilo.
         if ($role === 'admin') {
@@ -246,7 +253,7 @@ class ForumController extends Controller
         // Se consulta directamente (no la relación cargada) porque el docente
         // se eager-loadea solo con id y full_name.
         $isAdminThread = User::where('id', $thread->teacher_id)
-            ->where('role', Role::ADMIN)
+            ->whereHas('role', fn ($query) => $query->where('name', Role::ADMIN))
             ->exists();
         if ($isAdminThread) {
             return;

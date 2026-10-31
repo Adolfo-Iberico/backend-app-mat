@@ -26,7 +26,7 @@ class GlobalRateLimit
             $retryAfter = RateLimiter::availableIn($limiterKey);
 
             return response()->json([
-                'message' => 'Demasiadas solicitudes. Intenta de nuevo en ' . $retryAfter . ' segundos.',
+                'message' => 'Demasiadas solicitudes. Intenta de nuevo en '.$retryAfter.' segundos.',
             ], 429)->withHeaders([
                 'Retry-After' => $retryAfter,
                 'X-RateLimit-Limit' => $maxAttempts,
@@ -50,9 +50,9 @@ class GlobalRateLimit
         $ip = $request->ip();
 
         if ($userId) {
-            return 'global_api_token_' . $userId;
+            return 'global_api_token_'.$userId;
         }
 
-        return 'global_api_ip_' . $ip;
+        return 'global_api_ip_'.$ip;
     }
 }

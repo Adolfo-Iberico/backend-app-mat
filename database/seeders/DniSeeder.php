@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -15,8 +16,7 @@ class DniSeeder extends Seeder
      */
     public function run(): void
     {
-        $students = DB::table('users')
-            ->where('role', 'student')
+        $students = User::forRole('student')
             ->select('users.id')
             ->get();
 

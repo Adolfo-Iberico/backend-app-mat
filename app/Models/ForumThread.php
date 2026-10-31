@@ -3,54 +3,41 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Hilo del foro vinculado a una lección y a un docente. */
-class ForumThread extends Model
+/**
+ * Vista de compatibilidad para hilos de foro.
+ * Ahora vive en la tabla canónica `threads` con type='forum'.
+ */
+class ForumThread extends Thread
 {
-    use HasUuids;
+    protected $table = 'threads';
 
-    protected $keyType = 'string';
+    public const STATUS_OPEN = 'open';
 
-    public $incrementing = false;
+    public const STATUS_CLOSED = 'closed';
 
-    protected $fillable = [
-        'id',
-        'teacher_id',
-        'author_id',
-        'lesson_id',
-        'title',
-        'body',
-        'status',
-    ];
+    protected static function booted(): void
+    {
+        static::addGlobalScope('forum', function ($query) {
+            $query->where('type', 'forum');
+        });
 
-    const STATUS_OPEN = 'open';
+        static::creating(function ($thread) {
+            $thread->type = 'forum';
+        });
+    }
 
-    const STATUS_CLOSED = 'closed';
-
-    /** Docente responsable del hilo. */
+    /** Alias para el docente responsable. */
     public function teacher()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->creator();
     }
 
-    /** Usuario que abrió el hilo (docente o estudiante). */
-    public function author()
+    /** Alias para el autor del hilo. */
+    public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
-    }
-
-    /** Lección relacionada con el hilo. */
-    public function lesson()
-    {
-        return $this->belongsTo(Lesson::class);
-    }
-
-    /** Publicaciones del hilo. */
-    public function posts()
-    {
-        return $this->hasMany(ForumPost::class, 'thread_id');
     }
 
     /** Filtra los hilos con estado abierto. */

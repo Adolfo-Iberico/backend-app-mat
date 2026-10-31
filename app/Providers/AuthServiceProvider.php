@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use App\Models\Lesson;
 use App\Models\Evaluation;
-use App\Policies\LessonPolicy;
+use App\Models\Lesson;
 use App\Policies\EvaluationPolicy;
+use App\Policies\LessonPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 /** Registra las políticas de autorización de lecciones y evaluaciones. */
 class AuthServiceProvider extends ServiceProvider

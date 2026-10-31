@@ -19,7 +19,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('achievements', 'name_es')) {
+        if (! Schema::hasColumn('achievements', 'name_es')) {
             return; // Ya migrado.
         }
 
@@ -49,7 +49,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasColumn('achievements', 'name')) {
+        if (! Schema::hasColumn('achievements', 'name')) {
             return;
         }
 

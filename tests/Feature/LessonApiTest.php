@@ -2,18 +2,21 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\Lesson;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
 class LessonApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1';
+
     private User $teacher;
+
     private User $student;
 
     protected function setUp(): void
@@ -24,7 +27,7 @@ class LessonApiTest extends TestCase
         $studentRole = 'student';
 
         $this->teacher = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Teacher Test',
             'email' => 'teacher-lesson@test.com',
             'password' => 'password123',
@@ -34,7 +37,7 @@ class LessonApiTest extends TestCase
         ]);
 
         $this->student = User::create([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'full_name' => 'Student Test',
             'email' => 'student-lesson@test.com',
             'password' => 'password123',
@@ -47,7 +50,7 @@ class LessonApiTest extends TestCase
     private function createLesson(array $overrides = []): Lesson
     {
         return Lesson::create(array_merge([
-            'id' => \Illuminate\Support\Str::uuid(),
+            'id' => Str::uuid(),
             'title' => 'Test Lesson',
             'description' => 'A test lesson description',
             'content' => '<p>Lesson content here</p>',
@@ -272,7 +275,7 @@ class LessonApiTest extends TestCase
     {
         Sanctum::actingAs($this->student, ['web']);
 
-        $nonExistentId = \Illuminate\Support\Str::uuid();
+        $nonExistentId = Str::uuid();
 
         $response = $this->getJson("{$this->baseUrl}/lessons/{$nonExistentId}");
 

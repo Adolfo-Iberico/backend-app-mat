@@ -29,7 +29,7 @@ class Authenticate extends Middleware
         parent::authenticate($request, $guards);
 
         $user = $request->user();
-        if ($user && !$user->is_active) {
+        if ($user && ! $user->is_active) {
             if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
             }

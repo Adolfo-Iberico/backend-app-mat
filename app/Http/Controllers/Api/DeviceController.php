@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DeviceToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 /**
  * Registra, elimina y lista los tokens de notificación push del usuario actual.
@@ -54,7 +53,7 @@ class DeviceController extends Controller
                 'id' => $device->id,
                 'platform' => $device->platform,
                 'device_name' => $device->device_name,
-            ]
+            ],
         ]);
     }
 
@@ -72,7 +71,7 @@ class DeviceController extends Controller
             ->update(['is_active' => false]);
 
         return response()->json([
-            'message' => __('device_unregistered')
+            'message' => __('device_unregistered'),
         ]);
     }
 

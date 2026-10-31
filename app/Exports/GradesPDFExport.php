@@ -2,15 +2,13 @@
 
 namespace App\Exports;
 
-use App\Models\EvaluationResult;
-use App\Models\Evaluation;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /** Consulta resultados de evaluaciones y calcula métricas para informes docentes. */
 class GradesPDFExport
 {
     protected $teacherId;
+
     protected $filters;
 
     /** Configura el informe con un docente opcional y filtros de consulta. */
@@ -44,15 +42,15 @@ class GradesPDFExport
             $query->where('evaluations.teacher_id', $this->teacherId);
         }
 
-        if (!empty($this->filters['student_id'])) {
+        if (! empty($this->filters['student_id'])) {
             $query->where('evaluation_results.user_id', $this->filters['student_id']);
         }
 
-        if (!empty($this->filters['evaluation_id'])) {
+        if (! empty($this->filters['evaluation_id'])) {
             $query->where('evaluation_results.evaluation_id', $this->filters['evaluation_id']);
         }
 
-        if (!empty($this->filters['area'])) {
+        if (! empty($this->filters['area'])) {
             $query->where('lessons.unit', $this->filters['area']);
         }
 
@@ -99,9 +97,16 @@ class GradesPDFExport
     public static function gradeLetter($score): string
     {
         $score = (float) $score;
-        if ($score >= 18) return 'AD';
-        if ($score >= 15) return 'A';
-        if ($score >= 12) return 'B';
+        if ($score >= 18) {
+            return 'AD';
+        }
+        if ($score >= 15) {
+            return 'A';
+        }
+        if ($score >= 12) {
+            return 'B';
+        }
+
         return 'C';
     }
 }

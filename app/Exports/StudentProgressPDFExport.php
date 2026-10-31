@@ -2,9 +2,8 @@
 
 namespace App\Exports;
 
-use App\Models\User;
 use App\Models\LessonProgress;
-use App\Models\EvaluationResult;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /** Reúne el avance en lecciones y los resultados de evaluación de un estudiante. */
@@ -40,9 +39,10 @@ class StudentProgressPDFExport
         // Estructura de resultados de evaluaciones (compatible con el CSV student)
         $results = $evaluations->map(function ($e) {
             $date = $e->created_at ?? '';
-            if ($date && !is_string($date) && method_exists($date, 'format')) {
+            if ($date && ! is_string($date) && method_exists($date, 'format')) {
                 $date = $date->format('d/m/Y H:i');
             }
+
             return [
                 'evaluation_name' => $e->title,
                 'type' => 'evaluation',
@@ -62,7 +62,7 @@ class StudentProgressPDFExport
                 'lessons_in_progress' => $lessons->where('status', 'in_progress')->count(),
                 'average_score' => $evaluations->avg('score') ?? 0,
                 'total_evaluations' => $evaluations->count(),
-            ]
+            ],
         ];
     }
 }
