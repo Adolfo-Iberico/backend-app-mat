@@ -49,10 +49,11 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:10,1');
 
         // Google OAuth
+        // Requiere middleware web para que Socialite pueda guardar el estado OAuth en sesión.
         Route::get('/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])
-            ->middleware('throttle:30,1');
+            ->middleware(['web', 'throttle:30,1']);
         Route::get('/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])
-            ->middleware('throttle:30,1');
+            ->middleware(['web', 'throttle:30,1']);
         Route::post('/google/exchange-code', [GoogleAuthController::class, 'exchangeCode'])
             ->middleware('throttle:10,1');
         Route::post('/google/login', [GoogleAuthController::class, 'loginWithGoogleToken'])
