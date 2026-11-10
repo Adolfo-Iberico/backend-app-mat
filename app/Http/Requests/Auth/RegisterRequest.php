@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'sometimes|in:student',
             'academic_level' => 'required_if:role,student|in:basic,intermediate,advanced',
@@ -36,7 +36,6 @@ class RegisterRequest extends FormRequest
         return [
             'full_name.required' => __('validation_full_name_required'),
             'email.required' => __('validation_email_required'),
-            'email.unique' => __('email_already_registered'),
             'password.required' => __('validation_password_required'),
             'password.min' => __('validation_password_min'),
             'password.confirmed' => __('validation_password_confirmed'),

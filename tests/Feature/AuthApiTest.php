@@ -75,6 +75,57 @@ class AuthApiTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_unknown_email_login_uses_the_same_response_as_wrong_password(): void
+    {
+        User::create([
+            'id' => Str::uuid(),
+            'email' => 'known-login@example.com',
+            'full_name' => 'Known User',
+            'password' => 'password123',
+            'role' => 'student',
+            'is_active' => true,
+            'provider' => 'email',
+        ]);
+
+        $wrongPasswordResponse = $this->postJson("{$this->baseUrl}/auth/login", [
+            'email' => 'known-login@example.com',
+            'password' => 'wrongpassword',
+        ]);
+        $unknownEmailResponse = $this->postJson("{$this->baseUrl}/auth/login", [
+            'email' => 'unknown-login@example.com',
+            'password' => 'wrongpassword',
+        ]);
+
+        $wrongPasswordResponse->assertUnauthorized();
+        $unknownEmailResponse->assertUnauthorized()
+            ->assertExactJson($wrongPasswordResponse->json());
+    }
+
+    public function test_duplicate_registration_does_not_disclose_email_existence(): void
+    {
+        User::create([
+            'id' => Str::uuid(),
+            'email' => 'registered@example.com',
+            'full_name' => 'Registered User',
+            'password' => 'password123',
+            'role' => 'student',
+            'is_active' => true,
+            'provider' => 'email',
+        ]);
+
+        $response = $this->postJson("{$this->baseUrl}/auth/register", [
+            'full_name' => 'Another Student',
+            'email' => 'registered@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'student',
+            'academic_level' => 'basic',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('errors.email.0', __('registration_email_unavailable'));
+    }
+
     public function test_unauthenticated_cannot_access_profile(): void
     {
         $response = $this->getJson("{$this->baseUrl}/user/profile");

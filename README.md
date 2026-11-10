@@ -63,6 +63,11 @@ La API está versionada bajo `/api/v1`.
 
 Las rutas protegidas requieren una sesión válida de Sanctum, usuario activo y los permisos del rol correspondiente. También se aplican límites de frecuencia, auditoría y caché donde corresponde.
 
+El login ejecuta la verificación de contraseña también cuando el correo no
+existe, y los intentos de registro duplicado devuelven un error genérico sin
+confirmar si la cuenta está registrada. Mantén esos mensajes genéricos en
+cualquier cliente de la API.
+
 ### Consulta de progreso para apoderados
 
 `POST /api/v1/guest/student-lookup` y
@@ -171,7 +176,7 @@ vendor/bin/pint --test
 Antes de probar integraciones externas, usa credenciales de desarrollo y una base de datos aislada.
 
 La suite de backend se ejecuta en GitHub Actions con SQLite y también prueba
-una migración limpia de MariaDB. El CI separado de `Frontend-app-mat` valida
+una migración limpia de MariaDB. El CI separado de `frontend-app-mat` valida
 `npm ci`, TypeScript y el build de producción.
 
 ## Variables de entorno
@@ -189,6 +194,10 @@ Usa `.env.example` como plantilla. Entre las variables esperadas están:
 - Push: `FCM_*` y las variables requeridas por Web Push.
 
 No coloques valores reales en este README, `.env.example`, commits, logs, capturas ni issues. El archivo `.env` debe permanecer fuera del control de versiones. Las claves secretas de proveedores deben existir únicamente en el entorno del backend y nunca en variables `VITE_*`.
+
+Las versiones de `minishlink/web-push` y `sentry/sentry-laravel` usan rangos
+de versión explícitos en `composer.json`; instala con `composer install` para
+respetar las versiones fijadas en `composer.lock`.
 
 El `.env.example` usa `CACHE_STORE=database` y `SESSION_DRIVER=database` para
 que CAPTCHA, rate limits y sesiones se compartan entre instancias. El esquema

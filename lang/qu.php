@@ -5,6 +5,8 @@ return [
     'email_already_registered' => 'Qhay mail kaypi sakun',
     'invalid_role' => 'Mana ruwayna',
     'register_success' => 'Runaapaq ñan tukuy',
+    'register_failed' => 'Manan qillqakuyta tukuyta atikunchu.',
+    'registration_email_unavailable' => 'Manan kay willaykunawan qillqakuyta tukuyta atikunchu.',
     'invalid_credentials' => 'Mana riqsichiy churana',
     'user_inactive' => 'Mana llamkay runa',
     'login_success' => 'Ñan tukuy',

@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserProfile;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -21,18 +22,14 @@ use Laravel\Socialite\Facades\Socialite;
  */
 class AuthController extends Controller
 {
+    private const DUMMY_PASSWORD_HASH = '$2y$12$RK6ISGRKptGa3t/dMX5lkuS3fSU7ZjUmKFTTj9g4ESKlOy01YNVOe';
+
     /**
      * Registro tradicional (email + password)
      */
     public function register(RegisterRequest $request)
     {
         $validated = $request->validated();
-
-        if (User::where('email', $validated['email'])->exists()) {
-            return response()->json([
-                'message' => __('email_already_registered'),
-            ], 422);
-        }
 
         $roleName = $validated['role'] ?? Role::STUDENT;
         if (! in_array($roleName, [Role::STUDENT, Role::TEACHER], true)) {
@@ -41,15 +38,26 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::create([
-            'id' => Str::uuid(),
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'full_name' => $validated['full_name'],
-            'role' => $roleName,
-            'is_active' => true,
-            'provider' => 'email',
-        ]);
+        $passwordHash = Hash::make($validated['password']);
+
+        try {
+            $user = User::create([
+                'id' => Str::uuid(),
+                'email' => $validated['email'],
+                'password' => $passwordHash,
+                'full_name' => $validated['full_name'],
+                'role' => $roleName,
+                'is_active' => true,
+                'provider' => 'email',
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return response()->json([
+                'message' => __('register_failed'),
+                'errors' => [
+                    'email' => [__('registration_email_unavailable')],
+                ],
+            ], 422);
+        }
 
         if ($roleName === Role::STUDENT) {
             UserProfile::create([
@@ -83,14 +91,9 @@ class AuthController extends Controller
         $validated = $request->validated();
 
         $user = User::where('email', $validated['email'])->first();
+        $passwordHash = $user?->password ?? self::DUMMY_PASSWORD_HASH;
 
-        if (! $user) {
-            return response()->json([
-                'message' => __('invalid_credentials'),
-            ], 401);
-        }
-
-        if (! Hash::check($validated['password'], $user->password)) {
+        if (! Hash::check($validated['password'], $passwordHash) || ! $user) {
             return response()->json([
                 'message' => __('invalid_credentials'),
             ], 401);

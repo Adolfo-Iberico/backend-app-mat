@@ -5,6 +5,8 @@ return [
     'email_already_registered' => 'The email is already registered',
     'invalid_role' => 'Invalid role',
     'register_success' => 'User registered successfully',
+    'register_failed' => 'Registration could not be completed.',
+    'registration_email_unavailable' => 'Registration could not be completed with the provided details.',
     'invalid_credentials' => 'Invalid credentials',
     'user_inactive' => 'Inactive user',
     'login_success' => 'Login successful',
