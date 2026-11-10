@@ -125,6 +125,23 @@ class LessonApiTest extends TestCase
         ]);
     }
 
+    public function test_teacher_lesson_content_is_sanitized_before_storage(): void
+    {
+        Sanctum::actingAs($this->teacher, ['web']);
+
+        $response = $this->postJson("{$this->baseUrl}/lessons", [
+            'title' => 'Sanitized Lesson',
+            'content' => '<p onclick="alert(1)">Safe</p><img src="x" onerror="alert(1)"><a href="javascript:alert(1)">Link</a>',
+            'difficulty' => 'basic',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.content', fn (string $content): bool => str_contains($content, '<p>Safe</p>')
+                && ! str_contains($content, 'onclick')
+                && ! str_contains($content, 'onerror')
+                && ! str_contains($content, 'javascript:'));
+    }
+
     public function test_student_cannot_create_lesson(): void
     {
         Sanctum::actingAs($this->student, ['web']);

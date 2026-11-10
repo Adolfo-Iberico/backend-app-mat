@@ -13,16 +13,14 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Permite consultar públicamente el progreso estudiantil tras validar un CAPTCHA.
- */
+/** Permite a apoderados autenticados consultar el progreso de estudiantes vinculados. */
 class GuestStudentController extends Controller
 {
     private const CAPTCHA_TTL_SECONDS = 300;
 
     private const CAPTCHA_MAX_ATTEMPTS = 5;
 
-    /** Valida el CAPTCHA y devuelve el resumen académico del estudiante encontrado. */
+    /** Valida el CAPTCHA y devuelve el resumen académico de un estudiante vinculado. */
     public function lookup(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -35,14 +33,12 @@ class GuestStudentController extends Controller
             return $error;
         }
 
-        $student = User::where('dni', $validated['dni'])
-            ->whereHas('role', fn ($query) => $query->where('name', Role::STUDENT))
-            ->first();
+        $student = $this->findLinkedStudent($validated['dni'], (string) $request->user()->id);
 
         if (! $student) {
             return response()->json([
                 'success' => false,
-                'message' => 'Estudiante no encontrado con ese DNI.',
+                'message' => 'No se pudo completar la consulta.',
             ], 404);
         }
 
@@ -134,6 +130,15 @@ class GuestStudentController extends Controller
             ], 422);
         }
 
+        $usedKey = 'captcha_used:'.$decoded['jti'];
+        $remainingSeconds = max(1, $decoded['expires_at'] - time());
+        if (! Cache::add($usedKey, true, now()->addSeconds($remainingSeconds))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Captcha inválido o expirado. Intente nuevamente.',
+            ], 422);
+        }
+
         if (strtoupper($validated['captcha_answer']) !== strtoupper($decoded['code'])) {
             $ipKey = 'captcha_attempts:'.request()->ip();
             $dniKey = 'captcha_attempts_dni:'.$validated['dni'];
@@ -180,14 +185,12 @@ class GuestStudentController extends Controller
             return $error;
         }
 
-        $student = User::where('dni', $validated['dni'])
-            ->whereHas('role', fn ($query) => $query->where('name', Role::STUDENT))
-            ->first();
+        $student = $this->findLinkedStudent($validated['dni'], (string) $request->user()->id);
 
         if (! $student) {
             return response()->json([
                 'success' => false,
-                'message' => 'Estudiante no encontrado con ese DNI.',
+                'message' => 'No se pudo completar la consulta.',
             ], 404);
         }
 
@@ -240,6 +243,20 @@ class GuestStudentController extends Controller
         return $streak;
     }
 
+    private function findLinkedStudent(string $dni, string $parentId): ?User
+    {
+        return User::query()
+            ->where('dni', $dni)
+            ->whereHas('role', fn ($query) => $query->where('name', Role::STUDENT))
+            ->whereExists(function ($query) use ($parentId): void {
+                $query->selectRaw('1')
+                    ->from('parent_student')
+                    ->whereColumn('parent_student.student_id', 'users.id')
+                    ->where('parent_student.parent_id', $parentId);
+            })
+            ->first();
+    }
+
     /** Genera un token CAPTCHA cifrado y la imagen correspondiente. */
     public function generateCaptcha(): JsonResponse
     {
@@ -253,6 +270,7 @@ class GuestStudentController extends Controller
         $token = Crypt::encryptString(json_encode([
             'code' => $captcha,
             'expires_at' => $expiresAt,
+            'jti' => bin2hex(random_bytes(16)),
         ]));
 
         return response()->json([
@@ -274,7 +292,12 @@ class GuestStudentController extends Controller
         } catch (\Throwable $e) {
             return null;
         }
-        if (! is_array($payload) || empty($payload['code']) || empty($payload['expires_at'])) {
+        if (
+            ! is_array($payload)
+            || empty($payload['code'])
+            || ! is_numeric($payload['expires_at'] ?? null)
+            || empty($payload['jti'])
+        ) {
             return null;
         }
 

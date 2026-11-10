@@ -63,6 +63,20 @@ La API está versionada bajo `/api/v1`.
 
 Las rutas protegidas requieren una sesión válida de Sanctum, usuario activo y los permisos del rol correspondiente. También se aplican límites de frecuencia, auditoría y caché donde corresponde.
 
+### Consulta de progreso para apoderados
+
+`POST /api/v1/guest/student-lookup` y
+`POST /api/v1/guest/student-lookup/export` requieren una cuenta activa con rol
+`parent`, autenticada con Sanctum. Cada consulta queda restringida a los
+estudiantes vinculados a esa cuenta en `parent_student`; conocer el DNI no
+concede acceso. Los estudiantes no vinculados y los DNI inexistentes reciben
+la misma respuesta. El CAPTCHA sigue siendo una defensa adicional y cada
+token es de un solo uso, también en los intentos fallidos.
+
+Para habilitar el acceso de una familia, crea/verifica su cuenta `parent` y
+registra la relación con el estudiante en `parent_student`. No publiques esos
+datos ni expongas los reportes por rutas anónimas.
+
 ### Integración con E-Lean Studio
 
 El frontend `E-LeanStudio-app-mat` consume esta API desde acciones de servidor de Next.js. La URL base debe apuntar al prefijo versionado:
@@ -100,7 +114,7 @@ copy .env.example .env
 php artisan key:generate
 ```
 
-Configura la base de datos en `.env` usando valores locales o de tu entorno. Después ejecuta:
+Configura la base de datos en `.env` usando valores locales o de tu entorno. Para desarrollo con el esquema histórico de Laravel, ejecuta:
 
 ```bash
 php artisan migrate --seed
@@ -113,6 +127,12 @@ En PowerShell, el equivalente de `copy` es:
 ```powershell
 Copy-Item .env.example .env
 ```
+
+El esquema v2 de producción es una ruta distinta: importa `../schema.sql` en
+una base vacía y no ejecutes `php artisan migrate` sobre ella. Para actualizar
+una instalación v2 existente, respáldala y sigue los pasos de
+[`DEPLOYMENT.md`](DEPLOYMENT.md), incluido el parche
+`database/schema-v2-upgrades/2026_11_09_000001_add_shared_cache_and_sessions.sql`.
 
 ## Desarrollo
 
@@ -150,6 +170,10 @@ vendor/bin/pint --test
 
 Antes de probar integraciones externas, usa credenciales de desarrollo y una base de datos aislada.
 
+La suite de backend se ejecuta en GitHub Actions con SQLite y también prueba
+una migración limpia de MariaDB. El CI separado de `Frontend-app-mat` valida
+`npm ci`, TypeScript y el build de producción.
+
 ## Variables de entorno
 
 Usa `.env.example` como plantilla. Entre las variables esperadas están:
@@ -165,6 +189,13 @@ Usa `.env.example` como plantilla. Entre las variables esperadas están:
 - Push: `FCM_*` y las variables requeridas por Web Push.
 
 No coloques valores reales en este README, `.env.example`, commits, logs, capturas ni issues. El archivo `.env` debe permanecer fuera del control de versiones. Las claves secretas de proveedores deben existir únicamente en el entorno del backend y nunca en variables `VITE_*`.
+
+El `.env.example` usa `CACHE_STORE=database` y `SESSION_DRIVER=database` para
+que CAPTCHA, rate limits y sesiones se compartan entre instancias. El esquema
+v2 incluye las tablas `cache`, `cache_locks` y `sessions`. Si cambias a Redis,
+configura y provisiona Redis antes de seleccionar ese driver. La cola de
+ejemplo sigue siendo `sync`; para procesamiento asíncrono configura un driver
+y worker adecuados a tu infraestructura.
 
 Para el entorno local, registra `http://localhost:8000/api/v1/auth/google/callback` como URI de retorno autorizado en Google y configura `FRONTEND_URL=http://localhost:9002`. En producción, usa el URI HTTPS público de la API y el origen HTTPS del frontend.
 
@@ -187,6 +218,6 @@ storage/                  Logs, caché y archivos generados
 
 ## Despliegue
 
-El despliegue debe configurar el entorno de producción fuera del repositorio, ejecutar migraciones con una estrategia controlada, construir recursos, configurar el worker de cola y servir `public/` como raíz web. Este proyecto se despliega en cPanel: el document root debe apuntar a `public/`, el dominio es `api.aulamate.com` y el certificado se emite con AutoSSL.
+El despliegue debe configurar el entorno de producción fuera del repositorio y servir `public/` como raíz web. Este proyecto se despliega en cPanel: el document root debe apuntar a `public/`, el dominio es `api.aulamate.com` y el certificado se emite con AutoSSL. Antes de actualizar, identifica el esquema de base de datos: sigue [`DEPLOYMENT.md`](DEPLOYMENT.md) para el esquema v2 y no ejecutes migraciones Laravel sobre esa base.
 
 Nunca habilites `APP_DEBUG=true` en producción ni publiques archivos `.env`, tokens, claves privadas, dumps de base de datos o credenciales de servicios.

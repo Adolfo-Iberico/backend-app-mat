@@ -539,9 +539,11 @@ Route::prefix('v1')->group(function () {
 
     // ============================================================
 
-    // CONSULTA DE INVITADOS: búsqueda de estudiante y generación de captcha con límites por ruta.
-    Route::post('/guest/student-lookup', [GuestStudentController::class, 'lookup'])->middleware('throttle:5,1');
-    Route::post('/guest/student-lookup/export', [GuestStudentController::class, 'exportLookup'])->middleware('throttle:5,1');
+    // CONSULTA DE APODERADOS: solo permite consultar estudiantes vinculados a la cuenta autenticada.
+    Route::middleware(['auth:sanctum', 'auth.active', 'rate.limit', 'role:parent'])->group(function () {
+        Route::post('/guest/student-lookup', [GuestStudentController::class, 'lookup'])->middleware('throttle:5,1');
+        Route::post('/guest/student-lookup/export', [GuestStudentController::class, 'exportLookup'])->middleware('throttle:5,1');
+    });
     Route::get('/guest/captcha', [GuestStudentController::class, 'generateCaptcha'])->middleware('throttle:10,1');
 
     // ============================================================

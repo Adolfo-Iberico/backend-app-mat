@@ -1,6 +1,6 @@
 -- =====================================================================
 --  MathFlow / KawsayMath  ·  schema.sql  ·  v2 (optimizado)
---  30 tablas + 2 vistas   (la v1 tenia 46 tablas)
+--  33 tablas + 2 vistas   (la v1 tenia 46 tablas)
 --  Motor: MariaDB 10.4+ / MySQL 8  ·  InnoDB  ·  utf8mb4_unicode_ci
 --
 --  USO
@@ -596,10 +596,34 @@ CREATE TABLE `system_translations` (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
---  8. TECNICAS DE LARAVEL (solo las imprescindibles)
---     Eliminadas: cache, cache_locks, jobs, job_batches, failed_jobs, sessions.
---     En .env:  CACHE_STORE=file  QUEUE_CONNECTION=sync  SESSION_DRIVER=file
+--  8. TECNICAS DE LARAVEL
 -- =====================================================================
+
+CREATE TABLE `cache` (
+  `key`        VARCHAR(255) NOT NULL,
+  `value`      MEDIUMTEXT NOT NULL,
+  `expiration` INT NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `cache_locks` (
+  `key`        VARCHAR(255) NOT NULL,
+  `owner`      VARCHAR(255) NOT NULL,
+  `expiration` INT NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `sessions` (
+  `id`            VARCHAR(255) NOT NULL,
+  `user_id`       CHAR(36) NULL,
+  `ip_address`    VARCHAR(45) NULL,
+  `user_agent`    TEXT NULL,
+  `payload`       LONGTEXT NOT NULL,
+  `last_activity` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sessions_user_id` (`user_id`),
+  KEY `idx_sessions_last_activity` (`last_activity`)
+) ENGINE=InnoDB;
 
 CREATE TABLE `personal_access_tokens` (
   `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

@@ -7,6 +7,10 @@ consolidado `../schema.sql`. El proyecto conserva `roles`, `courses` y
 `role_id`; no se deben fusionar automaticamente datos de la otra base local
 `mentematica`.
 
+Las rutas de consulta de progreso estudiantil requieren una cuenta activa con
+rol `parent` y una relacion `parent_student` con el alumno. No ofrecen acceso
+anonimo por DNI; el CAPTCHA es una proteccion adicional, no el control de acceso.
+
 Hay dos rutas de esquema incompatibles:
 
 - `../schema.sql`: esquema v2 elegido para produccion.
@@ -28,7 +32,11 @@ en staging. No ejecutar `migrate:fresh` en una base que contenga datos.
    despues de la importacion.
 4. Crear `.env` desde `.env.example`. Configurar dominios HTTPS reales,
    credenciales, correo y los mismos origenes en `FRONTEND_URL`,
-   `CORS_ALLOWED_ORIGINS` y `SANCTUM_STATEFUL_DOMAINS`.
+   `CORS_ALLOWED_ORIGINS` y `SANCTUM_STATEFUL_DOMAINS`. Mantener
+   `CACHE_STORE=database` y `SESSION_DRIVER=database`; ambos usan la base de
+   datos compartida para que CAPTCHA, rate limits y sesiones funcionen entre
+   varias instancias. El esquema incluye las tablas `cache`, `cache_locks` y
+   `sessions`.
 5. Generar `APP_KEY` una sola vez. No copiar `.env`, claves ni respaldos al
    repositorio.
 6. Desplegar el backend e instalar dependencias de produccion:
@@ -62,7 +70,10 @@ indices y claves foraneas coincidieron con el SQL v2 actual; los conteos de las
 tablas existentes se mantuvieron iguales (incluidos 17 usuarios, 181
 evaluaciones, 182 lecciones y 905 preguntas). La copia paso de 27 a 30 tablas
 base; `lesson_segments`, `submitted_works` y `announcements` quedaron vacias.
-La base fuente no se toco.
+La base fuente no se toco. El parche adicional
+`2026_11_09_000001_add_shared_cache_and_sessions.sql` agrega las tres tablas
+compartidas para las nuevas configuraciones de caché y sesiones (33 tablas en
+total); es idempotente y debe aplicarse tambien a instalaciones v2 existentes.
 
 Para el corte de produccion:
 
@@ -75,9 +86,15 @@ Para el corte de produccion:
    mysql --defaults-extra-file=RUTA_PRIVADA.cnf --database=mentematica_v2 < database/schema-v2-upgrades/2026_10_31_000001_align_schema_v2.sql
    ```
 
-4. Verificar columnas, tablas, indices, claves foraneas y conteos de datos;
-   ejecutar smoke tests de la API. Repetir el parche debe terminar sin cambios.
-5. Solo despues de aprobar staging, respaldar y aplicar el mismo parche a
+4. Crear las tablas compartidas de caché y sesiones en staging:
+
+   ```sh
+   mysql --defaults-extra-file=RUTA_PRIVADA.cnf --database=mentematica_v2 < database/schema-v2-upgrades/2026_11_09_000001_add_shared_cache_and_sessions.sql
+   ```
+
+5. Verificar columnas, tablas, indices, claves foraneas y conteos de datos;
+   ejecutar smoke tests de la API. Repetir ambos parches debe terminar sin cambios.
+6. Solo despues de aprobar staging, respaldar y aplicar los mismos parches a
    produccion dentro de una ventana de mantenimiento con rollback probado.
 
 La base antigua `mentematica` contiene registros auxiliares que no estan en la

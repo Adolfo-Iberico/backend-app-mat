@@ -712,9 +712,13 @@ class LessonController extends Controller
 
     private function sanitizeHtml(string $content): string
     {
-        $allowed = '<p><br><strong><b><em><i><u><h1><h2><h3><h4><ul><ol><li><a><img><blockquote><pre><code><table><thead><tbody><tr><th><td><div><span><sup><sub><hr>';
+        $config = \HTMLPurifier_Config::createDefault();
+        $config->set(
+            'HTML.Allowed',
+            'p,br,strong,b,em,i,u,h1,h2,h3,h4,ul,ol,li,a[href|title],img[src|alt|width|height],blockquote,pre,code,table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],div,span,sup,sub,hr'
+        );
 
-        return strip_tags($content, $allowed);
+        return (new \HTMLPurifier($config))->purify($content);
     }
 
     /**
