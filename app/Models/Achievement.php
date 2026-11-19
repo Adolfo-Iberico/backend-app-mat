@@ -5,14 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * Logro configurable con traducciones, criterios y recompensa de experiencia.
- *
- * Desde Fase 3 las traducciones viven en dos columnas JSON (name, description)
- * con los idiomas como claves: {"es": "...", "en": "...", "qu": "..."}.
- * Los accessores name_es/name_en/... mantienen la compatibilidad con el
- * código existente (GamificationService, ExamController, ProgressController).
- */
 class Achievement extends Model
 {
     public const LOCALES = ['es', 'en', 'qu'];
